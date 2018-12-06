@@ -263,13 +263,19 @@ UniValue help(const JSONRPCRequest& jsonRequest)
 
 UniValue stop(const JSONRPCRequest& jsonRequest)
 {
-    if (jsonRequest.fHelp || !jsonRequest.params.empty())
+    // Accept the hidden 'wait' integer argument (milliseconds)
+    // For instance, 'stop 1000' makes the call wait 1 second before returning
+    // to the client (intended for testing)
+    if (jsonRequest.fHelp || jsonRequest.params.size() > 1)
         throw std::runtime_error(
             "stop\n"
             "\nStop PIVX server.");
     // Event loop will exit after current HTTP requests have been handled, so
     // this reply will get back to the client.
     StartShutdown();
+    if (jsonRequest.params[0].isNum()) {
+        MilliSleep(jsonRequest.params[0].get_int());
+    }
     return "PIVX server stopping";
 }
 
@@ -283,7 +289,7 @@ static const CRPCCommand vRPCCommands[] =
   //  --------------------- ------------------------  -----------------------  ------ ----------
     /* Overall control/query calls */
     { "control",            "help",                   &help,                   true,  {"command"}  },
-    { "control",            "stop",                   &stop,                   true,  {}  },
+    { "control",            "stop",                   &stop,                   true,  {"wait"}  },
 };
 
 CRPCTable::CRPCTable()
