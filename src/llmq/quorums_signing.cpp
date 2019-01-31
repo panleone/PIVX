@@ -558,7 +558,7 @@ CQuorumCPtr CSigningManager::SelectQuorumForSigning(Consensus::LLMQType llmqType
     CBlockIndex* pindexStart;
     {
         LOCK(cs_main);
-        if (signHeight > chainActive.Height()) {
+        if (signHeight - SIGN_HEIGHT_OFFSET > chainActive.Height()) {
             return nullptr;
         }
         pindexStart = chainActive[signHeight - SIGN_HEIGHT_OFFSET];
