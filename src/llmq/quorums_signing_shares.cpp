@@ -1108,6 +1108,7 @@ void CSigSharesManager::BanNode(NodeId nodeId)
 
 void CSigSharesManager::WorkThreadMain()
 {
+    int64_t lastSendTime = 0;
     while (!interruptSigningShare) {
         bool didWork = false;
 
@@ -1115,7 +1116,12 @@ void CSigSharesManager::WorkThreadMain()
         didWork |= quorumSigningManager->ProcessPendingRecoveredSigs(*g_connman);
         didWork |= ProcessPendingSigShares(*g_connman);
         didWork |= SignPendingSigShares();
-        SendMessages();
+
+        if (GetTimeMillis() - lastSendTime > 100) {
+            SendMessages();
+            lastSendTime = GetTimeMillis();
+        }
+
         Cleanup();
         quorumSigningManager->Cleanup();
 
