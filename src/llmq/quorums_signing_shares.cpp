@@ -453,14 +453,14 @@ void CSigSharesManager::CollectPendingSigSharesToVerify(
     }
 }
 
-void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
+bool CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
 {
     std::map<NodeId, std::vector<CSigShare>> sigSharesByNodes;
     std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr> quorums;
 
     CollectPendingSigSharesToVerify(32, sigSharesByNodes, quorums);
     if (sigSharesByNodes.empty()) {
-        return;
+        return false;
     }
 
     // It's ok to perform insecure batched verification here as we verify against the quorum public key shares,
@@ -520,6 +520,8 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
 
         ProcessPendingSigSharesFromNode(nodeId, v, quorums, connman);
     }
+
+    return true;
 }
 
 // It's ensured that no duplicates are passed to this method
@@ -881,7 +883,7 @@ void CSigSharesManager::CollectSigSharesToAnnounce(std::map<NodeId, std::map<uin
     this->sigSharesToAnnounce.clear();
 }
 
-void CSigSharesManager::SendMessages()
+bool CSigSharesManager::SendMessages()
 {
     std::multimap<CService, NodeId> nodesByAddress;
     g_connman->ForEachNode([&nodesByAddress](CNode* pnode) {
@@ -899,6 +901,8 @@ void CSigSharesManager::SendMessages()
         CollectSigSharesToAnnounce(sigSharesToAnnounce);
     }
 
+    bool didSend = false;
+
     g_connman->ForEachNode([&](CNode* pnode) {
         CNetMsgMaker msgMaker(pnode->GetSendVersion());
 
@@ -909,6 +913,7 @@ void CSigSharesManager::SendMessages()
                 LogPrintf("llmq", "CSigSharesManager::SendMessages -- QGETSIGSHARES inv={%s}, node=%d\n",
                     p.second.ToString(), pnode->GetId());
                 g_connman->PushMessage(pnode, msgMaker.Make(NetMsgType::QGETSIGSHARES, p.second));
+                didSend = true;
             }
         }
 
@@ -919,6 +924,7 @@ void CSigSharesManager::SendMessages()
                 LogPrintf("llmq", "CSigSharesManager::SendMessages -- QBSIGSHARES inv={%s}, node=%d\n",
                     p.second.ToInv().ToString(), pnode->GetId());
                 g_connman->PushMessage(pnode, msgMaker.Make(NetMsgType::QBSIGSHARES, p.second));
+                didSend = true;
             }
         }
 
@@ -929,11 +935,14 @@ void CSigSharesManager::SendMessages()
                 LogPrintf("llmq", "CSigSharesManager::SendMessages -- QSIGSHARESINV inv={%s}, node=%d\n",
                     p.second.ToString(), pnode->GetId());
                 g_connman->PushMessage(pnode, msgMaker.Make(NetMsgType::QSIGSHARESINV, p.second));
+                didSend = true;
             }
         }
 
         return true;
     });
+
+    return didSend;
 }
 
 void CSigSharesManager::Cleanup()
@@ -1099,19 +1108,22 @@ void CSigSharesManager::BanNode(NodeId nodeId)
 
 void CSigSharesManager::WorkThreadMain()
 {
-    int64_t lastProcessTime = GetTimeMillis();
     while (!interruptSigningShare) {
+        bool didWork = false;
+
         RemoveBannedNodeStates();
-        quorumSigningManager->ProcessPendingRecoveredSigs(*g_connman);
-        ProcessPendingSigShares(*g_connman);
-        SignPendingSigShares();
+        didWork |= quorumSigningManager->ProcessPendingRecoveredSigs(*g_connman);
+        didWork |= ProcessPendingSigShares(*g_connman);
+        didWork |= SignPendingSigShares();
         SendMessages();
         Cleanup();
         quorumSigningManager->Cleanup();
 
         // TODO Wakeup when pending signing is needed?
-        if (!interruptSigningShare.sleep_for(std::chrono::milliseconds(100))) {
-            return;
+        if(!didWork) {
+            if (!interruptSigningShare.sleep_for(std::chrono::milliseconds(100))) {
+                return;
+            }
         }
     }
 }
@@ -1122,7 +1134,7 @@ void CSigSharesManager::AsyncSign(const CQuorumCPtr& quorum, const uint256& id, 
     pendingSigns.emplace_back(quorum, id, msgHash);
 }
 
-void CSigSharesManager::SignPendingSigShares()
+bool CSigSharesManager::SignPendingSigShares()
 {
     std::vector<std::tuple<const CQuorumCPtr, uint256, uint256>> v;
     {
@@ -1133,6 +1145,8 @@ void CSigSharesManager::SignPendingSigShares()
     for (auto& t : v) {
         Sign(std::get<0>(t), std::get<1>(t), std::get<2>(t));
     }
+
+    return !v.empty();
 }
 
 void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash)
