@@ -136,7 +136,7 @@ private:
     CRecoveredSigsDb db;
 
     // Incoming and not verified yet
-    std::map<NodeId, std::list<CRecoveredSig>> pendingRecoveredSigs;
+    std::unordered_map<NodeId, std::list<CRecoveredSig>> pendingRecoveredSigs;
 
     // must be protected by cs
     FastRandomContext rnd;
@@ -157,7 +157,7 @@ private:
     void ProcessMessageRecoveredSig(CNode* pfrom, const CRecoveredSig& recoveredSig, CConnman& connman);
     bool PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& recoveredSig, bool& retBan);
 
-    void CollectPendingRecoveredSigsToVerify(size_t maxUniqueSessions, std::map<NodeId, std::list<CRecoveredSig>>& retSigShares, std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums);
+    void CollectPendingRecoveredSigsToVerify(size_t maxUniqueSessions, std::unordered_map<NodeId, std::list<CRecoveredSig>>& retSigShares, std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums);
     bool ProcessPendingRecoveredSigs(CConnman& connman); // called from the worker thread of CSigSharesManager
     void ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& recoveredSig, const CQuorumCPtr& quorum, CConnman& connman);
     void Cleanup(); // called from the worker thread of CSigSharesManager
