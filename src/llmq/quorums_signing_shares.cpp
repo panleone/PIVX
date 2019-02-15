@@ -374,11 +374,6 @@ bool CSigSharesManager::PreVerifyBatchedSigShares(NodeId nodeId, const CBatchedS
 
     for (size_t i = 0; i < batchedSigShares.sigShares.size(); i++) {
         auto quorumMember = batchedSigShares.sigShares[i].first;
-        auto& sigShare = batchedSigShares.sigShares[i].second;
-        if (!sigShare.IsValid()) {
-            retBan = true;
-            return false;
-        }
         if (!dupMembers.emplace(quorumMember).second) {
             retBan = true;
             return false;
@@ -482,6 +477,14 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
                 continue;
             }
 
+            // we didn't check this earlier because we use a lazy BLS signature and tried to avoid doing the expensive
+            // deserialization in the message thread
+            if (!sigShare.sigShare.Get().IsValid()) {
+                BanNode(nodeId);
+                // don't process any additional shares from this node
+                break;
+            }
+
             auto quorum = quorums.at(std::make_pair((Consensus::LLMQType)sigShare.llmqType, sigShare.quorumHash));
             auto pubKeyShare = quorum->GetPubKeyShare(sigShare.quorumMember);
 
@@ -492,7 +495,7 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
                 assert(false);
             }
 
-            batchVerifier.PushMessage(nodeId, sigShare.GetKey(), sigShare.GetSignHash(), sigShare.sigShare, pubKeyShare);
+            batchVerifier.PushMessage(nodeId, sigShare.GetKey(), sigShare.GetSignHash(), sigShare.sigShare.Get(), pubKeyShare);
             verifyCount++;
         }
     }
@@ -616,7 +619,7 @@ void CSigSharesManager::TryRecoverSig(const CQuorumCPtr& quorum, const uint256& 
         idsForRecovery.reserve((size_t)quorum->params.threshold);
         for (auto it = itPair.first; it != itPair.second && sigSharesForRecovery.size() < quorum->params.threshold; ++it) {
             auto& sigShare = it->second;
-            sigSharesForRecovery.emplace_back(sigShare.sigShare);
+            sigSharesForRecovery.emplace_back(sigShare.sigShare.Get());
             idsForRecovery.emplace_back(CBLSId(quorum->members[sigShare.quorumMember]->proTxHash));
         }
 
@@ -1160,8 +1163,8 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
     sigShare.quorumMember = (uint16_t)memberIdx;
     uint256 signHash = llmq::utils::BuildSignHash(sigShare);
 
-    sigShare.sigShare = skShare.Sign(signHash);
-    if (!sigShare.sigShare.IsValid()) {
+    sigShare.sigShare.Set(skShare.Sign(signHash));
+    if (!sigShare.sigShare.Get().IsValid()) {
         LogPrintf("CSigSharesManager::%s -- failed to sign sigShare. id=%s, msgHash=%s, time=%s\n", __func__,
             sigShare.id.ToString(), sigShare.msgHash.ToString(), t.count());
         return;

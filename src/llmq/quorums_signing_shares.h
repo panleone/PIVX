@@ -38,7 +38,7 @@ public:
     uint16_t quorumMember;
     uint256 id;
     uint256 msgHash;
-    CBLSSignature sigShare;
+    CBLSLazySignature sigShare;
 
     SigShareKey key;
 
@@ -94,50 +94,17 @@ public:
     uint256 quorumHash;
     uint256 id;
     uint256 msgHash;
-    std::vector<std::pair<uint16_t, CBLSSignature>> sigShares;
+    std::vector<std::pair<uint16_t, CBLSLazySignature>> sigShares;
 
 public:
-    template <typename Stream, typename Operation>
-    inline void SerializationOpBase(Stream& s, Operation ser_action)
+    SERIALIZE_METHODS(CBatchedSigShares, obj)
     {
-        READWRITE(llmqType);
-        READWRITE(quorumHash);
-        READWRITE(id);
-        READWRITE(msgHash);
-        ::Serialize(s, llmqType);
+        READWRITE(obj.llmqType);
+        READWRITE(obj.quorumHash);
+        READWRITE(obj.id);
+        READWRITE(obj.msgHash);
+        READWRITE(obj.sigShares);
     }
-
-    template <typename Stream>
-    inline void Serialize(Stream& s) const
-    {
-        s << llmqType;
-        s << quorumHash;
-        s << id;
-        s << msgHash;
-        // this->SerializationOpBase(s, CSerActionSerialize());
-        s << sigShares;
-    }
-    template <typename Stream>
-    inline void Unserialize(Stream& s)
-    {
-        // this->SerializationOpBase(s, CSerActionUnserialize());
-        s >> llmqType;
-        s >> quorumHash;
-        s >> id;
-        s >> msgHash;
-        // we do custom deserialization here with the malleability check skipped for signatures
-        // we can do this here because we never use the hash of a sig share for identification and are only interested
-        // in validity
-        uint64_t nSize = ReadCompactSize(s);
-        if (nSize > 400) { // we don't support larger quorums, so this is the limit
-            throw std::ios_base::failure(strprintf("too many elements (%d) in CBatchedSigShares", nSize));
-        }
-        sigShares.resize(nSize);
-        for (size_t i = 0; i < nSize; i++) {
-            s >> sigShares[i].first;
-            sigShares[i].second.Unserialize(s, false);
-        }
-    };
 
     CSigShare RebuildSigShare(size_t idx) const
     {
