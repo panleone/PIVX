@@ -209,7 +209,7 @@ public:
     bool ForNode(NodeId id, std::function<bool(CNode* pnode)> func);
     bool ForNode(const CService& addr, const std::function<bool(const CNode* pnode)>& cond, const std::function<bool(CNode* pnode)>& func);
 
-    void PushMessage(CNode* pnode, CSerializedNetMsg&& msg);
+    void PushMessage(CNode* pnode, CSerializedNetMsg&& msg, bool allowOptimisticSend = true);
 
     template<typename Callable>
     bool ForEachNodeContinueIf(Callable&& func)
@@ -360,6 +360,9 @@ public:
     TierTwoConnMan* GetTierTwoConnMan() { return m_tiertwo_conn_man.get(); };
     /** Update the node to be a iqr member if needed */
     void UpdateQuorumRelayMemberIfNeeded(CNode* pnode);
+    /** Interrupt the select/poll system call **/
+    void WakeSelect();
+
 private:
     struct ListenSocket {
         SOCKET socket;
@@ -478,6 +481,11 @@ private:
     std::atomic<bool> flagInterruptMsgProc;
 
     CThreadInterrupt interruptNet;
+
+#ifndef WIN32
+    /** a pipe which is added to select() calls to wakeup before the timeout */
+    int wakeupPipe[2]{-1, -1};
+#endif
 
     std::thread threadDNSAddressSeed;
     std::thread threadSocketHandler;
