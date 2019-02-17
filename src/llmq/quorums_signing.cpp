@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <unordered_set>
 
 namespace llmq
 {
@@ -155,7 +156,7 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
     }
 }
 
-template<typename K>
+template <typename K>
 static void TruncateCacheMap(std::unordered_map<K, std::pair<bool, int64_t>>& m, size_t maxSize, size_t truncateThreshold)
 {
     typedef typename std::unordered_map<K, std::pair<bool, int64_t>> Map;
@@ -355,8 +356,8 @@ bool CSigningManager::PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& 
 
 void CSigningManager::CollectPendingRecoveredSigsToVerify(
     size_t maxUniqueSessions,
-    std::map<NodeId, std::list<CRecoveredSig>>& retSigShares,
-    std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums)
+    std::unordered_map<NodeId, std::list<CRecoveredSig>>& retSigShares,
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums)
 {
     {
         LOCK(cs);
@@ -364,9 +365,8 @@ void CSigningManager::CollectPendingRecoveredSigsToVerify(
             return;
         }
 
-        std::set<std::pair<NodeId, uint256>> uniqueSignHashes;
-        llmq::utils::IterateNodesRandom(
-            pendingRecoveredSigs, [&]() { return uniqueSignHashes.size() < maxUniqueSessions; }, [&](NodeId nodeId, std::list<CRecoveredSig>& ns) {
+        std::unordered_set<std::pair<NodeId, uint256>> uniqueSignHashes;
+        llmq::utils::IterateNodesRandom(pendingRecoveredSigs, [&]() { return uniqueSignHashes.size() < maxUniqueSessions; }, [&](NodeId nodeId, std::list<CRecoveredSig>& ns) {
             if (ns.empty()) {
                 return false;
             }
@@ -419,8 +419,8 @@ void CSigningManager::CollectPendingRecoveredSigsToVerify(
 
 bool CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
 {
-    std::map<NodeId, std::list<CRecoveredSig>> recSigsByNode;
-    std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr> quorums;
+    std::unordered_map<NodeId, std::list<CRecoveredSig>> recSigsByNode;
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr> quorums;
 
     CollectPendingRecoveredSigsToVerify(32, recSigsByNode, quorums);
     if (recSigsByNode.empty()) {
@@ -449,7 +449,7 @@ bool CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
 
     LogPrintf("llmq", "CSigningManager::%s -- verified recovered sig(s). count=%d, vt=%d, nodes=%d\n", __func__, verifyCount, verifyTimer.count(), recSigsByNode.size());
 
-    std::set<uint256> processed;
+    std::unordered_set<uint256> processed;
     for (auto& p : recSigsByNode) {
         NodeId nodeId = p.first;
         auto& v = p.second;
