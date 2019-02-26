@@ -326,7 +326,7 @@ public:
     void RemoveSession(const uint256& signHash);
 };
 
-class CSigSharesManager
+class CSigSharesManager : public CRecoveredSigsListener
 {
     static const int64_t SIGNING_SESSION_TIMEOUT = 60 * 1000;
     static const int64_t SIG_SHARE_REQUEST_TIMEOUT = 5 * 1000;
@@ -357,6 +357,8 @@ public:
 
     void StartWorkerThread();
     void StopWorkerThread();
+    void RegisterAsRecoveredSigsListener();
+    void UnregisterAsRecoveredSigsListener();
     void Interrupt();
 
 public:
@@ -364,6 +366,8 @@ public:
 
     void AsyncSign(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash);
     void Sign(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash);
+
+    void HandleNewRecoveredSig(const CRecoveredSig& recoveredSig);
 
 private:
     void ProcessMessageSigSharesInv(CNode* pfrom, const CSigSharesInv& inv, CConnman& connman);

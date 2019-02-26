@@ -172,6 +172,16 @@ void CSigSharesManager::StopWorkerThread()
     }
 }
 
+void CSigSharesManager::RegisterAsRecoveredSigsListener()
+{
+    quorumSigningManager->RegisterRecoveredSigsListener(this);
+}
+
+void CSigSharesManager::UnregisterAsRecoveredSigsListener()
+{
+    quorumSigningManager->UnregisterRecoveredSigsListener(this);
+}
+
 void CSigSharesManager::Interrupt()
 {
     interruptSigningShare();
@@ -1172,4 +1182,11 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
         sigShare.id.ToString(), sigShare.msgHash.ToString(), t.count());
     ProcessSigShare(-1, sigShare, *g_connman, quorum);
 }
+
+void CSigSharesManager::HandleNewRecoveredSig(const llmq::CRecoveredSig& recoveredSig)
+{
+    LOCK(cs);
+    RemoveSigSharesForSession(llmq::utils::BuildSignHash(recoveredSig));
+}
+
 } // namespace llmq
