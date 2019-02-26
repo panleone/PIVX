@@ -10,20 +10,10 @@
 
 #include "chainparams.h"
 #include "net.h"
+#include "saltedhasher.h"
 #include "sync.h"
 
 #include <unordered_map>
-
-namespace std {
-    template <>
-    struct hash<std::pair<Consensus::LLMQType, uint256>>
-    {
-        std::size_t operator()(const std::pair<Consensus::LLMQType, uint256>& k) const
-        {
-            return (std::size_t)((k.first + 1) * k.second.GetCheapHash());
-        }
-    };
-}
 
 namespace llmq
 {
@@ -86,9 +76,9 @@ private:
     CDBWrapper db;
 
     RecursiveMutex cs;
-    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, std::pair<bool, int64_t>> hasSigForIdCache;
-    std::unordered_map<uint256, std::pair<bool, int64_t>> hasSigForSessionCache;
-    std::unordered_map<uint256, std::pair<bool, int64_t>> hasSigForHashCache;
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForIdCache;
+    std::unordered_map<uint256, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForSessionCache;
+    std::unordered_map<uint256, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForHashCache;
 
 public:
     CRecoveredSigsDb(bool fMemory);
@@ -157,7 +147,9 @@ private:
     void ProcessMessageRecoveredSig(CNode* pfrom, const CRecoveredSig& recoveredSig, CConnman& connman);
     bool PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& recoveredSig, bool& retBan);
 
-    void CollectPendingRecoveredSigsToVerify(size_t maxUniqueSessions, std::unordered_map<NodeId, std::list<CRecoveredSig>>& retSigShares, std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums);
+    void CollectPendingRecoveredSigsToVerify(size_t maxUniqueSessions,
+            std::unordered_map<NodeId, std::list<CRecoveredSig>>& retSigShares,
+            std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums);
     bool ProcessPendingRecoveredSigs(CConnman& connman); // called from the worker thread of CSigSharesManager
     void ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& recoveredSig, const CQuorumCPtr& quorum, CConnman& connman);
     void Cleanup(); // called from the worker thread of CSigSharesManager
