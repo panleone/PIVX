@@ -10,6 +10,7 @@
 #include "consensus/params.h"
 #include "net.h"
 #include "random.h"
+#include "saltedhasher.h"
 #include "serialize.h"
 #include "sync.h"
 #include "tinyformat.h"
@@ -29,28 +30,6 @@ namespace llmq
 {
 // <signHash, quorumMember>
 typedef std::pair<uint256, uint16_t> SigShareKey;
-} // namespace llmq
-
-namespace std
-{
-template <>
-struct hash<llmq::SigShareKey> {
-    std::size_t operator()(const llmq::SigShareKey& k) const
-    {
-        return (std::size_t)((k.second + 1) * k.first.GetCheapHash());
-    }
-};
-template <>
-struct hash<std::pair<NodeId, uint256>> {
-    std::size_t operator()(const std::pair<NodeId, uint256>& k) const
-    {
-        return (std::size_t)((k.first + 1) * k.second.GetCheapHash());
-    }
-};
-} // namespace std
-
-namespace llmq
-{
 
 // this one does not get transmitted over the wire as it is batched inside CBatchedSigShares
 class CSigShare
@@ -151,7 +130,7 @@ template <typename T>
 class SigShareMap
 {
 private:
-    std::unordered_map<uint256, std::unordered_map<uint16_t, T>> internalMap;
+    std::unordered_map<uint256, std::unordered_map<uint16_t, T>, StaticSaltedHasher> internalMap;
 
 public:
     bool Add(const SigShareKey& k, const T& v)
@@ -340,7 +319,7 @@ private:
     SigShareMap<CSigShare> sigShares;
 
     // stores time of first and last receivedSigShare. Used to detect timeouts
-    std::unordered_map<uint256, std::pair<int64_t, int64_t>> timeSeenForSessions;
+    std::unordered_map<uint256, std::pair<int64_t, int64_t>, StaticSaltedHasher> timeSeenForSessions;
 
     std::unordered_map<NodeId, CSigSharesNodeState> nodeStates;
     SigShareMap<std::pair<NodeId, int64_t>> sigSharesRequested;
@@ -379,10 +358,15 @@ private:
     bool VerifySigSharesInv(NodeId from, const CSigSharesInv& inv);
     bool PreVerifyBatchedSigShares(NodeId nodeId, const CBatchedSigShares& batchedSigShares, bool& retBan);
 
-    void CollectPendingSigSharesToVerify(size_t maxUniqueSessions, std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares, std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums);
+    void CollectPendingSigSharesToVerify(size_t maxUniqueSessions,
+        std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares,
+        std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums);
     bool ProcessPendingSigShares(CConnman& connman);
 
-    void ProcessPendingSigSharesFromNode(NodeId nodeId, const std::vector<CSigShare>& sigShares, const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& quorums, CConnman& connman);
+    void ProcessPendingSigSharesFromNode(NodeId nodeId,
+        const std::vector<CSigShare>& sigShares,
+        const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& quorums,
+        CConnman& connman);
 
     void ProcessSigShare(NodeId nodeId, const CSigShare& sigShare, CConnman& connman, const CQuorumCPtr& quorum);
     void TryRecoverSig(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash, CConnman& connman);
@@ -395,9 +379,9 @@ private:
     void BanNode(NodeId nodeId);
 
     bool SendMessages();
-    void CollectSigSharesToRequest(std::unordered_map<NodeId, std::unordered_map<uint256, CSigSharesInv>>& sigSharesToRequest);
-    void CollectSigSharesToSend(std::unordered_map<NodeId, std::unordered_map<uint256, CBatchedSigShares>>& sigSharesToSend);
-    void CollectSigSharesToAnnounce(std::unordered_map<NodeId, std::unordered_map<uint256, CSigSharesInv>>& sigSharesToAnnounce);
+    void CollectSigSharesToRequest(std::unordered_map<NodeId, std::unordered_map<uint256, CSigSharesInv, StaticSaltedHasher>>& sigSharesToRequest);
+    void CollectSigSharesToSend(std::unordered_map<NodeId, std::unordered_map<uint256, CBatchedSigShares, StaticSaltedHasher>>& sigSharesToSend);
+    void CollectSigSharesToAnnounce(std::unordered_map<NodeId, std::unordered_map<uint256, CSigSharesInv, StaticSaltedHasher>>& sigSharesToAnnounce);
     bool SignPendingSigShares();
     void WorkThreadMain();
 };
