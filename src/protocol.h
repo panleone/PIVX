@@ -293,6 +293,7 @@ extern const char* QCONTRIB;
 extern const char* QCOMPLAINT;
 extern const char* QJUSTIFICATION;
 extern const char* QPCOMMITMENT;
+extern const char* QSIGSESANN;
 extern const char* QSIGSHARESINV;
 extern const char* QGETSIGSHARES;
 extern const char* QBSIGSHARES;

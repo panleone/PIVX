@@ -60,6 +60,7 @@ const char* QCONTRIB = "qcontrib";
 const char* QCOMPLAINT = "qcomplaint";
 const char* QJUSTIFICATION = "qjustify";
 const char* QPCOMMITMENT = "qpcommit";
+const char* QSIGSESANN = "qsigsesann";
 const char* QSIGSHARESINV = "qsigsinv";
 const char* QGETSIGSHARES = "qgetsigs";
 const char* QBSIGSHARES = "qbsigs";
@@ -122,6 +123,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::QCOMPLAINT,
     NetMsgType::QJUSTIFICATION,
     NetMsgType::QPCOMMITMENT,
+    NetMsgType::QSIGSESANN,
     NetMsgType::QSIGSHARESINV,
     NetMsgType::QGETSIGSHARES,
     NetMsgType::QBSIGSHARES,
