@@ -3,7 +3,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "quorums_signing_shares.h"
+#include "quorums_signing.h"
+
 #include "activemasternode.h"
 #include "bls/bls_batchverifier.h"
 #include "cxxtimer.h"
@@ -11,7 +12,7 @@
 #include "net.h"
 #include "net_processing.h"
 #include "netmessagemaker.h"
-#include "quorums_signing.h"
+#include "quorums_signing_shares.h"
 #include "quorums_utils.h"
 #include "random.h"
 #include "shutdown.h"
@@ -169,6 +170,16 @@ void CSigSharesManager::StopWorkerThread()
     if (workThread.joinable()) {
         workThread.join();
     }
+}
+
+void CSigSharesManager::RegisterAsRecoveredSigsListener()
+{
+    quorumSigningManager->RegisterRecoveredSigsListener(this);
+}
+
+void CSigSharesManager::UnregisterAsRecoveredSigsListener()
+{
+    quorumSigningManager->UnregisterRecoveredSigsListener(this);
 }
 
 void CSigSharesManager::Interrupt()
@@ -548,7 +559,16 @@ void CSigSharesManager::ProcessSigShare(NodeId nodeId, const CSigShare& sigShare
         }
 
         sigSharesToAnnounce.Add(sigShare.GetKey(), true);
-        firstSeenForSessions.emplace(sigShare.GetSignHash(), GetTimeMillis());
+
+        auto it = timeSeenForSessions.find(sigShare.GetSignHash());
+        if (it == timeSeenForSessions.end()) {
+            auto t = GetTimeMillis();
+            // insert first-seen and last-seen time
+            timeSeenForSessions.emplace(sigShare.GetSignHash(), std::make_pair(t, t));
+        } else {
+            // update last-seen time
+            it->second.second = GetTimeMillis();
+        }
 
         if (!quorumNodes.empty()) {
             // don't announce and wait for other nodes to request this share and directly send it to them
@@ -946,11 +966,12 @@ void CSigSharesManager::Cleanup()
 
         // Remove sessions which timed out
         std::unordered_set<uint256> timeoutSessions;
-        for (auto& p : firstSeenForSessions) {
+        for (auto& p : timeSeenForSessions) {
             auto& signHash = p.first;
-            int64_t time = p.second;
+            int64_t firstSeenTime = p.second.first;
+            int64_t lastSeenTime = p.second.second;
 
-            if (now - time >= SIGNING_SESSION_TIMEOUT) {
+            if (now - firstSeenTime >= SESSION_TOTAL_TIMEOUT || now - lastSeenTime >= SESSION_NEW_SHARES_TIMEOUT) {
                 timeoutSessions.emplace(signHash);
             }
         }
@@ -1032,7 +1053,7 @@ void CSigSharesManager::RemoveSigSharesForSession(const uint256& signHash)
     sigSharesRequested.EraseAllForSignHash(signHash);
     sigSharesToAnnounce.EraseAllForSignHash(signHash);
     sigShares.EraseAllForSignHash(signHash);
-    firstSeenForSessions.erase(signHash);
+    timeSeenForSessions.erase(signHash);
 }
 
 void CSigSharesManager::RemoveBannedNodeStates()
@@ -1171,4 +1192,11 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
         sigShare.id.ToString(), sigShare.msgHash.ToString(), t.count());
     ProcessSigShare(-1, sigShare, *g_connman, quorum);
 }
+
+void CSigSharesManager::HandleNewRecoveredSig(const llmq::CRecoveredSig& recoveredSig)
+{
+    LOCK(cs);
+    RemoveSigSharesForSession(llmq::utils::BuildSignHash(recoveredSig));
+}
+
 } // namespace llmq

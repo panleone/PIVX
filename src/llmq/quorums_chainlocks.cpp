@@ -77,17 +77,17 @@ void CChainLocksHandler::ProcessMessage(CNode* pfrom, const std::string& strComm
 
         auto hash = ::SerializeHash(clsig);
 
-        {
-            LOCK(cs_main);
-            connman.RemoveAskFor(hash, MSG_CLSIG);
-        }
-
         ProcessNewChainLock(pfrom->GetId(), clsig, hash);
     }
 }
 
 void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLockSig& clsig, const uint256& hash)
 {
+    {
+        LOCK(cs_main);
+        g_connman->RemoveAskFor(hash, MSG_CLSIG);
+    }
+
     {
         LOCK(cs);
         if (!seenChainLocks.emplace(hash, GetTimeMillis()).second) {
@@ -190,6 +190,8 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
         return;
     }
 
+    Cleanup();
+
     // DIP8 defines a process called "Signing attempts" which should run before the CLSIG is finalized
     // To simplify the initial implementation, we skip this process and directly try to create a CLSIG
     // This will fail when multiple blocks compete, but we accept this for the initial implementation.
@@ -200,6 +202,12 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
 
     {
         LOCK(cs);
+
+        if (bestChainLockBlockIndex == pindexNew) {
+            // we first got the CLSIG, then the header, and then the block was connected.
+            // In this case there is no need to continue here.
+            return;
+        }
 
         if (InternalHasConflictingChainLock(pindexNew->nHeight, pindexNew->GetBlockHash())) {
             if (!inEnforceBestChainLock) {
@@ -226,8 +234,6 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
     }
 
     quorumSigningManager->AsyncSignIfMember(Params().GetConsensus().llmqChainLocks, requestId, msgHash);
-
-    Cleanup();
 }
 
 // WARNING: cs_main and cs should not be held!
