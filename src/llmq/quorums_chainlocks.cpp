@@ -39,6 +39,11 @@ CChainLocksHandler::~CChainLocksHandler()
 void CChainLocksHandler::Start()
 {
     quorumSigningManager->RegisterRecoveredSigsListener(this);
+    scheduler->scheduleEvery([&]() {
+        // regularely retry signing the current chaintip
+        TrySignChainTip();
+    },
+        5000);
 }
 
 void CChainLocksHandler::Stop()
@@ -180,55 +185,86 @@ void CChainLocksHandler::AcceptedBlockHeader(const CBlockIndex* pindexNew)
 
 void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork)
 {
+    // don't call TrySignChainTip directly but instead let the scheduler call it. This way we ensure that cs_main is
+    // never locked and TrySignChainTip is not called twice in parallel
+    LOCK(cs);
+    if (tryLockChainTipScheduled) {
+        return;
+    }
+    tryLockChainTipScheduled = true;
+    scheduler->scheduleFromNow([&]() {
+        TrySignChainTip();
+        LOCK(cs);
+        tryLockChainTipScheduled = false;
+    },
+        0);
+}
+
+void CChainLocksHandler::TrySignChainTip()
+{
+    Cleanup();
+
+    const CBlockIndex* pindex;
+    {
+        LOCK(cs_main);
+        pindex = chainActive.Tip();
+    }
+
     if (!fMasterNode) {
         return;
     }
-    if (!pindexNew->pprev) {
+    if (!pindex->pprev) {
         return;
     }
     if (!sporkManager.IsSporkActive(SPORK_23_CHAINLOCKS_ENFORCEMENT)) {
         return;
     }
 
-    Cleanup();
-
     // DIP8 defines a process called "Signing attempts" which should run before the CLSIG is finalized
     // To simplify the initial implementation, we skip this process and directly try to create a CLSIG
     // This will fail when multiple blocks compete, but we accept this for the initial implementation.
     // Later, we'll add the multiple attempts process.
 
-    uint256 requestId = ::SerializeHash(std::make_pair(CLSIG_REQUESTID_PREFIX, pindexNew->nHeight));
-    uint256 msgHash = pindexNew->GetBlockHash();
-
     {
         LOCK(cs);
 
-        if (bestChainLockBlockIndex == pindexNew) {
+        if (bestChainLockBlockIndex == pindex) {
             // we first got the CLSIG, then the header, and then the block was connected.
             // In this case there is no need to continue here.
             return;
         }
 
-        if (InternalHasConflictingChainLock(pindexNew->nHeight, pindexNew->GetBlockHash())) {
-            if (!inEnforceBestChainLock) {
-                // we accepted this block when there was no lock yet, but now a conflicting lock appeared. Invalidate it.
-                LogPrintf("CChainLocksHandler::%s -- conflicting lock after block was accepted, invalidating now\n",
-                          __func__);
-                ScheduleInvalidateBlock(pindexNew);
-            }
+        if (pindex->nHeight == lastSignedHeight) {
+            // already signed this one
             return;
         }
 
-        if (bestChainLock.nHeight >= pindexNew->nHeight) {
+        if (bestChainLock.nHeight >= pindex->nHeight) {
             // already got the same CLSIG or a better one
             return;
         }
 
-        if (pindexNew->nHeight == lastSignedHeight) {
-            // already signed this one
+        if (InternalHasConflictingChainLock(pindex->nHeight, pindex->GetBlockHash())) {
+            if (!inEnforceBestChainLock) {
+                // we accepted this block when there was no lock yet, but now a conflicting lock appeared. Invalidate it.
+                LogPrintf("CChainLocksHandler::%s -- conflicting lock after block was accepted, invalidating now\n",
+                          __func__);
+                ScheduleInvalidateBlock(pindex);
+            }
             return;
         }
-        lastSignedHeight = pindexNew->nHeight;
+    }
+
+    uint256 requestId = ::SerializeHash(std::make_pair(CLSIG_REQUESTID_PREFIX, pindex->nHeight));
+    uint256 msgHash = pindex->GetBlockHash();
+
+    {
+        LOCK(cs);
+        if (bestChainLock.nHeight >= pindex->nHeight) {
+            // might have happened while we didn't hold cs
+            return;
+        }
+        lastSignedHeight = pindex->nHeight;
         lastSignedRequestId = requestId;
         lastSignedMsgHash = msgHash;
     }
