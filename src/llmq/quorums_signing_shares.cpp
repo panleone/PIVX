@@ -406,7 +406,7 @@ bool CSigSharesManager::ProcessMessageBatchedSigShares(CNode* pfrom, const CBatc
 
     bool ban = false;
     if (!PreVerifyBatchedSigShares(pfrom->GetId(), sessionInfo, batchedSigShares, ban)) {
-        return ban;
+        return !ban;
     }
 
     std::vector<CSigShare> sigShares;
