@@ -12,6 +12,7 @@
 #include "net.h"
 #include "saltedhasher.h"
 #include "sync.h"
+#include "unordered_lru_cache.h"
 
 #include <unordered_map>
 
@@ -69,19 +70,16 @@ public:
 
 class CRecoveredSigsDb
 {
-    static const size_t MAX_CACHE_SIZE = 30000;
-    static const size_t MAX_CACHE_TRUNCATE_THRESHOLD = 50000;
-
 private:
-    CDBWrapper db;
+    CDBWrapper& db;
 
     RecursiveMutex cs;
-    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForIdCache;
-    std::unordered_map<uint256, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForSessionCache;
-    std::unordered_map<uint256, std::pair<bool, int64_t>, StaticSaltedHasher> hasSigForHashCache;
+    unordered_lru_cache<std::pair<Consensus::LLMQType, uint256>, bool, StaticSaltedHasher, 30000> hasSigForIdCache;
+    unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForSessionCache;
+    unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForHashCache;
 
 public:
-    CRecoveredSigsDb(bool fMemory);
+    CRecoveredSigsDb(CDBWrapper& _db);
 
     bool HasRecoveredSig(Consensus::LLMQType llmqType, const uint256& id, const uint256& msgHash);
     bool HasRecoveredSigForId(Consensus::LLMQType llmqType, const uint256& id);
@@ -136,7 +134,7 @@ private:
     std::vector<CRecoveredSigsListener*> recoveredSigsListeners;
 
 public:
-    CSigningManager(bool fMemory);
+    CSigningManager(CDBWrapper& llmqDb, bool fMemory);
 
     bool AlreadyHave(const CInv& inv);
     bool GetRecoveredSigForGetData(const uint256& hash, CRecoveredSig& ret);
@@ -163,6 +161,8 @@ public:
     bool HasRecoveredSigForId(Consensus::LLMQType llmqType, const uint256& id);
     bool HasRecoveredSigForSession(const uint256& signHash);
     bool IsConflicting(Consensus::LLMQType llmqType, const uint256& id, const uint256& msgHash);
+    bool HasVotedOnId(Consensus::LLMQType llmqType, const uint256& id);
+    bool GetVoteForId(Consensus::LLMQType llmqType, const uint256& id, uint256& msgHashRet);
     CQuorumCPtr SelectQuorumForSigning(Consensus::LLMQType llmqType, int signHeight, const uint256& selectionHash);
     // Verifies a recovered sig that was signed while the chain tip was at signedAtTip
     bool VerifyRecoveredSig(Consensus::LLMQType llmqType, int signedAtHeight, const uint256& id, const uint256& msgHash, const CBLSSignature& sig);
