@@ -97,7 +97,7 @@ public:
         READWRITE(AUTOBITSET(obj.inv, (size_t)invSize));
     }
 
-    void Init(Consensus::LLMQType _llmqType);
+    void Init(size_t size);
     bool IsSet(uint16_t quorumMember) const;
     void Set(uint16_t quorumMember, bool v);
     void Merge(const CSigSharesInv& inv2);
@@ -120,7 +120,7 @@ public:
         READWRITE(obj.sigShares);
     }
 
-    CSigSharesInv ToInv(Consensus::LLMQType llmqType) const;
+    std::string ToInvString() const;
 };
 
 template <typename T>

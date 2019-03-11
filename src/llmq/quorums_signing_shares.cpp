@@ -70,10 +70,9 @@ std::string CSigSharesInv::ToString() const
     return str;
 }
 
-void CSigSharesInv::Init(Consensus::LLMQType _llmqType)
+void CSigSharesInv::Init(size_t size)
 {
-    size_t llmqSize = (size_t)(Params().GetConsensus().llmqs.at(_llmqType).size);
-    inv.resize(llmqSize, false);
+    inv.resize(size, false);
 }
 
 bool CSigSharesInv::IsSet(uint16_t quorumMember) const
@@ -88,27 +87,30 @@ void CSigSharesInv::Set(uint16_t quorumMember, bool v)
     inv[quorumMember] = v;
 }
 
-CSigSharesInv CBatchedSigShares::ToInv(Consensus::LLMQType llmqType) const
+std::string CBatchedSigShares::ToInvString() const
 {
     CSigSharesInv inv;
-    inv.Init(llmqType);
+    // we use 400 here no matter what the real size is. We don't really care about that size as we just want to call ToString()
+    inv.Init(400);
     for (size_t i = 0; i < sigShares.size(); i++) {
         inv.inv[sigShares[i].first] = true;
     }
-    return inv;
+    return inv.ToString();
 }
 
 template <typename T>
 static void InitSession(CSigSharesNodeState::Session& s, const uint256& signHash, T& from)
 {
+    const auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)from.llmqType);
+
     s.llmqType = (Consensus::LLMQType)from.llmqType;
     s.quorumHash = from.quorumHash;
     s.id = from.id;
     s.msgHash = from.msgHash;
     s.signHash = signHash;
-    s.announced.Init((Consensus::LLMQType)from.llmqType);
-    s.requested.Init((Consensus::LLMQType)from.llmqType);
-    s.knows.Init((Consensus::LLMQType)from.llmqType);
+    s.announced.Init((size_t)params.size);
+    s.requested.Init((size_t)params.size);
+    s.knows.Init((size_t)params.size);
 }
 
 CSigSharesNodeState::Session& CSigSharesNodeState::GetOrCreateSessionFromShare(const llmq::CSigShare& sigShare)
@@ -435,8 +437,8 @@ bool CSigSharesManager::ProcessMessageBatchedSigShares(CNode* pfrom, const CBatc
         }
     }
 
-    LogPrintf("llmq", "CSigSharesManager::%s -- signHash=%s, shares=%d, new=%d, inv={%s}, node=%d\n", __func__,
-        sessionInfo.signHash.ToString(), batchedSigShares.sigShares.size(), sigShares.size(), batchedSigShares.ToInv(sessionInfo.llmqType).ToString(), pfrom->GetId());
+    LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- signHash=%s, shares=%d, new=%d, inv={%s}, node=%d\n", __func__,
+        sessionInfo.signHash.ToString(), batchedSigShares.sigShares.size(), sigShares.size(), batchedSigShares.ToInvString(), pfrom->GetId());
 
     if (sigShares.empty()) {
         return true;
@@ -862,7 +864,8 @@ void CSigSharesManager::CollectSigSharesToRequest(std::unordered_map<NodeId, std
                 }
                 auto& inv = (*invMap)[signHash];
                 if (inv.inv.empty()) {
-                    inv.Init(session.llmqType);
+                    const auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)session.llmqType);
+                    inv.Init((size_t)params.size);
                 }
                 inv.inv[k.second] = true;
 
@@ -974,7 +977,8 @@ void CSigSharesManager::CollectSigSharesToAnnounce(std::unordered_map<NodeId, st
 
             auto& inv = sigSharesToAnnounce[nodeId][signHash];
             if (inv.inv.empty()) {
-                inv.Init((Consensus::LLMQType)sigShare->llmqType);
+                const auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)sigShare->llmqType);
+                inv.Init((size_t)params.size);
             }
             inv.inv[quorumMember] = true;
             session.knows.inv[quorumMember] = true;
@@ -1093,14 +1097,8 @@ bool CSigSharesManager::SendMessages()
             std::vector<CBatchedSigShares> msgs;
             for (auto& p : jt->second) {
                 assert(!p.second.sigShares.empty());
-                if (LogAcceptCategory(BCLog::LogFlags::LLMQ)) {
-                    LOCK(cs);
-                    auto session = nodeStates[pnode->GetId()].GetSessionBySignHash(p.first);
-                    assert(session);
-                    LogPrintf("llmq", "CSigSharesManager::SendMessages -- QBSIGSHARES signHash=%s, inv={%s}, node=%d\n",
-                        p.first.ToString(), p.second.ToInv(session->llmqType).ToString(), pnode->GetId());
-                }
-
+                LogPrint(BCLog::LLMQ, "CSigSharesManager::SendMessages -- QBSIGSHARES signHash=%s, inv={%s}, node=%d\n",
+                    p.first.ToString(), p.second.ToInvString(), pnode->GetId());
                 if (totalSigsCount + p.second.sigShares.size() > MAX_MSGS_TOTAL_BATCHED_SIGS) {
                     g_connman->PushMessage(pnode, msgMaker.Make(NetMsgType::QBSIGSHARES, msgs));
                     msgs.clear();
