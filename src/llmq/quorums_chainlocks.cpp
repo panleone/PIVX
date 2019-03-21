@@ -158,8 +158,8 @@ void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLock
     },
         0);
 
-    LogPrintf("CChainLocksHandler::%s -- processed new CLSIG (%s), peer=%d\n",
-              __func__, clsig.ToString(), from);
+    LogPrint(BCLog::LLMQ, "CChainLocksHandler::%s -- processed new CLSIG (%s), peer=%d\n",
+        __func__, clsig.ToString(), from);
 }
 
 void CChainLocksHandler::AcceptedBlockHeader(const CBlockIndex* pindexNew)
@@ -246,6 +246,8 @@ void CChainLocksHandler::TrySignChainTip()
             return;
         }
     }
+
+    LogPrint(BCLog::LLMQ, "CChainLocksHandler::%s -- trying to sign %s, height=%d\n", __func__, pindex->GetBlockHash().ToString(), pindex->nHeight);
 
     uint256 requestId = ::SerializeHash(std::make_pair(CLSIG_REQUESTID_PREFIX, pindex->nHeight));
     uint256 msgHash = pindex->GetBlockHash();
