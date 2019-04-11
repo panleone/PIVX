@@ -1339,7 +1339,9 @@ void CConnman::SocketEvents(std::set<SOCKET>& recv_set, std::set<SOCKET>& send_s
         vpollfds.push_back(std::move(it.second));
     }
 
+    isInSelect = true;
     if (poll(vpollfds.data(), vpollfds.size(), SELECT_TIMEOUT_MILLISECONDS) < 0) return;
+    isInSelect = false;
 
     if (interruptNet) return;
 
@@ -1388,7 +1390,9 @@ void CConnman::SocketEvents(std::set<SOCKET> &recv_set, std::set<SOCKET> &send_s
         hSocketMax = std::max(hSocketMax, hSocket);
     }
 
+    isInSelect = true;
     int nSelect = select(hSocketMax + 1, &fdsetRecv, &fdsetSend, &fdsetError, &timeout);
+    isInSelect = false;
 
     if (interruptNet)
         return;
@@ -2759,6 +2763,7 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg, bool allowOpti
     size_t nBytesSent = 0;
     {
         LOCK(pnode->cs_vSend);
+        bool hasPendingData = !pnode->vSendMsg.empty();
         bool optimisticSend(allowOptimisticSend && pnode->vSendMsg.empty());
 
         //log total amount of bytes per command
@@ -2774,6 +2779,9 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg, bool allowOpti
         // If write queue empty, attempt "optimistic write"
         if (optimisticSend == true)
             nBytesSent = SocketSendData(pnode);
+        // wake up select() call in case there was no pending data before (so it was not selecting this socket for sending)
+        else if (!hasPendingData && isInSelect)
+            WakeSelect();
     }
     if (nBytesSent)
         RecordBytesSent(nBytesSent);
