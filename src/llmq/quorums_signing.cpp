@@ -100,7 +100,7 @@ bool CRecoveredSigsDb::ReadRecoveredSig(Consensus::LLMQType llmqType, const uint
     }
 
     try {
-        ret.Unserialize(ds, false);
+        ret.Unserialize(ds);
         return true;
     } catch (std::exception&) {
         return false;
@@ -326,11 +326,6 @@ bool CSigningManager::PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& 
         return false;
     }
 
-    if (!recoveredSig.sig.IsValid()) {
-        retBan = true;
-        return false;
-    }
-
     return true;
 }
 
@@ -417,8 +412,14 @@ bool CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
         auto& v = p.second;
 
         for (auto& recSig : v) {
+            // we didn't verify the lazy signature until now
+            if (!recSig.sig.Get().IsValid()) {
+                batchVerifier.badSources.emplace(nodeId);
+                break;
+            }
+
             const auto& quorum = quorums.at(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.quorumHash));
-            batchVerifier.PushMessage(nodeId, recSig.GetHash(), llmq::utils::BuildSignHash(recSig), recSig.sig, quorum->quorumPublicKey);
+            batchVerifier.PushMessage(nodeId, recSig.GetHash(), llmq::utils::BuildSignHash(recSig), recSig.sig.Get(), quorum->quorumPublicKey);
             verifyCount++;
         }
     }

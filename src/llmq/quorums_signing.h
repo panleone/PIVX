@@ -26,34 +26,20 @@ public:
     uint256 quorumHash;
     uint256 id;
     uint256 msgHash;
-    CBLSSignature sig;
+    CBLSLazySignature sig;
 
     // only in-memory
     uint256 hash;
 
 public:
-    template <typename Stream>
-    inline void Serialize(Stream& s) const
+    SERIALIZE_METHODS(CRecoveredSig, obj)
     {
-        s << llmqType;
-        s << quorumHash;
-        s << id;
-        s << msgHash;
-        s << sig;
-    }
-    template <typename Stream>
-    inline void Unserialize(Stream& s, bool checkMalleable = true, bool updateHash = true, bool skipSig = false)
-    {
-        s >> llmqType;
-        s >> quorumHash;
-        s >> id;
-        s >> msgHash;
-        if (!skipSig) {
-            sig.Unserialize(s, checkMalleable);
-            if (updateHash) {
-                UpdateHash();
-            }
-        }
+        READWRITE(obj.llmqType);
+        READWRITE(obj.quorumHash);
+        READWRITE(obj.id);
+        READWRITE(obj.msgHash);
+        READWRITE(obj.sig);
+        SER_READ(obj, obj.UpdateHash());
     }
 
     void UpdateHash()
