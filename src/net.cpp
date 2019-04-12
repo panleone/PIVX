@@ -1295,7 +1295,7 @@ bool CConnman::GenerateSelectSet(std::set<SOCKET>& recv_set, std::set<SOCKET>& s
         }
     }
 
-#ifndef WIN32
+#ifdef USE_WAKEUP_PIPE
     // We add a pipe to the read set so that the select() call can be woken up from the outside
     // This is done when data is added to send buffers (vSendMsg) or when new peers are added
     // This is currently only implemented for POSIX compliant systems. This means that Windows will fall back to
@@ -1339,9 +1339,12 @@ void CConnman::SocketEvents(std::set<SOCKET>& recv_set, std::set<SOCKET>& send_s
         vpollfds.push_back(std::move(it.second));
     }
 
-    isInSelect = true;
-    if (poll(vpollfds.data(), vpollfds.size(), SELECT_TIMEOUT_MILLISECONDS) < 0) return;
-    isInSelect = false;
+    wakeupSelectNeeded = true;
+    int r = poll(vpollfds.data(), vpollfds.size(), SELECT_TIMEOUT_MILLISECONDS);
+    wakeupSelectNeeded = false;
+    if (r < 0) {
+        return;
+    }
 
     if (interruptNet) return;
 
@@ -1390,9 +1393,9 @@ void CConnman::SocketEvents(std::set<SOCKET> &recv_set, std::set<SOCKET> &send_s
         hSocketMax = std::max(hSocketMax, hSocket);
     }
 
-    isInSelect = true;
+    wakeupSelectNeeded = true;
     int nSelect = select(hSocketMax + 1, &fdsetRecv, &fdsetSend, &fdsetError, &timeout);
-    isInSelect = false;
+    wakeupSelectNeeded = false;
 
     if (interruptNet)
         return;
@@ -1433,7 +1436,7 @@ void CConnman::SocketHandler()
     std::set<SOCKET> recv_set, send_set, error_set;
     SocketEvents(recv_set, send_set, error_set);
 
-#ifndef WIN32
+#ifdef USE_WAKEUP_PIPE
     // drain the wakeup pipe
     if (recv_set.count(wakeupPipe[0])) {
         LogPrint(BCLog::NET, "woke up select()\n");
@@ -1563,7 +1566,7 @@ void CConnman::WakeMessageHandler()
 
 void CConnman::WakeSelect()
 {
-#ifndef WIN32
+#ifdef USE_WAKEUP_PIPE
     if (wakeupPipe[1] == -1) {
         return;
     }
@@ -1575,6 +1578,8 @@ void CConnman::WakeSelect()
         LogPrint(BCLog::NET, "write to wakeupPipe failed\n");
     }
 #endif
+
+    wakeupSelectNeeded = false;
 }
 
 static std::string GetDNSHost(const CDNSSeedData& data, ServiceFlags* requiredServiceBits)
@@ -2284,7 +2289,7 @@ bool CConnman::Start(CScheduler& scheduler, const Options& connOptions)
         fMsgProcWake = false;
     }
 
-#ifndef WIN32
+#ifdef USE_WAKEUP_PIPE
     if (pipe(wakeupPipe) != 0) {
         wakeupPipe[0] = wakeupPipe[1] = -1;
         LogPrint(BCLog::NET, "pipe() for wakeupPipe failed\n");
@@ -2429,7 +2434,7 @@ void CConnman::Stop()
     vhListenSocket.clear();
     semOutbound.reset();
     semAddnode.reset();
-#ifndef WIN32
+#ifdef USE_WAKEUP_PIPE
     if (wakeupPipe[0] != -1) close(wakeupPipe[0]);
     if (wakeupPipe[1] != -1) close(wakeupPipe[1]);
     wakeupPipe[0] = wakeupPipe[1] = -1;
@@ -2780,7 +2785,7 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg, bool allowOpti
         if (optimisticSend == true)
             nBytesSent = SocketSendData(pnode);
         // wake up select() call in case there was no pending data before (so it was not selecting this socket for sending)
-        else if (!hasPendingData && isInSelect)
+        else if (!hasPendingData && wakeupSelectNeeded)
             WakeSelect();
     }
     if (nBytesSent)
