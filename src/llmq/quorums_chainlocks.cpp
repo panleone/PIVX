@@ -13,6 +13,7 @@
 #include "scheduler.h"
 #include "spork.h"
 #include "sporkid.h"
+#include "tiertwo/tiertwo_sync_state.h"
 #include "validation.h"
 
 namespace llmq
@@ -207,15 +208,20 @@ void CChainLocksHandler::TrySignChainTip()
 {
     Cleanup();
 
+    if (!fMasterNode) {
+        return;
+    }
+
+    if (!g_tiertwo_sync_state.IsBlockchainSynced()) {
+        return;
+    }
+
     const CBlockIndex* pindex;
     {
         LOCK(cs_main);
         pindex = chainActive.Tip();
     }
 
-    if (!fMasterNode) {
-        return;
-    }
     if (!pindex->pprev) {
         return;
     }
@@ -440,6 +446,10 @@ bool CChainLocksHandler::InternalHasConflictingChainLock(int nHeight, const uint
 
 void CChainLocksHandler::Cleanup()
 {
+    if (!g_tiertwo_sync_state.IsBlockchainSynced()) {
+        return;
+    }
+
     {
         LOCK(cs);
         if (GetTimeMillis() - lastCleanupTime < CLEANUP_INTERVAL) {
