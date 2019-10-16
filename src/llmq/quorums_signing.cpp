@@ -246,7 +246,7 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
     }
 }
 
-void CRecoveredSigsDb::RemoveRecoveredSig(CDBBatch& batch, Consensus::LLMQType llmqType, const uint256& id, bool deleteTimeKey)
+void CRecoveredSigsDb::RemoveRecoveredSig(CDBBatch& batch, Consensus::LLMQType llmqType, const uint256& id, bool deleteHashKey, bool deleteTimeKey)
 {
     AssertLockHeld(cs);
 
@@ -263,7 +263,9 @@ void CRecoveredSigsDb::RemoveRecoveredSig(CDBBatch& batch, Consensus::LLMQType l
     auto k4 = std::make_tuple(std::string("rs_s"), signHash);
     batch.Erase(k1);
     batch.Erase(k2);
-    batch.Erase(k3);
+    if (deleteHashKey) {
+        batch.Erase(k3);
+    }
     batch.Erase(k4);
 
     if (deleteTimeKey) {
@@ -279,14 +281,27 @@ void CRecoveredSigsDb::RemoveRecoveredSig(CDBBatch& batch, Consensus::LLMQType l
 
     hasSigForIdCache.erase(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id));
     hasSigForSessionCache.erase(signHash);
-    hasSigForHashCache.erase(recSig.GetHash());
+    if (deleteHashKey) {
+        hasSigForHashCache.erase(recSig.GetHash());
+    }
 }
 
+// Completely remove any traces of the recovered sig
 void CRecoveredSigsDb::RemoveRecoveredSig(Consensus::LLMQType llmqType, const uint256& id)
 {
     LOCK(cs);
     CDBBatch batch(CLIENT_VERSION | ADDRV2_FORMAT);
-    RemoveRecoveredSig(batch, llmqType, id, true);
+    RemoveRecoveredSig(batch, llmqType, id, true, true);
+    db.WriteBatch(batch);
+}
+
+// Remove the recovered sig itself and all keys required to get from id -> recSig
+// This will leave the byHash key in-place so that HasRecoveredSigForHash still returns true
+void CRecoveredSigsDb::TruncateRecoveredSig(Consensus::LLMQType llmqType, const uint256& id)
+{
+    LOCK(cs);
+    CDBBatch batch(CLIENT_VERSION | ADDRV2_FORMAT);
+    RemoveRecoveredSig(batch, llmqType, id, false, false);
     db.WriteBatch(batch);
 }
 
@@ -326,7 +341,7 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
     {
         LOCK(cs);
         for (auto& e : toDelete) {
-            RemoveRecoveredSig(batch, e.first, e.second, false);
+            RemoveRecoveredSig(batch, e.first, e.second, true, false);
 
             if (batch.SizeEstimate() >= (1 << 24)) {
                 db.WriteBatch(batch);
@@ -459,7 +474,8 @@ void CSigningManager::ProcessMessageRecoveredSig(CNode* pfrom, const CRecoveredS
         return;
     }
 
-    LogPrint(BCLog::LLMQ, "CSigningManager::%s -- signHash=%s, node=%d\n", __func__, llmq::utils::BuildSignHash(recoveredSig).ToString(), pfrom->GetId());
+    LogPrint(BCLog::LLMQ, "CSigningManager::%s -- signHash=%s, id=%s, msgHash=%s, node=%d\n", __func__,
+        llmq::utils::BuildSignHash(recoveredSig).ToString(), recoveredSig.id.ToString(), recoveredSig.msgHash.ToString(), pfrom->GetId());
 
     LOCK(cs);
     pendingRecoveredSigs[pfrom->GetId()].emplace_back(recoveredSig);
@@ -624,6 +640,11 @@ void CSigningManager::ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& re
         LOCK(cs_main);
         connman.RemoveAskFor(recoveredSig.GetHash(), MSG_QUORUM_RECOVERED_SIG);
     }
+
+    if (db.HasRecoveredSigForHash(recoveredSig.GetHash())) {
+        return;
+    }
+
     std::vector<CRecoveredSigsListener*> listeners;
     {
         LOCK(cs);
@@ -670,9 +691,9 @@ void CSigningManager::ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& re
     }
 }
 
-void CSigningManager::RemoveRecoveredSig(Consensus::LLMQType llmqType, const uint256& id)
+void CSigningManager::TruncateRecoveredSig(Consensus::LLMQType llmqType, const uint256& id)
 {
-    db.RemoveRecoveredSig(llmqType, id);
+    db.TruncateRecoveredSig(llmqType, id);
 }
 
 void CSigningManager::Cleanup()
