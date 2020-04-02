@@ -11,6 +11,7 @@
 #include "llmq/quorums_debug.h"
 #include "llmq/quorums_dkgsession.h"
 #include "llmq/quorums_signing.h"
+#include "llmq/quorums_signing_shares.h"
 #include "rpc/server.h"
 #include "validation.h"
 
@@ -343,6 +344,48 @@ UniValue quorumdkgstatus(const JSONRPCRequest& request)
     return ret;
 }
 
+UniValue quorumselectquorum(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 2) {
+        throw std::runtime_error(
+            "quorum selectquorum llmqType \"id\"\n"
+            "Returns the quorum that would/should sign a request\n"
+            "\nArguments:\n"
+            "1. llmqType              (int, required) LLMQ type.\n"
+            "2. \"id\"                  (string, required) Request id.\n");
+    }
+
+    Consensus::LLMQType llmqType = static_cast<Consensus::LLMQType>(request.params[0].get_int());
+    if (!Params().GetConsensus().llmqs.count(llmqType)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LLMQ type");
+    }
+
+    uint256 id = ParseHashV(request.params[1], "id");
+
+    int tipHeight;
+    {
+        LOCK(cs_main);
+        tipHeight = chainActive.Height();
+    }
+
+    UniValue ret(UniValue::VOBJ);
+
+    auto quorum = llmq::quorumSigningManager->SelectQuorumForSigning(llmqType, tipHeight, id);
+    if (!quorum) {
+        throw JSONRPCError(RPC_MISC_ERROR, "no quorums active");
+    }
+    ret.pushKV("quorumHash", quorum->pindexQuorum->GetBlockHash().ToString());
+
+    UniValue recoveryMembers(UniValue::VARR);
+    for (int i = 0; i < quorum->params.recoveryMembers; i++) {
+        auto dmn = llmq::quorumSigSharesManager->SelectMemberForRecovery(quorum, id, i);
+        recoveryMembers.push_back(dmn->proTxHash.ToString());
+    }
+    ret.pushKV("recoveryMembers", recoveryMembers);
+
+    return ret;
+}
+
 UniValue quorumdkgsimerror(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 2) {
@@ -382,6 +425,7 @@ static const CRPCCommand commands[] =
   //  -------------- ------------------------- --------------------- ------ --------
     { "evo",         "getminedcommitment",     &getminedcommitment,  true,  {"llmq_type", "quorum_hash"}  },
     { "evo",         "getquorummembers",       &getquorummembers,    true,  {"llmq_type", "quorum_hash"}  },
+    { "evo",         "quorumselectquorum",     &quorumselectquorum,  true,  {"llmq_type", "id"}  },
     { "evo",         "quorumdkgsimerror",      &quorumdkgsimerror,   true,  {"error_type", "rate"}  },
     { "evo",         "quorumdkgstatus",        &quorumdkgstatus,     true,  {"detail_level"}  },
     { "evo",         "listquorums",            &listquorums,         true,  {"count"}  },

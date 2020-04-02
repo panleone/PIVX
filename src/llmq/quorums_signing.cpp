@@ -682,7 +682,7 @@ void CSigningManager::ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& re
 
     CInv inv(MSG_QUORUM_RECOVERED_SIG, recoveredSig.GetHash());
     g_connman->ForEachNode([&](CNode* pnode) {
-        if (pnode->nVersion >= LLMQS_PROTO_VERSION && pnode->m_wants_recsigs && !pnode->m_masternode_connection) {
+        if (pnode->nVersion >= LLMQS_PROTO_VERSION && pnode->m_wants_recsigs && pnode->CanRelay()) {
             pnode->PushInventory(inv);
         }
     });
