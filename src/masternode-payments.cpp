@@ -478,11 +478,9 @@ bool CMasternodePayments::ProcessMessageMasternodePayments(CNode* pfrom, std::st
         int nCountNeeded;
         vRecv >> nCountNeeded;
 
-        if (Params().NetworkIDString() == CBaseChainParams::MAIN) {
-            if (g_netfulfilledman.HasFulfilledRequest(pfrom->addr, NetMsgType::GETMNWINNERS)) {
-                LogPrint(BCLog::MASTERNODE, "%s: mnget - peer already asked me for the list\n", __func__);
-                return state.DoS(20, false, REJECT_INVALID, "getmnwinners-request-already-fulfilled");
-            }
+        if (g_netfulfilledman.HasFulfilledRequest(pfrom->addr, NetMsgType::GETMNWINNERS)) {
+            LogPrint(BCLog::MASTERNODE, "%s: mnget - peer already asked me for the list\n", __func__);
+            return state.DoS(20, false, REJECT_INVALID, "getmnwinners-request-already-fulfilled");
         }
 
         g_netfulfilledman.AddFulfilledRequest(pfrom->addr, NetMsgType::GETMNWINNERS);

@@ -455,14 +455,12 @@ bool CMasternodeMan::RequestMnList(CNode* pnode)
     }
 
     LOCK(cs);
-    if (Params().NetworkIDString() == CBaseChainParams::MAIN) {
-        if (!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal())) {
-            std::map<CNetAddr, int64_t>::iterator it = mWeAskedForMasternodeList.find(pnode->addr);
-            if (it != mWeAskedForMasternodeList.end()) {
-                if (GetTime() < (*it).second) {
-                    LogPrint(BCLog::MASTERNODE, "dseg - we already asked peer %i for the list; skipping...\n", pnode->GetId());
-                    return false;
-                }
+    if (!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal())) {
+        std::map<CNetAddr, int64_t>::iterator it = mWeAskedForMasternodeList.find(pnode->addr);
+        if (it != mWeAskedForMasternodeList.end()) {
+            if (GetTime() < (*it).second) {
+                LogPrint(BCLog::MASTERNODE, "dseg - we already asked peer %i for the list; skipping...\n", pnode->GetId());
+                return false;
             }
         }
     }
@@ -915,7 +913,7 @@ int CMasternodeMan::ProcessGetMNList(CNode* pfrom, CTxIn& vin)
         if (itAskedUsMNList != mAskedUsForMasternodeList.end()) {
             int64_t t = (*itAskedUsMNList).second;
             if (GetTime() < t) {
-                LogPrintf("CMasternodeMan::ProcessMessage() : dseg - peer already asked me for the list\n");
+                LogPrintf("%s : dseg - peer already asked me for the list, peer %s\n", __func__, pfrom->addr.ToString());
                 return 20;
             }
         }
