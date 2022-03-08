@@ -339,7 +339,7 @@ void MasterNodesWidget::onInfoMNClicked()
                                  "externalip=" + address.left(address.lastIndexOf(":")) + "\n"
                                  "listen=1\n";
             if (isLegacy) {
-                exportedMN = "masternodeaddr=" + address + +"\n" +
+                exportedMN += "masternodeaddr=" + address + +"\n" +
                              "masternodeprivkey=" +
                              index.sibling(index.row(), MNModel::PRIV_KEY).data(Qt::DisplayRole).toString() + "\n";
             } else {
