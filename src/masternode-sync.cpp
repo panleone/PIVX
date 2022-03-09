@@ -118,6 +118,11 @@ void CMasternodeSync::SwitchToNextAsset()
     RequestedMasternodeAttempt = 0;
     nAssetSyncStarted = GetTime();
     LogPrintf("%s - %s\n", __func__, GetSyncStatus(next_sync_phase));
+
+    // Update the last sync finished time
+    if (next_sync_phase == MASTERNODE_SYNC_FINISHED) {
+        lastSyncFinishedTime = GetTime();
+    }
 }
 
 std::string CMasternodeSync::GetSyncStatus()
@@ -208,6 +213,12 @@ void CMasternodeSync::Process()
         if (isRegTestNet) {
             return;
         }
+
+        // Only try to reset the sync process if the node finished syncing an hour ago
+        if (lastSyncFinishedTime + 60 * 60 > now) {
+            return;
+        }
+
         bool legacy_obsolete = deterministicMNManager->LegacyMNObsolete();
         // Check if we lost all masternodes (except the local one in case the node is a MN)
         // from sleep/wake or failure to sync originally (after spork 21, check if we lost
