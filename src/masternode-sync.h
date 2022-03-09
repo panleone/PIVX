@@ -98,6 +98,9 @@ private:
 
     // Mark sync timeout
     void syncTimeout(const std::string& reason);
+
+    // Return human-readable string for 'phase'
+    std::string GetSyncStatus(int phase);
 };
 
 #endif

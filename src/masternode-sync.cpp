@@ -117,31 +117,34 @@ void CMasternodeSync::SwitchToNextAsset()
     g_tiertwo_sync_state.SetCurrentSyncPhase(next_sync_phase);
     RequestedMasternodeAttempt = 0;
     nAssetSyncStarted = GetTime();
-
-    if (next_sync_phase == MASTERNODE_SYNC_FINISHED) {
-        LogPrintf("%s - Sync has finished\n", __func__);
-    }
+    LogPrintf("%s - %s\n", __func__, GetSyncStatus(next_sync_phase));
 }
 
 std::string CMasternodeSync::GetSyncStatus()
 {
-    switch (g_tiertwo_sync_state.GetSyncPhase()) {
-    case MASTERNODE_SYNC_INITIAL:
-        return _("MNs synchronization pending...");
-    case MASTERNODE_SYNC_SPORKS:
-        return _("Synchronizing sporks...");
-    case MASTERNODE_SYNC_LIST:
-        return _("Synchronizing masternodes...");
-    case MASTERNODE_SYNC_MNW:
-        return _("Synchronizing masternode winners...");
-    case MASTERNODE_SYNC_BUDGET:
-        return _("Synchronizing budgets...");
-    case MASTERNODE_SYNC_FAILED:
-        return _("Synchronization failed");
-    case MASTERNODE_SYNC_FINISHED:
-        return _("Synchronization finished");
+    return GetSyncStatus(g_tiertwo_sync_state.GetSyncPhase());
+}
+
+std::string CMasternodeSync::GetSyncStatus(int phase)
+{
+    switch (phase) {
+        case MASTERNODE_SYNC_INITIAL:
+            return _("MNs synchronization pending...");
+        case MASTERNODE_SYNC_SPORKS:
+            return _("Synchronizing sporks...");
+        case MASTERNODE_SYNC_LIST:
+            return _("Synchronizing masternodes...");
+        case MASTERNODE_SYNC_MNW:
+            return _("Synchronizing masternode winners...");
+        case MASTERNODE_SYNC_BUDGET:
+            return _("Synchronizing budgets...");
+        case MASTERNODE_SYNC_FAILED:
+            return _("Synchronization failed");
+        case MASTERNODE_SYNC_FINISHED:
+            return _("Synchronization finished");
+        default:
+            return _("Unknown sync phase");
     }
-    return "";
 }
 
 void CMasternodeSync::ProcessSyncStatusMsg(int nItemID, int nCount)
