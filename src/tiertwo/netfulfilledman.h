@@ -49,6 +49,7 @@ public:
 
     void AddFulfilledRequest(const CService& addr, const std::string& strRequest);
     bool HasFulfilledRequest(const CService& addr, const std::string& strRequest) const;
+    void ClearRequestsGlobal(const std::vector<std::string>& strRequests);
 
     // Faster lookup using bloom filter
     void AddItemRequest(const CService& addr, const uint256& itemHash);

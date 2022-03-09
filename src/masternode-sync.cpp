@@ -183,7 +183,7 @@ void CMasternodeSync::ProcessSyncStatusMsg(int nItemID, int nCount)
 
 void CMasternodeSync::ClearFulfilledRequest()
 {
-    g_netfulfilledman.Clear();
+    g_netfulfilledman.ClearRequestsGlobal({"getspork", "mnsync", "mnwsync", "busync"});
 }
 
 void CMasternodeSync::Process()

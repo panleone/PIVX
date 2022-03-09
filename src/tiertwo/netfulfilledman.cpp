@@ -38,6 +38,20 @@ bool CNetFulfilledRequestManager::HasFulfilledRequest(const CService& addr, cons
     return false;
 }
 
+void CNetFulfilledRequestManager::ClearRequestsGlobal(const std::vector<std::string>& strRequests)
+{
+    LOCK(cs_mapFulfilledRequests);
+    auto it = mapFulfilledRequests.begin();
+    while (it != mapFulfilledRequests.end()) {
+        if (!it->second.empty()) {
+            for (const auto& request: strRequests) {
+                it->second.erase(request);
+            }
+        }
+        it++;
+    }
+}
+
 static std::vector<unsigned char> convertElement(const CService& addr, const uint256& itemHash)
 {
     CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
