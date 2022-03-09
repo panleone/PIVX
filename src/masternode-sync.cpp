@@ -107,18 +107,20 @@ int CMasternodeSync::GetNextAsset(int currentAsset)
 
 void CMasternodeSync::SwitchToNextAsset()
 {
-    int RequestedMasternodeAssets = g_tiertwo_sync_state.GetSyncPhase();
-    if (RequestedMasternodeAssets == MASTERNODE_SYNC_INITIAL ||
-            RequestedMasternodeAssets == MASTERNODE_SYNC_FAILED) {
+    int current_sync_phase = g_tiertwo_sync_state.GetSyncPhase();
+    if (current_sync_phase == MASTERNODE_SYNC_INITIAL ||
+            current_sync_phase == MASTERNODE_SYNC_FAILED) {
         ClearFulfilledRequest();
     }
-    const int nextAsset = GetNextAsset(RequestedMasternodeAssets);
-    if (nextAsset == MASTERNODE_SYNC_FINISHED) {
-        LogPrintf("%s - Sync has finished\n", __func__);
-    }
-    g_tiertwo_sync_state.SetCurrentSyncPhase(nextAsset);
+    const int next_sync_phase = GetNextAsset(current_sync_phase);
+    if (current_sync_phase == next_sync_phase) return; // nothing to do
+    g_tiertwo_sync_state.SetCurrentSyncPhase(next_sync_phase);
     RequestedMasternodeAttempt = 0;
     nAssetSyncStarted = GetTime();
+
+    if (next_sync_phase == MASTERNODE_SYNC_FINISHED) {
+        LogPrintf("%s - Sync has finished\n", __func__);
+    }
 }
 
 std::string CMasternodeSync::GetSyncStatus()
