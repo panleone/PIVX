@@ -69,7 +69,7 @@ static std::vector<std::string>& GetWordList()
 
 static int IsValidWord(const std::string& word)
 {
-    auto words = GetWordList();
+    auto& words = GetWordList();
     return std::find(words.begin(), words.end(), word) - words.begin();
 }
 
@@ -116,7 +116,7 @@ std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
 {
     std::vector<bool> entropy_bits = BytesToBits(entropy);
     std::string seedphrase;
-    auto words = GetWordList();
+    auto& words = GetWordList();
     for (size_t i = 0; i < entropy.size() * BYTE_SIZE / WORD_SIZE; ++i) {
         if (i != 0) {
             seedphrase += " ";
