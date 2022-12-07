@@ -31,6 +31,10 @@
 
 #include "crypto/hmac_sha256.h"
 #include "crypto/sha256.h"
+
+#include "crypto/hmac_sha512.h"
+#include "crypto/sha512.h"
+
 #include "uint256.h"
 #include "utilstrencodings.h"
 
@@ -99,6 +103,56 @@ PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
     }
 
 }
+
+/**
+ * PBKDF2_SHA512(passwd, passwdlen, salt, saltlen, c, buf, dkLen):
+ * Compute PBKDF2(passwd, salt, c, dkLen) using HMAC-SHA512 as the PRF, and
+ * write the output to buf.
+ */
+void
+PBKDF2_SHA512(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
+              size_t saltlen, uint64_t c, uint8_t *buf, size_t dkLen)
+{
+    size_t i;
+    uint8_t ivec[4];
+    uint8_t U[64];
+    uint8_t T[64];
+    uint64_t j;
+    int k;
+    size_t clen;
+
+    /* Compute HMAC state after processing P and S. */
+    CHMAC_SHA512 PShctx = CHMAC_SHA512(passwd, passwdlen).Write(salt, saltlen);
+
+    /* Iterate through the blocks. */
+    for (i = 0; i * 64 < dkLen; i++) {
+        /* Generate INT(i + 1). */
+        be32enc(ivec, (uint32_t)(i + 1));
+
+        /* Compute U_1 = PRF(P, S || INT(i)). */
+        CHMAC_SHA512(PShctx).Write(ivec, 4).Finalize(U);
+
+        /* T_i = U_1 ... */
+        memcpy(T, U, 64);
+
+        for (j = 2; j <= c; j++) {
+            /* Compute U_j. */
+            CHMAC_SHA512(passwd, passwdlen).Write(U, 64).Finalize(U);
+
+            /* ... xor U_j ... */
+            for (k = 0; k < 64; k++)
+                T[k] ^= U[k];
+        }
+
+        /* Copy as many bytes as necessary into buf. */
+        clen = dkLen - i * 64;
+        if (clen > 64)
+            clen = 64;
+        memcpy(&buf[i * 64], T, clen);
+    }
+
+}
+
 
 static inline uint32_t
 le32dec_2(const void * pp)

@@ -64,6 +64,7 @@ public:
     /* Generates a new HD seed (will not be activated) */
     CPubKey GenerateNewSeed();
 
+    void GenerateNewSeedPhrase();
     /* Derives a new HD seed (will not be activated) */
     CPubKey DeriveNewSeed(const CKey& key);
 

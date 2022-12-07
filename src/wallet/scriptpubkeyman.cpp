@@ -4,8 +4,13 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "wallet/scriptpubkeyman.h"
+#include "wallet/bip39.h"
 #include "crypter.h"
 #include "script/standard.h"
+
+#include "crypto/scrypt.h"
+#include "crypto/sha256.h"
+#include "crypto/hmac_sha512.h"
 
 bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
 {
@@ -444,6 +449,7 @@ void ScriptPubKeyMan::AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const uint8_
  */
 CPubKey ScriptPubKeyMan::GenerateNewKey(WalletBatch &batch, const uint8_t& type)
 {
+    GenerateNewSeedPhrase();
     AssertLockHeld(wallet->cs_wallet);
     bool fCompressed = wallet->CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
 
@@ -621,6 +627,16 @@ bool ScriptPubKeyMan::AddKeyPubKeyInner(const CKey& key, const CPubKey &pubkey)
     }
     return true;
 }
+
+////////////////////// Seed Phrase Generation ///////////////////////////////////
+void ScriptPubKeyMan::GenerateNewSeedPhrase()
+{  
+   testStuff();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+
 
 ////////////////////// Seed Generation ///////////////////////////////////
 

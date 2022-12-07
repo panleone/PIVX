@@ -324,6 +324,7 @@ BITCOIN_CORE_H = \
   wallet/hdchain.h \
   wallet/rpcwallet.h \
   wallet/scriptpubkeyman.h \
+  wallet/bip39.h \
   destination_io.h \
   wallet/fees.h \
   wallet/init.h \
@@ -447,6 +448,7 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/rpcwallet.cpp \
   wallet/hdchain.cpp \
   wallet/scriptpubkeyman.cpp \
+  wallet/bip39.cpp \
   destination_io.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
