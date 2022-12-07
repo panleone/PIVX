@@ -18,8 +18,6 @@
 #include <string>
 #include <vector>
 
-#include <csignal>
-
 // Size in bits of a byte
 constexpr int BYTE_SIZE = 8;
 // Sizes in bits of the index of a word (Each index can be from 0 to 2048)
