@@ -1,198 +1,173 @@
 #include "wallet/bip39.h"
 
 #include "crypter.h"
-#include "script/standard.h"
+#include "crypto/hmac_sha512.h"
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
-#include "crypto/hmac_sha512.h"
 #include "random.h"
+#include "script/standard.h"
 
-#include <fstream>
-#include <string> 
-#include <iostream>
-#include <math.h> 
+#include <algorithm>
+#include <array>
 #include <bitset>
+#include <boost/algorithm/string.hpp>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <math.h>
+#include <string>
 #include <vector>
 
-constexpr int BYTE_SIZE=8;
-constexpr int WORD_SIZE=11;
-constexpr int ITERATIONS=2048;
-constexpr int NUMBER_OF_WORDS=2048;
-constexpr int SEED_LENGTH=64;
-bool generated=false;
-std::string WORDS[NUMBER_OF_WORDS];
+#include <csignal>
 
-void LoadWords(){
-  std::ifstream infile("src/wallet/bip39_english.txt");
-  std::string word;
-  int i=0;
-  while (infile >> word)
-  {
-    WORDS[i]=word;
-    i++;
-  }
-}
+// Size in bits of a byte
+constexpr int BYTE_SIZE = 8;
+// Sizes in bits of the index of a word (Each index can be from 0 to 2048)
+constexpr int WORD_SIZE = 11;
+// Number of iterations
+constexpr int ITERATIONS = 2048;
+constexpr int SEED_LENGTH = 64;
 
-int IsValidWord(std::string word){
-  //Load words if you haven't yet
-  if(!generated){
-    LoadWords();
-    generated=true;
-  }
-  for(int i=0;i<NUMBER_OF_WORDS;i++){
-    if(word.compare(WORDS[i])==0){
-      return i;
-    }
-  }
-  return 2048;
-}
+std::vector<std::string> _words;
 
-void ConvertToBinary(unsigned char* x,int x_len,int* buffer)
+static std::vector<uint8_t> BitsToBytes(std::vector<bool>::const_iterator begin, std::vector<bool>::const_iterator end)
 {
-    int result[BYTE_SIZE*x_len];
-    for(int i=0;i<x_len;i++){
-      std::bitset<WORD_SIZE> b(x[i]);
-      for(int j=0;j<BYTE_SIZE;j++){
-        result[j+i*BYTE_SIZE]=b[BYTE_SIZE-1-j];
-      }
+    std::vector<uint8_t> result;
+    size_t size = end - begin;
+    result.reserve(size / BYTE_SIZE);
+    for (size_t i = 0; i < size / BYTE_SIZE; ++i) {
+        result.push_back(0);
+        for (int j = 0; j < BYTE_SIZE; ++j) {
+            result[i] |= (begin[i * BYTE_SIZE + j] << (BYTE_SIZE - 1 - j));
+        }
     }
-    std::memcpy(buffer, result, BYTE_SIZE*x_len*sizeof(*buffer));
+    return result;
 }
 
-void ConvertToWordBinary(int* x,int x_len,int* buffer)
+static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 {
-    int result[WORD_SIZE*x_len];
-    for(int i=0;i<x_len;i++){
-      std::bitset<WORD_SIZE> b(x[i]);
-
-      for(int j=0;j<WORD_SIZE;j++){
-        result[j+i*WORD_SIZE]=b[WORD_SIZE-1-j];
-      }
+    std::vector<bool> result;
+    result.reserve(bytes.size() * 8);
+    for (auto&& b : bytes) {
+        for (int i = BYTE_SIZE - 1; i >= 0; --i) {
+            result.push_back(b & (1 << i));
+        }
     }
-    std::memcpy(buffer, result, WORD_SIZE*x_len*sizeof(*buffer));
-}
-
-bool CheckValidityOfSeedPhrase(std::string seedphrase){
-  std::vector<std::string> splitphrase;
-  std::string word="";
-  for(char c: seedphrase){
-    
-    if(c==32){
-      splitphrase.push_back(word);
-      word="";
-      continue;
-    }
-    word+=c;
-    
-  }
-  splitphrase.push_back(word);
-
-  if(splitphrase.size()!= 24 && splitphrase.size() != 21 && splitphrase.size()!= 18 && splitphrase.size()!= 15 && splitphrase.size()!= 12){
-    return false;
-  }
-  int  int_words[splitphrase.size()];
-
-  for(int i=0;i<splitphrase.size();i++){
-    int val= IsValidWord(splitphrase[i]);
-    if(val==2048){
-      return false;
-    }
-    int_words[i]=val;
-  }
-  int binary[splitphrase.size()*WORD_SIZE];
-  ConvertToWordBinary(int_words, splitphrase.size(), binary);
-  int entropy[splitphrase.size()*WORD_SIZE*32/33];
-
-  memcpy(entropy, binary,splitphrase.size()*11*32/33*sizeof(*entropy) );
-  unsigned char entropy_bytes[splitphrase.size()*WORD_SIZE*32/(8*33)];
-  unsigned char sum=0;
-  int i=0;
-  do{
-    sum+=pow(2,7-i%8)*entropy[i];
-    if(i%8==0){
-      entropy_bytes[i/8-1]=sum;
-      sum=0;
-    }
-    i++;
-  }while(i<splitphrase.size()*WORD_SIZE*32/33+1);
-  unsigned char checksum=0;
-  for(int i=splitphrase.size()*WORD_SIZE-1;i>splitphrase.size()*WORD_SIZE*32/33-1;i--){
-    checksum+=pow(2,(splitphrase.size()*WORD_SIZE-1)-i)*binary[i];
-  }
-  unsigned char sha_buffer[32];
-  CSHA256().Write(entropy_bytes, 32).Finalize(sha_buffer);
-  std::bitset<BYTE_SIZE> checksum_bits(sha_buffer[0]);
-  unsigned char second_checksum=0;
-  for(int i=0;i<splitphrase.size()*WORD_SIZE/33;i++){
-    second_checksum+=pow(2,splitphrase.size()*WORD_SIZE/33-i-1)*checksum_bits[i];
-  }
-  return second_checksum==checksum;
-
+    return result;
 }
 
 
-
-std::string GenerateSeedPhrase(unsigned char* data,int data_len){
-  std::string seedphrase="";
-  int buffer[data_len*BYTE_SIZE];
-  ConvertToBinary(data,data_len,buffer);
-
-  int i=0;
-  while(i<data_len*BYTE_SIZE/WORD_SIZE){
-    int sum=0;
-    if(i!=0){
-      seedphrase+=" ";
+static std::vector<std::string>& GetWordList()
+{
+    if (_words.size() == 0) {
+        std::ifstream infile("src/wallet/bip39_english.txt");
+        std::string word;
+        for (int i = 0; infile >> word; i++) {
+            _words.push_back(std::move(word));
+        }
     }
-    for(int j=0;j<WORD_SIZE;j++){
-      sum+=pow(2,WORD_SIZE-1-j)*buffer[i*WORD_SIZE+j];
-    }
-    seedphrase+=WORDS[sum];
-    i++;
-  }
-  return seedphrase;
+    return _words;
 }
 
-//GENERATE SEED FROM SEEDPHRASE
-void GenerateSeedFromSeedPhrase(unsigned char* buffer,unsigned char* seedphrase, int seedphrase_len,std::string passphrase=""){
-  std::string pre_salt="mnemonic";
-  pre_salt+= passphrase;
-  unsigned char salt[pre_salt.length()];
-  std::copy( pre_salt.begin(), pre_salt.end(), salt );
-  PBKDF2_SHA512(seedphrase,seedphrase_len, salt,pre_salt.length(), ITERATIONS ,buffer,SEED_LENGTH);
+static int IsValidWord(const std::string& word)
+{
+    auto words = GetWordList();
+    return std::find(words.begin(), words.end(), word) - words.begin();
 }
 
-//GENERATE SEEDPHRASE OF 24 WORDS
-std::string CreateRandomSeedPhrase()
-{  
-   //Load words if you haven't yet
-    if(!generated){
-        LoadWords();
-        generated=true;
+bool CheckValidityOfSeedPhrase(const std::string& seedphrase)
+{
+    std::vector<std::string> words;
+    boost::split(words, seedphrase, boost::is_any_of(" "));
+
+    if (words.size() % 3 != 0) {
+        return false;
     }
-    uint8_t buffer[32];
-    uint8_t sha_buffer[32];
-    uint8_t total_buffer[32+1];
-    
-    GetStrongRandBytes(buffer, 32);
-    CSHA256().Write(buffer, 32).Finalize(sha_buffer);
-    
-    for(int i=0; i<32;i++){
-        total_buffer[i]=buffer[i];
+
+    std::vector<bool> word_bits;
+
+    for (auto&& word : words) {
+        int index = IsValidWord(word);
+        if (index == 2048) {
+            return false;
+        }
+        // Convert index to 11 bit word
+        for (int i = WORD_SIZE - 1; i >= 0; i--) {
+            word_bits.push_back(index & (1 << i));
+        }
     }
-    total_buffer[32]=sha_buffer[0];
-    std::string seedphrase = GenerateSeedPhrase(total_buffer,33);
+    // Divider index between entropy and checksum
+    int divider = (word_bits.size() / 33) * 32;
+    auto entropy_bytes = BitsToBytes(word_bits.begin(), word_bits.begin() + divider);
+    auto checksum_bytes = BitsToBytes(word_bits.begin() + divider, word_bits.end());
+    if (entropy_bytes.size() < 16 || entropy_bytes.size() > 32 || entropy_bytes.size() % 4 != 0) {
+        return false;
+    }
+    std::array<uint8_t, 32> sha256;
+    CSHA256().Write(&entropy_bytes[0], entropy_bytes.size()).Finalize(&sha256[0]);
+    for (size_t i = 0; i < checksum_bytes.size(); i++) {
+        if (checksum_bytes[i] != sha256[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
+{
+    std::vector<bool> entropy_bits = BytesToBits(entropy);
+    std::string seedphrase;
+    auto words = GetWordList();
+    for (size_t i = 0; i < entropy.size() * BYTE_SIZE / WORD_SIZE; ++i) {
+        if (i != 0) {
+            seedphrase += " ";
+        }
+        int sum = 0;
+
+        for (int j = 0; j < WORD_SIZE; ++j) {
+            sum += pow(2, WORD_SIZE - 1 - j) * entropy_bits[i * WORD_SIZE + j];
+        }
+        seedphrase += words[sum];
+    }
     return seedphrase;
 }
 
-//temporary test function
-void testStuff(){
-  std::string seedphrase = CreateRandomSeedPhrase();
-  unsigned char seed[SEED_LENGTH];
-  unsigned char to_crypt[seedphrase.length()];
-  std::copy( seedphrase.begin(), seedphrase.end(), to_crypt );
-  GenerateSeedFromSeedPhrase(seed,to_crypt,seedphrase.length(),"TREZOR");
-  std::cout<<seedphrase<<std::endl;
-  bool result = CheckValidityOfSeedPhrase("letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless");
-  std::cout<<result<<std::endl;
+std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const std::string& passphrase)
+{
+    std::string salt = "mnemonic";
+    std::vector<uint8_t> result;
+    result.resize(SEED_LENGTH);
+    salt += passphrase;
+    PBKDF2_SHA512((const unsigned char*)mnemonic.c_str(), mnemonic.length(), (const unsigned char*)salt.c_str(), salt.length(), ITERATIONS, &result[0], SEED_LENGTH);
+    return result;
+}
 
+// GENERATE SEEDPHRASE OF 24 WORDS
+std::string CreateRandomSeedPhrase()
+{
+    std::vector<uint8_t> random_bytes;
+    random_bytes.resize(32);
+    std::array<uint8_t, 32> sha256;
+
+    // Put 32 random bytes in buffer
+    GetStrongRandBytes(&random_bytes[0], random_bytes.size());
+
+    // Sha256 the bytes
+    CSHA256().Write(&random_bytes[0], random_bytes.size()).Finalize(&sha256[0]);
+
+    random_bytes.push_back(sha256[0]);
+    std::string seedphrase = EntropyToSeedPhrase(random_bytes);
+    return seedphrase;
+}
+
+// temporary test function
+void testStuff()
+{
+    std::string seedphrase = CreateRandomSeedPhrase();
+
+    auto seed = GenerateSeedFromMnemonic(seedphrase);
+    std::cout << seedphrase << std::endl;
+    bool result = CheckValidityOfSeedPhrase("great light crowd glad together verify supply horror guilt walk provide connect glory scare solution cost play talent radar initial minute essay purity uphold");
+    std::cout << result << std::endl;
 }

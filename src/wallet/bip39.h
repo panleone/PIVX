@@ -1,8 +1,12 @@
-#include <string> 
-#ifndef BIP39T
-#define BIP39T 
+#ifndef PIVX_WALLET_BIP39_H
+#define PIVX_WALLET_BIP39_H
 
-void testStuff();
+#include <string>
+#include <vector>
+
 std::string CreateRandomSeedPhrase();
-void GenerateSeedFromSeedPhrase(unsigned char* buffer,unsigned char* seedphrase, int seedphrase_len,std::string passphrase);
-#endif //BIP39T
+std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const std::string& passphrase = "");
+bool ValidateSeedPhrase(const std::string& seedphrase);
+void testStuff();
+
+#endif // PIVX_WALLET_BIP39_H
