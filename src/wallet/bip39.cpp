@@ -28,6 +28,27 @@ constexpr int SEED_LENGTH = 64;
 
 std::vector<std::string> _words;
 
+//split a string into words
+size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
+{
+    size_t pos = txt.find( ch );
+    size_t initialPos = 0;
+    strs.clear();
+
+    // Decompose statement
+    while( pos != std::string::npos ) {
+        strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+        initialPos = pos + 1;
+
+        pos = txt.find( ch, initialPos );
+    }
+
+    // Add the last one
+    strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+
+    return strs.size();
+}
+
 static std::vector<uint8_t> BitsToBytes(std::vector<bool>::const_iterator begin, std::vector<bool>::const_iterator end)
 {
     std::vector<uint8_t> result;
@@ -147,13 +168,10 @@ std::string CreateRandomSeedPhrase()
     std::vector<uint8_t> random_bytes;
     random_bytes.resize(32);
     std::array<uint8_t, 32> sha256;
-
     // Put 32 random bytes in buffer
     GetStrongRandBytes(&random_bytes[0], random_bytes.size());
-
     // Sha256 the bytes
     CSHA256().Write(&random_bytes[0], random_bytes.size()).Finalize(&sha256[0]);
-
     random_bytes.push_back(sha256[0]);
     std::string seedphrase = EntropyToSeedPhrase(random_bytes);
     return seedphrase;

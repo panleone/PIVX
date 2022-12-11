@@ -16,6 +16,11 @@
 #include <QListView>
 #include <QScreen>
 #include <QSettings>
+#include <array>
+#include "qt/pivx/seedslot.h"
+#include "qwidget.h"
+#include "wallet/bip39.h"
+#include <iostream>
 
 WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     QDialog(parent, Qt::FramelessWindowHint | Qt::WindowSystemMenuHint),
@@ -30,7 +35,7 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->setupUi(this);
 
     this->setStyleSheet(GUIUtil::loadStyleSheet());
-
+    
     ui->frame->setProperty("cssClass", "container-welcome-stack");
 #ifdef Q_OS_MAC
     ui->frame_2->load("://bg-welcome");
@@ -75,6 +80,7 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->labelLine1->setProperty("cssClass", "line-welcome");
     ui->labelLine2->setProperty("cssClass", "line-welcome");
     ui->labelLine3->setProperty("cssClass", "line-welcome");
+    ui->labelLine4->setProperty("cssClass", "line-welcome");
 
     ui->groupBoxName->setProperty("cssClass", "container-welcome-box");
     ui->groupContainer->setProperty("cssClass", "container-welcome-box");
@@ -87,6 +93,8 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->pushNumber3->setEnabled(false);
     ui->pushNumber4->setProperty("cssClass", "btn-welcome-number-check");
     ui->pushNumber4->setEnabled(false);
+    ui->pushNumber5->setProperty("cssClass", "btn-welcome-number-check");
+    ui->pushNumber5->setEnabled(false);
 
     ui->pushName1->setProperty("cssClass", "btn-welcome-name-check");
     ui->pushName1->setEnabled(false);
@@ -96,9 +104,20 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->pushName3->setEnabled(false);
     ui->pushName4->setProperty("cssClass", "btn-welcome-name-check");
     ui->pushName4->setEnabled(false);
+    ui->pushName5->setProperty("cssClass", "btn-welcome-name-check");
+    ui->pushName5->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(0);
-
+    std::string recovery_phrase = CreateRandomSeedPhrase();
+    std::vector<std::string> seed_split;
+    split(recovery_phrase, seed_split, ' ');
+    std::array<QWidget*, 24> seeds = {ui->seed1,ui->seed2,ui->seed3,ui->seed4,ui->seed5,ui->seed6,ui->seed7,ui->seed8,ui->seed9,ui->seed10,ui->seed11,ui->seed12,ui->seed13,ui->seed14,ui->seed15,ui->seed16,ui->seed17,ui->seed18,ui->seed19,ui->seed20,ui->seed21,ui->seed22,ui->seed23,ui->seed24};
+    for(int i=0;i<24;i++){
+        std::cout << i << seed_split.at(i) << std::endl;
+       SeedSlot* seedTest1 = new SeedSlot(QString::number(i),QString::fromStdString(seed_split.at(i)),seeds[i]);
+       seedTest1->show();
+    }
+   
     // Frame 1
     ui->page_1->setProperty("cssClass", "container-welcome-step1");
     ui->labelTitle1->setProperty("cssClass", "text-title-welcome");
@@ -121,11 +140,19 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->labelTitle4->setProperty("cssClass", "text-title-welcome");
     ui->labelMessage4->setProperty("cssClass", "text-main-white");
 
+    // Frame 5
+    ui->page_5->setProperty("cssClass", "container-welcome-step4");
+    ui->labelTitle5->setProperty("cssClass", "text-title-welcome");
+    ui->yesButton->setProperty("cssClass","btn-primary");
+    ui->importBtn->setProperty("cssClass","btn-primary");
+    //ui->labelMessage5->setProperty("cssClass", "text-main-white");
+
     // Confirm icons
     icConfirm1 = new QPushButton(ui->layoutIcon1_2);
     icConfirm2 = new QPushButton(ui->layoutIcon2_2);
     icConfirm3 = new QPushButton(ui->layoutIcon3_2);
     icConfirm4 = new QPushButton(ui->layoutIcon4_2);
+    icConfirm5 = new QPushButton(ui->layoutIcon5_2);
 
     QSize BUTTON_CONFIRM_SIZE = QSize(22, 22);
     int posX = 0;
@@ -159,6 +186,14 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     icConfirm4->show();
     icConfirm4->raise();
     icConfirm4->setVisible(false);
+
+    icConfirm5->setProperty("cssClass", "ic-step-confirm-welcome");
+    icConfirm5->setMinimumSize(BUTTON_CONFIRM_SIZE);
+    icConfirm5->setMaximumSize(BUTTON_CONFIRM_SIZE);
+    icConfirm5->move(posX, posY);
+    icConfirm5->show();
+    icConfirm5->raise();
+    icConfirm5->setVisible(false);
 
     ui->pushButtonSkip->setProperty("cssClass", "btn-close-white");
     onNextClicked();
@@ -224,6 +259,7 @@ void WelcomeContentWidget::onNextClicked()
             backButton->setVisible(true);
             ui->stackedWidget->setCurrentIndex(2);
             ui->pushNumber2->setChecked(true);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(false);
             ui->pushName3->setChecked(false);
             ui->pushName2->setChecked(true);
@@ -234,6 +270,7 @@ void WelcomeContentWidget::onNextClicked()
         case 2: {
             ui->stackedWidget->setCurrentIndex(3);
             ui->pushNumber3->setChecked(true);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(false);
             ui->pushName3->setChecked(true);
             ui->pushName2->setChecked(true);
@@ -244,6 +281,7 @@ void WelcomeContentWidget::onNextClicked()
         case 3:{
             ui->stackedWidget->setCurrentIndex(4);
             ui->pushNumber4->setChecked(true);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(true);
             ui->pushName3->setChecked(true);
             ui->pushName2->setChecked(true);
@@ -252,6 +290,19 @@ void WelcomeContentWidget::onNextClicked()
             break;
         }
         case 4:{
+            ui->stackedWidget->setCurrentIndex(5);
+            ui->pushNumber5->setChecked(true);
+            ui->pushName5->setChecked(true);
+            ui->pushName4->setChecked(true);
+            ui->pushName3->setChecked(true);
+            ui->pushName2->setChecked(true);
+            ui->pushName1->setChecked(true);
+            icConfirm4->setVisible(true);
+            nextButton->hide();
+            nextButton->setDisabled(true);
+            break;
+        }
+        case 5:{
             isOk = true;
             accept();
             break;
@@ -276,6 +327,7 @@ void WelcomeContentWidget::onBackClicked()
             ui->pushNumber4->setChecked(false);
             ui->pushNumber3->setChecked(false);
             ui->pushNumber2->setChecked(false);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(false);
             ui->pushName3->setChecked(false);
             ui->pushName2->setChecked(false);
@@ -290,6 +342,7 @@ void WelcomeContentWidget::onBackClicked()
             ui->pushNumber2->setChecked(true);
             ui->pushNumber4->setChecked(false);
             ui->pushNumber3->setChecked(false);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(false);
             ui->pushName3->setChecked(false);
             ui->pushName2->setChecked(true);
@@ -301,12 +354,26 @@ void WelcomeContentWidget::onBackClicked()
             ui->stackedWidget->setCurrentIndex(3);
             ui->pushNumber3->setChecked(true);
             ui->pushNumber4->setChecked(false);
+            ui->pushName5->setChecked(false);
             ui->pushName4->setChecked(false);
             ui->pushName3->setChecked(true);
             ui->pushName2->setChecked(true);
             ui->pushName1->setChecked(true);
             icConfirm3->setVisible(false);
             break;
+        }
+        case 4:{
+            ui->stackedWidget->setCurrentIndex(4);
+            ui->pushNumber4->setChecked(true);
+            ui->pushNumber5->setChecked(false);
+            ui->pushName5->setChecked(false);
+            ui->pushName4->setChecked(true);
+            ui->pushName3->setChecked(true);
+            ui->pushName2->setChecked(true);
+            ui->pushName1->setChecked(true);
+            icConfirm4->setVisible(false);
+            nextButton->show();
+            nextButton->setDisabled(false);  
         }
 
     }
