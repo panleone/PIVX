@@ -63,8 +63,8 @@ public:
 
     /* Generates a new HD seed (will not be activated) */
     CPubKey GenerateNewSeed();
-
-    void GenerateNewSeedPhrase();
+    CPubKey AssignNewSeed(std::vector<uint8_t> seed);
+ 
     /* Derives a new HD seed (will not be activated) */
     CPubKey DeriveNewSeed(const CKey& key);
 

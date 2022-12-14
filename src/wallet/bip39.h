@@ -5,7 +5,9 @@
 #include <vector>
 
 size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
-std::string CreateRandomSeedPhrase();
+std::string getCachedSeedphrase();
+std::string CreateRandomSeedPhrase(bool wantToCache);
+bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache);
 std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const std::string& passphrase = "");
 bool ValidateSeedPhrase(const std::string& seedphrase);
 void testStuff();

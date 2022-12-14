@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QPushButton>
+#include "qt/pivx/seedslot.h"
 class OptionsModel;
 
 namespace Ui {
@@ -33,6 +34,9 @@ public Q_SLOTS:
     void onNextClicked();
     void onBackClicked();
     void onSkipClicked();
+    void onImportClicked();
+    void onGenerateClicked();
+    void onImportSeedPhraseClicked();
     void checkLanguage();
 
 private:
@@ -46,6 +50,7 @@ private:
     QPushButton *nextButton;
 
     OptionsModel *model;
+    SeedSlot* input_slots[24];
 
     void initLanguages();
 };

@@ -27,8 +27,11 @@ constexpr int ITERATIONS = 2048;
 constexpr int SEED_LENGTH = 64;
 
 std::vector<std::string> _words;
-
+std::string cached_seedphrase="";
 //split a string into words
+std::string getCachedSeedphrase(){
+    return cached_seedphrase;
+}
 size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
 {
     size_t pos = txt.find( ch );
@@ -94,7 +97,7 @@ static int IsValidWord(const std::string& word)
     return std::find(words.begin(), words.end(), word) - words.begin();
 }
 
-bool CheckValidityOfSeedPhrase(const std::string& seedphrase)
+bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
 {
     std::vector<std::string> words;
     boost::split(words, seedphrase, boost::is_any_of(" "));
@@ -128,6 +131,9 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase)
         if (checksum_bytes[i] != sha256[i]) {
             return false;
         }
+    }
+    if(wantToCache){
+        cached_seedphrase = seedphrase;
     }
     return true;
 }
@@ -163,7 +169,7 @@ std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const
 }
 
 // GENERATE SEEDPHRASE OF 24 WORDS
-std::string CreateRandomSeedPhrase()
+std::string CreateRandomSeedPhrase(bool wantToCache)
 {
     std::vector<uint8_t> random_bytes;
     random_bytes.resize(32);
@@ -174,16 +180,19 @@ std::string CreateRandomSeedPhrase()
     CSHA256().Write(&random_bytes[0], random_bytes.size()).Finalize(&sha256[0]);
     random_bytes.push_back(sha256[0]);
     std::string seedphrase = EntropyToSeedPhrase(random_bytes);
+    if(wantToCache){
+        cached_seedphrase=seedphrase;
+    }
     return seedphrase;
 }
 
 // temporary test function
 void testStuff()
 {
-    std::string seedphrase = CreateRandomSeedPhrase();
+    std::string seedphrase = CreateRandomSeedPhrase(false);
 
     auto seed = GenerateSeedFromMnemonic(seedphrase);
     std::cout << seedphrase << std::endl;
-    bool result = CheckValidityOfSeedPhrase("great light crowd glad together verify supply horror guilt walk provide connect glory scare solution cost play talent radar initial minute essay purity uphold");
+    bool result = CheckValidityOfSeedPhrase("great light crowd glad together verify supply horror guilt walk provide connect glory scare solution cost play talent radar initial minute essay purity uphold",false);
     std::cout << result << std::endl;
 }
