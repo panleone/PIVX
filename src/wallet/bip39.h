@@ -10,6 +10,5 @@ std::string CreateRandomSeedPhrase(bool wantToCache);
 bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache);
 std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const std::string& passphrase = "");
 bool ValidateSeedPhrase(const std::string& seedphrase);
-void testStuff();
 
 #endif // PIVX_WALLET_BIP39_H

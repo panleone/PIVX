@@ -82,7 +82,7 @@ static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 static std::vector<std::string>& GetWordList()
 {
     if (_words.size() == 0) {
-        std::ifstream infile("src/wallet/bip39_english.txt");
+        std::ifstream infile("wallet/bip39_english.txt");
         std::string word;
         for (int i = 0; infile >> word; i++) {
             _words.push_back(std::move(word));
@@ -121,14 +121,20 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
     // Divider index between entropy and checksum
     int divider = (word_bits.size() / 33) * 32;
     auto entropy_bytes = BitsToBytes(word_bits.begin(), word_bits.begin() + divider);
-    auto checksum_bytes = BitsToBytes(word_bits.begin() + divider, word_bits.end());
+    std::vector<bool> checksum_bits(word_bits.begin()+divider,word_bits.end());
+    
     if (entropy_bytes.size() < 16 || entropy_bytes.size() > 32 || entropy_bytes.size() % 4 != 0) {
         return false;
     }
     std::array<uint8_t, 32> sha256;
     CSHA256().Write(&entropy_bytes[0], entropy_bytes.size()).Finalize(&sha256[0]);
-    for (size_t i = 0; i < checksum_bytes.size(); i++) {
-        if (checksum_bytes[i] != sha256[i]) {
+    std::vector<bool>  sha256_bits;
+    //we only need to convert in bits the first byte
+    for(int i = 7; i > -1; i--) {
+     sha256_bits.push_back(((sha256[0] >> i) & 0x01));
+    }
+    for (size_t i = 0; i < checksum_bits.size(); i++) {
+        if (checksum_bits[i] != sha256_bits[i]) {
             return false;
         }
     }
@@ -186,13 +192,3 @@ std::string CreateRandomSeedPhrase(bool wantToCache)
     return seedphrase;
 }
 
-// temporary test function
-void testStuff()
-{
-    std::string seedphrase = CreateRandomSeedPhrase(false);
-
-    auto seed = GenerateSeedFromMnemonic(seedphrase);
-    std::cout << seedphrase << std::endl;
-    bool result = CheckValidityOfSeedPhrase("great light crowd glad together verify supply horror guilt walk provide connect glory scare solution cost play talent radar initial minute essay purity uphold",false);
-    std::cout << result << std::endl;
-}
