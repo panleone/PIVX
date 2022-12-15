@@ -5,6 +5,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "wallet/bip39.h"
 #if defined(HAVE_CONFIG_H)
 #include "config/pivx-config.h"
 #endif
@@ -4248,6 +4249,19 @@ CWallet* CWallet::CreateWalletFromFile(const std::string& name, const fs::path& 
         if (!fLegacyWallet) {
             // Create new HD Wallet
             LogPrintf("Creating HD Wallet\n");
+            
+            //if you are using pivxd
+            if(!CheckValidityOfSeedPhrase(getCachedSeedphrase(),false)){
+               LogPrintf("here: %s \n", gArgs.GetArg("-seedphrase",""));
+               if(CheckValidityOfSeedPhrase(gArgs.GetArg("-seedphrase",""),true)){
+                  LogPrintf("Valid seed phrase!");
+                
+               }else{
+                std::string seed_phrase = CreateRandomSeedPhrase(true);
+                LogPrintf("Your seed phrase is: &s \n", seed_phrase);
+               }
+            }
+
             // Ensure this wallet can only be opened by clients supporting HD.
             walletInstance->SetMinVersion(FEATURE_LATEST);
             walletInstance->SetupSPKM();

@@ -32,6 +32,7 @@
 #include "sapling/saplingscriptpubkeyman.h"
 #include "validation.h"
 #include "wallet/walletdb.h"
+#include "wallet/bip39.h"
 
 #include <algorithm>
 #include <atomic>
