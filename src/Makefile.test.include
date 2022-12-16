@@ -175,6 +175,7 @@ SAPLING_TESTS =\
 
 if ENABLE_WALLET
 BITCOIN_TESTS += \
+  wallet/test/bip39_tests.cpp \
   wallet/test/wallet_tests.cpp \
   wallet/test/crypto_tests.cpp
 

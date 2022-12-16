@@ -4252,13 +4252,12 @@ CWallet* CWallet::CreateWalletFromFile(const std::string& name, const fs::path& 
             
             //if you are using pivxd
             if(!CheckValidityOfSeedPhrase(getCachedSeedphrase(),false)){
-               LogPrintf("here: %s \n", gArgs.GetArg("-seedphrase",""));
                if(CheckValidityOfSeedPhrase(gArgs.GetArg("-seedphrase",""),true)){
                   LogPrintf("Valid seed phrase!");
                 
                }else{
                 std::string seed_phrase = CreateRandomSeedPhrase(true);
-                LogPrintf("Your seed phrase is: &s \n", seed_phrase);
+                LogPrintf("Your seed phrase is: %s \n", seed_phrase);
                }
             }
 

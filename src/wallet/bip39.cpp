@@ -26,7 +26,9 @@ constexpr int WORD_SIZE = 11;
 constexpr int ITERATIONS = 2048;
 constexpr int SEED_LENGTH = 64;
 
-std::vector<std::string> _words;
+const char * _words[]  = 
+#include "bip39_english.txt"
+;
 std::string cached_seedphrase="";
 //split a string into words
 std::string getCachedSeedphrase(){
@@ -79,22 +81,11 @@ static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 }
 
 
-static std::vector<std::string>& GetWordList()
-{
-    if (_words.size() == 0) {
-        std::ifstream infile("wallet/bip39_english.txt");
-        std::string word;
-        for (int i = 0; infile >> word; i++) {
-            _words.push_back(std::move(word));
-        }
-    }
-    return _words;
-}
+
 
 static int IsValidWord(const std::string& word)
 {
-    auto& words = GetWordList();
-    return std::find(words.begin(), words.end(), word) - words.begin();
+    return std::find(std::begin(_words), std::end(_words), word) - std::begin(_words);
 }
 
 bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
@@ -147,10 +138,15 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
 
 std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
 {
-    std::vector<bool> entropy_bits = BytesToBits(entropy);
+    std::vector<uint8_t> data_vector(entropy.begin(),entropy.end());
+    std::array<uint8_t, 32> sha256;
+    // Sha256 the bytes
+    CSHA256().Write(&entropy[0], entropy.size()).Finalize(&sha256[0]);
+    data_vector.push_back(sha256[0]);
+    std::vector<bool> entropy_bits = BytesToBits(data_vector);
     std::string seedphrase;
-    auto& words = GetWordList();
-    for (size_t i = 0; i < entropy.size() * BYTE_SIZE / WORD_SIZE; ++i) {
+
+    for (size_t i = 0; i < data_vector.size() * BYTE_SIZE / WORD_SIZE; ++i) {
         if (i != 0) {
             seedphrase += " ";
         }
@@ -159,7 +155,7 @@ std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
         for (int j = 0; j < WORD_SIZE; ++j) {
             sum += pow(2, WORD_SIZE - 1 - j) * entropy_bits[i * WORD_SIZE + j];
         }
-        seedphrase += words[sum];
+        seedphrase += _words[sum];
     }
     return seedphrase;
 }
@@ -179,12 +175,9 @@ std::string CreateRandomSeedPhrase(bool wantToCache)
 {
     std::vector<uint8_t> random_bytes;
     random_bytes.resize(32);
-    std::array<uint8_t, 32> sha256;
+   
     // Put 32 random bytes in buffer
     GetStrongRandBytes(&random_bytes[0], random_bytes.size());
-    // Sha256 the bytes
-    CSHA256().Write(&random_bytes[0], random_bytes.size()).Finalize(&sha256[0]);
-    random_bytes.push_back(sha256[0]);
     std::string seedphrase = EntropyToSeedPhrase(random_bytes);
     if(wantToCache){
         cached_seedphrase=seedphrase;

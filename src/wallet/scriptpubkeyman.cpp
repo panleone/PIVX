@@ -18,10 +18,11 @@ bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
         return false;
     }
     if(!CheckValidityOfSeedPhrase(getCachedSeedphrase(),false)){
-        return false;
+         SetHDSeed(GenerateNewSeed(), force, memOnly);
+    }else{
+        SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
     }
-    SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
-
+    
     if (newKeypool && !NewKeyPool()) {
         return false;
     }
