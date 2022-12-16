@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-size_t split(const std::string &txt, std::vector<std::string> &strs, char ch);
+size_t split(const std::string& txt, std::vector<std::string>& strs, char ch);
 std::string getCachedSeedphrase();
 std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy);
 std::string CreateRandomSeedPhrase(bool wantToCache);
