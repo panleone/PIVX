@@ -452,6 +452,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-proxy=<ip:port>", "Connect through SOCKS5 proxy");
     strUsage += HelpMessageOpt("-proxyrandomize", strprintf("Randomize credentials for every proxy connection. This enables Tor stream isolation (default: %u)", DEFAULT_PROXYRANDOMIZE));
     strUsage += HelpMessageOpt("-seednode=<ip>", "Connect to a node to retrieve peer addresses, and disconnect");
+    strUsage += HelpMessageOpt("-seedphrase","Create the wallet with a custom seed phrase (works only on first opening)");
     strUsage += HelpMessageOpt("-timeout=<n>", strprintf("Specify connection timeout in milliseconds (minimum: 1, default: %d)", DEFAULT_CONNECT_TIMEOUT));
     strUsage += HelpMessageOpt("-torcontrol=<ip>:<port>", strprintf("Tor control port to use if onion listening enabled (default: %s)", DEFAULT_TOR_CONTROL));
     strUsage += HelpMessageOpt("-torpassword=<pass>", "Tor control port password (default: empty)");
