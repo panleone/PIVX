@@ -315,6 +315,7 @@ set(WALLET_SOURCES
         ./src/zpiv/zpivmodule.cpp
         ./src/zpiv/zpos.cpp
         ./src/stakeinput.cpp
+        ./src/wallet/bip39.cpp
         )
 add_library(WALLET_A STATIC ${BitcoinHeaders} ${WALLET_SOURCES})
 target_include_directories(WALLET_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
