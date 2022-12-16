@@ -1,12 +1,12 @@
 #include "wallet/bip39.h"
 
+#include "wallet/bip39_english.json.h"
 #include "crypter.h"
 #include "crypto/hmac_sha512.h"
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
 #include "random.h"
 #include "script/standard.h"
-
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -26,14 +26,19 @@ constexpr int WORD_SIZE = 11;
 constexpr int ITERATIONS = 2048;
 constexpr int SEED_LENGTH = 64;
 
-const char* _words[] =
-#include "wallet/bip39_english.txt"
-    ;
+std::vector<std::string> _words;
+
 std::string cached_seedphrase = "";
 // split a string into words
 std::string getCachedSeedphrase()
 {
     return cached_seedphrase;
+}
+void loadWords()
+{
+    if (_words.size() == 0) {
+        split(loadWordList(), _words, ' ');
+    }
 }
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch)
 {
@@ -84,7 +89,8 @@ static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 
 static int IsValidWord(const std::string& word)
 {
-    return std::find(std::begin(_words), std::end(_words), word) - std::begin(_words);
+    loadWords();
+    return std::find(_words.begin(), _words.end(), word) - _words.begin();
 }
 
 bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
@@ -145,6 +151,7 @@ std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
     std::vector<bool> entropy_bits = BytesToBits(data_vector);
     std::string seedphrase;
 
+    loadWords();
     for (size_t i = 0; i < data_vector.size() * BYTE_SIZE / WORD_SIZE; ++i) {
         if (i != 0) {
             seedphrase += " ";
