@@ -26,30 +26,31 @@ constexpr int WORD_SIZE = 11;
 constexpr int ITERATIONS = 2048;
 constexpr int SEED_LENGTH = 64;
 
-const char * _words[]  = 
+const char* _words[] =
 #include "bip39_english.txt"
-;
-std::string cached_seedphrase="";
-//split a string into words
-std::string getCachedSeedphrase(){
+    ;
+std::string cached_seedphrase = "";
+// split a string into words
+std::string getCachedSeedphrase()
+{
     return cached_seedphrase;
 }
-size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
+size_t split(const std::string& txt, std::vector<std::string>& strs, char ch)
 {
-    size_t pos = txt.find( ch );
+    size_t pos = txt.find(ch);
     size_t initialPos = 0;
     strs.clear();
 
     // Decompose statement
-    while( pos != std::string::npos ) {
-        strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+    while (pos != std::string::npos) {
+        strs.push_back(txt.substr(initialPos, pos - initialPos));
         initialPos = pos + 1;
 
-        pos = txt.find( ch, initialPos );
+        pos = txt.find(ch, initialPos);
     }
 
     // Add the last one
-    strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+    strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
     return strs.size();
 }
@@ -81,14 +82,12 @@ static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 }
 
 
-
-
 static int IsValidWord(const std::string& word)
 {
     return std::find(std::begin(_words), std::end(_words), word) - std::begin(_words);
 }
 
-bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
+bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
 {
     std::vector<std::string> words;
     boost::split(words, seedphrase, boost::is_any_of(" "));
@@ -112,24 +111,24 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
     // Divider index between entropy and checksum
     int divider = (word_bits.size() / 33) * 32;
     auto entropy_bytes = BitsToBytes(word_bits.begin(), word_bits.begin() + divider);
-    std::vector<bool> checksum_bits(word_bits.begin()+divider,word_bits.end());
-    
+    std::vector<bool> checksum_bits(word_bits.begin() + divider, word_bits.end());
+
     if (entropy_bytes.size() < 16 || entropy_bytes.size() > 32 || entropy_bytes.size() % 4 != 0) {
         return false;
     }
     std::array<uint8_t, 32> sha256;
     CSHA256().Write(&entropy_bytes[0], entropy_bytes.size()).Finalize(&sha256[0]);
-    std::vector<bool>  sha256_bits;
-    //we only need to convert in bits the first byte
-    for(int i = 7; i > -1; i--) {
-     sha256_bits.push_back(((sha256[0] >> i) & 0x01));
+    std::vector<bool> sha256_bits;
+    // we only need to convert in bits the first byte
+    for (int i = 7; i > -1; i--) {
+        sha256_bits.push_back(((sha256[0] >> i) & 0x01));
     }
     for (size_t i = 0; i < checksum_bits.size(); i++) {
         if (checksum_bits[i] != sha256_bits[i]) {
             return false;
         }
     }
-    if(wantToCache){
+    if (wantToCache) {
         cached_seedphrase = seedphrase;
     }
     return true;
@@ -138,7 +137,7 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase,bool wantToCache)
 
 std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
 {
-    std::vector<uint8_t> data_vector(entropy.begin(),entropy.end());
+    std::vector<uint8_t> data_vector(entropy.begin(), entropy.end());
     std::array<uint8_t, 32> sha256;
     // Sha256 the bytes
     CSHA256().Write(&entropy[0], entropy.size()).Finalize(&sha256[0]);
@@ -175,13 +174,12 @@ std::string CreateRandomSeedPhrase(bool wantToCache)
 {
     std::vector<uint8_t> random_bytes;
     random_bytes.resize(32);
-   
+
     // Put 32 random bytes in buffer
     GetStrongRandBytes(&random_bytes[0], random_bytes.size());
     std::string seedphrase = EntropyToSeedPhrase(random_bytes);
-    if(wantToCache){
-        cached_seedphrase=seedphrase;
+    if (wantToCache) {
+        cached_seedphrase = seedphrase;
     }
     return seedphrase;
 }
-

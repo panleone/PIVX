@@ -4,25 +4,25 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "wallet/scriptpubkeyman.h"
-#include "wallet/bip39.h"
 #include "crypter.h"
 #include "script/standard.h"
+#include "wallet/bip39.h"
 
+#include "crypto/hmac_sha512.h"
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
-#include "crypto/hmac_sha512.h"
 
 bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
 {
     if (CanGenerateKeys() && !force) {
         return false;
     }
-    if(!CheckValidityOfSeedPhrase(getCachedSeedphrase(),false)){
-         SetHDSeed(GenerateNewSeed(), force, memOnly);
-    }else{
+    if (!CheckValidityOfSeedPhrase(getCachedSeedphrase(), false)) {
+        SetHDSeed(GenerateNewSeed(), force, memOnly);
+    } else {
         SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
     }
-    
+
     if (newKeypool && !NewKeyPool()) {
         return false;
     }
@@ -91,7 +91,8 @@ bool ScriptPubKeyMan::CanGetAddresses(const uint8_t& type)
     return keypool_has_keys;
 }
 
-static int64_t GetOldestKeyTimeInPool(const std::set<int64_t>& setKeyPool, WalletBatch& batch) {
+static int64_t GetOldestKeyTimeInPool(const std::set<int64_t>& setKeyPool, WalletBatch& batch)
+{
     if (setKeyPool.empty()) {
         return GetTime();
     }
@@ -144,7 +145,7 @@ unsigned int ScriptPubKeyMan::GetStakingKeyPoolSize() const
 bool ScriptPubKeyMan::GetKeyFromPool(CPubKey& result, const uint8_t& changeType)
 {
     if (!CanGetAddresses(changeType)) {
-        LogPrintf("%s: Cannot get address, type: %d\n", __func__ ,changeType);
+        LogPrintf("%s: Cannot get address, type: %d\n", __func__, changeType);
         return false;
     }
 
@@ -190,7 +191,8 @@ bool ScriptPubKeyMan::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool, 
         bool fReturningStaking = type == HDChain::ChangeType::STAKING && isHDEnabled;
         bool use_split_keypool = set_pre_split_keypool.empty();
         std::set<int64_t>& setKeyPool = use_split_keypool ?
-                ( fReturningInternal ? setInternalKeyPool : (fReturningStaking ? setStakingKeyPool : setExternalKeyPool) ) : set_pre_split_keypool;
+                                            (fReturningInternal ? setInternalKeyPool : (fReturningStaking ? setStakingKeyPool : setExternalKeyPool)) :
+                                            set_pre_split_keypool;
 
         // Get the oldest key
         if (setKeyPool.empty()) {
@@ -227,7 +229,7 @@ bool ScriptPubKeyMan::ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool, 
         m_pool_key_to_index.erase(keypool.vchPubKey.GetID());
         LogPrintf("%s: keypool reserve %d\n", __func__, nIndex);
     }
-    //NotifyCanGetAddressesChanged();
+    // NotifyCanGetAddressesChanged();
     return true;
 }
 
@@ -261,7 +263,7 @@ void ScriptPubKeyMan::ReturnDestination(int64_t nIndex, const uint8_t& type, con
         CKeyID& pubkey_id = m_index_to_reserved_key.at(nIndex);
         m_pool_key_to_index[pubkey_id] = nIndex;
         m_index_to_reserved_key.erase(nIndex);
-        //NotifyCanGetAddressesChanged();
+        // NotifyCanGetAddressesChanged();
     }
     LogPrintf("%s: keypool return %d\n", __func__, nIndex);
 }
@@ -272,8 +274,7 @@ void ScriptPubKeyMan::MarkReserveKeysAsUsed(int64_t keypool_id)
     bool internal = setInternalKeyPool.count(keypool_id);
     bool staking = setStakingKeyPool.count(keypool_id);
     if (!internal) assert(setExternalKeyPool.count(keypool_id) || set_pre_split_keypool.count(keypool_id) || staking);
-    std::set<int64_t> *setKeyPool = internal ? &setInternalKeyPool : (set_pre_split_keypool.empty() ?
-            (staking ? &setStakingKeyPool : &setExternalKeyPool) : &set_pre_split_keypool);
+    std::set<int64_t>* setKeyPool = internal ? &setInternalKeyPool : (set_pre_split_keypool.empty() ? (staking ? &setStakingKeyPool : &setExternalKeyPool) : &set_pre_split_keypool);
     auto it = setKeyPool->begin();
 
     WalletBatch batch(wallet->GetDBHandle());
@@ -287,8 +288,7 @@ void ScriptPubKeyMan::MarkReserveKeysAsUsed(int64_t keypool_id)
             m_pool_key_to_index.erase(keyid);
             // add missing receive addresses to the AddressBook
             if (!internal && !wallet->HasAddressBook(keyid)) {
-                wallet->SetAddressBook(keyid, "", staking ? AddressBook::AddressBookPurpose::COLD_STAKING
-                                                          : AddressBook::AddressBookPurpose::RECEIVE);
+                wallet->SetAddressBook(keyid, "", staking ? AddressBook::AddressBookPurpose::COLD_STAKING : AddressBook::AddressBookPurpose::RECEIVE);
             }
         }
         batch.ErasePool(index);
@@ -388,13 +388,13 @@ bool ScriptPubKeyMan::TopUp(unsigned int kpSize)
         if (kpSize > 0)
             nTargetSize = kpSize;
         else
-            nTargetSize = std::max(gArgs.GetArg("-keypool", DEFAULT_KEYPOOL_SIZE), (int64_t) 0);
+            nTargetSize = std::max(gArgs.GetArg("-keypool", DEFAULT_KEYPOOL_SIZE), (int64_t)0);
 
         // Count amount of available keys (internal, external)
         // make sure the keypool of external and internal keys fits the user selected target (-keypool)
-        int64_t missingExternal = std::max(std::max((int64_t) nTargetSize, (int64_t) 1) - (int64_t)setExternalKeyPool.size(), (int64_t) 0);
-        int64_t missingInternal = std::max(std::max((int64_t) nTargetSize, (int64_t) 1) - (int64_t)setInternalKeyPool.size(), (int64_t) 0);
-        int64_t missingStaking = std::max(std::max((int64_t) nTargetSize, (int64_t) 1) - (int64_t)setStakingKeyPool.size(), (int64_t) 0);
+        int64_t missingExternal = std::max(std::max((int64_t)nTargetSize, (int64_t)1) - (int64_t)setExternalKeyPool.size(), (int64_t)0);
+        int64_t missingInternal = std::max(std::max((int64_t)nTargetSize, (int64_t)1) - (int64_t)setInternalKeyPool.size(), (int64_t)0);
+        int64_t missingStaking = std::max(std::max((int64_t)nTargetSize, (int64_t)1) - (int64_t)setStakingKeyPool.size(), (int64_t)0);
 
         if (!IsHDEnabled()) {
             // don't create extra internal or staking keys
@@ -415,7 +415,7 @@ bool ScriptPubKeyMan::TopUp(unsigned int kpSize)
         }
     }
     // TODO: Implement this.
-    //NotifyCanGetAddressesChanged();
+    // NotifyCanGetAddressesChanged();
     return true;
 }
 
@@ -427,7 +427,7 @@ void ScriptPubKeyMan::GeneratePool(WalletBatch& batch, int64_t targetSize, const
     }
 }
 
-void ScriptPubKeyMan::AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const uint8_t& type, WalletBatch &batch)
+void ScriptPubKeyMan::AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const uint8_t& type, WalletBatch& batch)
 {
     LOCK(wallet->cs_wallet);
     assert(m_max_keypool_index < std::numeric_limits<int64_t>::max()); // How in the hell did you use so many keys?
@@ -451,7 +451,7 @@ void ScriptPubKeyMan::AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const uint8_
 /**
  * Generate a new key and stores it in db.
  */
-CPubKey ScriptPubKeyMan::GenerateNewKey(WalletBatch &batch, const uint8_t& type)
+CPubKey ScriptPubKeyMan::GenerateNewKey(WalletBatch& batch, const uint8_t& type)
 {
     AssertLockHeld(wallet->cs_wallet);
     bool fCompressed = wallet->CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
@@ -486,17 +486,17 @@ CPubKey ScriptPubKeyMan::GenerateNewKey(WalletBatch &batch, const uint8_t& type)
     return pubkey;
 }
 
-void ScriptPubKeyMan::DeriveNewChildKey(WalletBatch &batch, CKeyMetadata& metadata, CKey& secret, const uint8_t& changeType)
+void ScriptPubKeyMan::DeriveNewChildKey(WalletBatch& batch, CKeyMetadata& metadata, CKey& secret, const uint8_t& changeType)
 {
     AssertLockHeld(wallet->cs_wallet);
     // Use BIP44 keypath scheme i.e. m / purpose' / coin_type' / account' / change / address_index
-    CKey seed;                     //seed (256bit)
-    CExtKey masterKey;             //hd master key
-    CExtKey purposeKey;            //key at m/purpose' --> key at m/44'
-    CExtKey cointypeKey;           //key at m/purpose'/coin_type'  --> key at m/44'/119'
-    CExtKey accountKey;            //key at m/purpose'/coin_type'/account' ---> key at m/44'/119'/account_num'
-    CExtKey changeKey;             //key at m/purpose'/coin_type'/account'/change ---> key at m/44'/119'/account_num'/change', external = 0' or internal = 1'.
-    CExtKey childKey;              //key at m/purpose'/coin_type'/account'/change/address_index ---> key at m/44'/119'/account_num'/change'/<n>'
+    CKey seed;           // seed (256bit)
+    CExtKey masterKey;   // hd master key
+    CExtKey purposeKey;  // key at m/purpose' --> key at m/44'
+    CExtKey cointypeKey; // key at m/purpose'/coin_type'  --> key at m/44'/119'
+    CExtKey accountKey;  // key at m/purpose'/coin_type'/account' ---> key at m/44'/119'/account_num'
+    CExtKey changeKey;   // key at m/purpose'/coin_type'/account'/change ---> key at m/44'/119'/account_num'/change', external = 0' or internal = 1'.
+    CExtKey childKey;    // key at m/purpose'/coin_type'/account'/change/address_index ---> key at m/44'/119'/account_num'/change'/<n>'
 
     // For now only one account.
     int nAccountNumber = 0;
@@ -515,7 +515,7 @@ void ScriptPubKeyMan::DeriveNewChildKey(WalletBatch &batch, CKeyMetadata& metada
     // derive m/purpose'/coin_type'/account' // Hardcoded to account 0 for now.
     cointypeKey.Derive(accountKey, nAccountNumber | BIP32_HARDENED_KEY_LIMIT);
     // derive m/purpose'/coin_type'/account'/change'
-    accountKey.Derive(changeKey,  changeType | BIP32_HARDENED_KEY_LIMIT);
+    accountKey.Derive(changeKey, changeType | BIP32_HARDENED_KEY_LIMIT);
 
     // derive child key at next index, skip keys already known to the wallet
     do {
@@ -530,7 +530,7 @@ void ScriptPubKeyMan::DeriveNewChildKey(WalletBatch &batch, CKeyMetadata& metada
         // Child chain counter
         uint32_t& chainCounter = hdChain.GetChainCounter(changeType);
         changeKey.Derive(childKey, chainCounter | BIP32_HARDENED_KEY_LIMIT);
-        metadata.key_origin.path.push_back( changeType | BIP32_HARDENED_KEY_LIMIT);
+        metadata.key_origin.path.push_back(changeType | BIP32_HARDENED_KEY_LIMIT);
         metadata.key_origin.path.push_back(chainCounter | BIP32_HARDENED_KEY_LIMIT);
         chainCounter++;
 
@@ -545,16 +545,16 @@ void ScriptPubKeyMan::DeriveNewChildKey(WalletBatch &batch, CKeyMetadata& metada
         throw std::runtime_error(std::string(__func__) + ": Writing HD chain model failed");
 }
 
-void ScriptPubKeyMan::LoadKeyPool(int64_t nIndex, const CKeyPool &keypool)
+void ScriptPubKeyMan::LoadKeyPool(int64_t nIndex, const CKeyPool& keypool)
 {
     AssertLockHeld(wallet->cs_wallet);
     if (keypool.m_pre_split) {
         set_pre_split_keypool.insert(nIndex);
     } else if (keypool.IsInternal()) {
         setInternalKeyPool.insert(nIndex);
-    } else if (keypool.IsExternal()){
+    } else if (keypool.IsExternal()) {
         setExternalKeyPool.insert(nIndex);
-    } else if (keypool.IsStaking()){
+    } else if (keypool.IsStaking()) {
         setStakingKeyPool.insert(nIndex);
     } else {
         throw std::runtime_error(std::string(__func__) + ": invalid CKeypool type");
@@ -591,7 +591,7 @@ bool ScriptPubKeyMan::AddKeyPubKeyWithDB(WalletBatch& batch, const CKey& secret,
     AssertLockHeld(wallet->cs_wallet);
 
     // Make sure we aren't adding private keys to private key disabled wallets
-    //assert(!m_storage.IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS));
+    // assert(!m_storage.IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS));
 
     // FillableSigningProvider has no concept of wallet databases, but calls AddCryptedKey
     // which is overridden below.  To avoid flushes, the database handle is
@@ -608,7 +608,7 @@ bool ScriptPubKeyMan::AddKeyPubKeyWithDB(WalletBatch& batch, const CKey& secret,
     return true;
 }
 
-bool ScriptPubKeyMan::AddKeyPubKeyInner(const CKey& key, const CPubKey &pubkey)
+bool ScriptPubKeyMan::AddKeyPubKeyInner(const CKey& key, const CPubKey& pubkey)
 {
     LOCK(wallet->cs_KeyStore);
     if (!wallet->HasEncryptionKeys()) {
@@ -632,9 +632,10 @@ bool ScriptPubKeyMan::AddKeyPubKeyInner(const CKey& key, const CPubKey &pubkey)
 }
 
 ////////////////////// Seed Generation ///////////////////////////////////
-CPubKey ScriptPubKeyMan::AssignNewSeed(std::vector<uint8_t> seed){
+CPubKey ScriptPubKeyMan::AssignNewSeed(std::vector<uint8_t> seed)
+{
     CKey secret;
-    secret.Set(&seed[0],&seed[0]+32, true);    
+    secret.Set(&seed[0], &seed[0] + 32, true);
     return DeriveNewSeed(secret);
 }
 CPubKey ScriptPubKeyMan::GenerateNewSeed()
@@ -683,13 +684,13 @@ void ScriptPubKeyMan::SetHDSeed(const CPubKey& seed, bool force, bool memOnly)
     // the child index counter in the database
     // as a hdChain object
     CHDChain newHdChain;
-    if (!newHdChain.SetSeed(seed.GetID()) ) {
+    if (!newHdChain.SetSeed(seed.GetID())) {
         throw std::runtime_error(std::string(__func__) + ": set hd seed failed");
     }
 
     SetHDChain(newHdChain, memOnly);
     // TODO: Connect this if is needed.
-    //NotifyCanGetAddressesChanged();
+    // NotifyCanGetAddressesChanged();
 }
 
 void ScriptPubKeyMan::SetHDChain(CHDChain& chain, bool memonly)
