@@ -27,7 +27,7 @@ constexpr int ITERATIONS = 2048;
 constexpr int SEED_LENGTH = 64;
 
 const char* _words[] =
-#include "bip39_english.txt"
+#include "wallet/bip39_english.txt"
     ;
 std::string cached_seedphrase = "";
 // split a string into words
