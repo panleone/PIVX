@@ -15,7 +15,7 @@ def read_dump(file_name, addrs, hd_master_addr_old):
     Read the given dump, count the addrs that match, count change and reserve.
     Also check that the old hd_master is inactive
     """
-    with open(file_name, encoding='utf8') as inputfile:
+    with open(file_name, encoding="utf8") as inputfile:
         found_addr = 0
         found_addr_chg = 0
         found_addr_rsv = 0
@@ -30,7 +30,7 @@ def read_dump(file_name, addrs, hd_master_addr_old):
                 date = key_date_label[1]
                 keytype = key_date_label[2]
 
-                imported_key = date == '1970-01-01T00:00:01Z'
+                imported_key = date == "1970-01-01T00:00:01Z"
                 if imported_key:
                     # Imported keys have multiple addresses, no label (keypath) and timestamp
                     # Skip them
@@ -41,8 +41,8 @@ def read_dump(file_name, addrs, hd_master_addr_old):
                 keypath = None
 
                 if keytype == "hdseed=1":
-                    # ensure we have generated a new hd master key
-                    assert hd_master_addr_old != addr
+                    # ensure the hd seed did not change after encryption
+                    assert hd_master_addr_old == addr or hd_master_addr_old is None
                     hd_master_addr_ret = addr
                 elif keytype == "script=1":
                     # scripts don't have keypaths
@@ -52,8 +52,12 @@ def read_dump(file_name, addrs, hd_master_addr_old):
 
                 # count key types
                 for addrObj in addrs:
-                    if addrObj['address'] == addr.split(",")[0] and addrObj['hdkeypath'] == keypath and keytype == "label=":
-                        if addr.startswith('x') or addr.startswith('y'):
+                    if (
+                        addrObj["address"] == addr.split(",")[0]
+                        and addrObj["hdkeypath"] == keypath
+                        and keytype == "label="
+                    ):
+                        if addr.startswith("x") or addr.startswith("y"):
                             # P2PKH address
                             found_addr += 1
                         # else: todo: add staking/anonymous addresses here
@@ -117,7 +121,7 @@ class WalletDumpTest(PivxTestFramework):
         found_addr, found_addr_chg, found_addr_rsv, hd_master_addr_enc = \
             read_dump(dumpEncrypted, addrs, hd_master_addr_unenc)
         assert_equal(found_addr, test_addr_count)
-        assert_equal(found_addr_chg, 90 * 3 + 1 + 50)  # old reserve keys are marked as change now. todo: The +1 needs to be removed once this is updated (master seed taken as an internal key)
+        assert_equal(found_addr_chg, 50)  # old reserve keys are eliminated from the keypool
         assert_equal(found_addr_rsv, 90 * 3) # 90 external + 90 internal + 90 staking
 
         # Overwriting should fail
