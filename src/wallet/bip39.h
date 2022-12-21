@@ -6,6 +6,7 @@
 
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch);
 std::string getCachedSeedphrase();
+void resetCachedSeedphrase();
 std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy);
 std::string CreateRandomSeedPhrase(bool wantToCache);
 bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache);

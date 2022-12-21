@@ -1,12 +1,12 @@
 #include "wallet/bip39.h"
 
-#include "wallet/bip39_english.json.h"
 #include "crypter.h"
 #include "crypto/hmac_sha512.h"
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
 #include "random.h"
 #include "script/standard.h"
+#include "wallet/bip39_english.json.h"
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -29,11 +29,16 @@ constexpr int SEED_LENGTH = 64;
 std::vector<std::string> _words;
 
 std::string cached_seedphrase = "";
-// split a string into words
+
 std::string getCachedSeedphrase()
 {
     return cached_seedphrase;
 }
+void resetCachedSeedphrase()
+{
+    cached_seedphrase = "";
+}
+// split a string into words
 void loadWords()
 {
     if (_words.size() == 0) {

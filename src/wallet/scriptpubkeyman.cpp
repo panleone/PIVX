@@ -21,6 +21,7 @@ bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
         SetHDSeed(GenerateNewSeed(), force, memOnly);
     } else {
         SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
+        resetCachedSeedphrase();
     }
 
     if (newKeypool && !NewKeyPool()) {
