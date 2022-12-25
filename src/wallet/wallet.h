@@ -28,11 +28,11 @@
 #include "utilstrencodings.h"
 #include "validationinterface.h"
 #include "script/ismine.h"
+#include "wallet/bip39.h"
 #include "wallet/scriptpubkeyman.h"
 #include "sapling/saplingscriptpubkeyman.h"
 #include "validation.h"
 #include "wallet/walletdb.h"
-#include "wallet/bip39.h"
 
 #include <algorithm>
 #include <atomic>

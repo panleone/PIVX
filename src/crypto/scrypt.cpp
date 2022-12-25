@@ -109,9 +109,7 @@ PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
  * Compute PBKDF2(passwd, salt, c, dkLen) using HMAC-SHA512 as the PRF, and
  * write the output to buf.
  */
-void
-PBKDF2_SHA512(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
-              size_t saltlen, uint64_t c, uint8_t *buf, size_t dkLen)
+void PBKDF2_SHA512(const uint8_t* passwd, size_t passwdlen, const uint8_t* salt, size_t saltlen, uint64_t c, uint8_t* buf, size_t dkLen)
 {
     size_t i;
     uint8_t ivec[4];
@@ -150,7 +148,6 @@ PBKDF2_SHA512(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
             clen = 64;
         memcpy(&buf[i * 64], T, clen);
     }
-
 }
 
 

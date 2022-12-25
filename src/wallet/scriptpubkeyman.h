@@ -21,20 +21,20 @@ static const uint32_t BIP32_HARDENED_KEY_LIMIT = 0x80000000;
  * when a scriptPubKey has been used. It also handles when and how to store a scriptPubKey
  * and its related scripts and keys, including encryption.
  */
-class ScriptPubKeyMan
-{
+class ScriptPubKeyMan {
+
 public:
     ScriptPubKeyMan(CWallet* parent) : wallet(parent) {}
-    ~ScriptPubKeyMan(){};
+    ~ScriptPubKeyMan() {};
 
     /* Set the HD chain model (chain child index counters) */
     void SetHDChain(CHDChain& chain, bool memonly);
     const CHDChain& GetHDChain() const { return hdChain; }
 
     /** Sets up the key generation stuff, i.e. generates new HD seeds and sets them as active.
-     * Returns false if already setup or setup fails, true if setup is successful
-     * Set force=true to make it re-setup if already setup, used for upgrades
-     */
+      * Returns false if already setup or setup fails, true if setup is successful
+      * Set force=true to make it re-setup if already setup, used for upgrades
+      */
     bool SetupGeneration(bool newKeypool = true, bool force = false, bool memOnly = false);
 
     /** Upgrades the wallet to the specified version */
@@ -75,16 +75,16 @@ public:
     void SetHDSeed(const CPubKey& key, bool force = false, bool memOnly = false);
 
     //! Load a keypool entry
-    void LoadKeyPool(int64_t nIndex, const CKeyPool& keypool);
+    void LoadKeyPool(int64_t nIndex, const CKeyPool &keypool);
     //! Key pool
     bool NewKeyPool();
     //! Update pre HD keys in db with the pre-split flag enabled.
     void MarkPreSplitKeys();
 
     /** Fills internal address pool. Use within ScriptPubKeyMan implementations should be used sparingly and only
-     * when something from the address pool is removed, excluding GetNewDestination and GetReservedDestination.
-     * External wallet code is primarily responsible for topping up prior to fetching new addresses
-     */
+      * when something from the address pool is removed, excluding GetNewDestination and GetReservedDestination.
+      * External wallet code is primarily responsible for topping up prior to fetching new addresses
+      */
     bool TopUp(unsigned int size = 0);
 
     //! Mark unused addresses as being used
@@ -97,7 +97,7 @@ public:
 
 
     //! Fetches a key from the keypool
-    bool GetKeyFromPool(CPubKey& key, const uint8_t& changeType = HDChain::ChangeType::EXTERNAL);
+    bool GetKeyFromPool(CPubKey &key, const uint8_t& changeType = HDChain::ChangeType::EXTERNAL);
     //! Reserve + fetch a key from the keypool
     bool GetReservedKey(const uint8_t& changeType, int64_t& index, CKeyPool& keypool);
 
@@ -131,7 +131,7 @@ private:
     CHDChain hdChain;
 
     /* TODO: This has not been implemented yet.. */
-    WalletBatch* encrypted_batch = nullptr;
+    WalletBatch *encrypted_batch = nullptr;
 
     // Key pool maps
     std::set<int64_t> setInternalKeyPool;
@@ -143,16 +143,16 @@ private:
     std::map<int64_t, CKeyID> m_index_to_reserved_key;
 
     /* */
-    bool AddKeyPubKeyInner(const CKey& key, const CPubKey& pubkey);
+    bool AddKeyPubKeyInner(const CKey& key, const CPubKey &pubkey);
 
     //! Adds a key to the store, and saves it to disk.
-    bool AddKeyPubKeyWithDB(WalletBatch& batch, const CKey& key, const CPubKey& pubkey);
+    bool AddKeyPubKeyWithDB(WalletBatch &batch,const CKey& key, const CPubKey &pubkey);
     /* Complete me */
     void AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const uint8_t& type, WalletBatch& batch);
     void GeneratePool(WalletBatch& batch, int64_t targetSize, const uint8_t& type);
 
     /* HD derive new child key (on internal or external chain) */
-    void DeriveNewChildKey(WalletBatch& batch, CKeyMetadata& metadata, CKey& secret, const uint8_t& type = HDChain::ChangeType::EXTERNAL);
+    void DeriveNewChildKey(WalletBatch &batch, CKeyMetadata& metadata, CKey& secret, const uint8_t& type = HDChain::ChangeType::EXTERNAL);
 
     /**
      * Marks all keys in the keypool up to and including reserve_key as used.

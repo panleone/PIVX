@@ -5,10 +5,10 @@
 #ifndef WELCOMECONTENTWIDGET_H
 #define WELCOMECONTENTWIDGET_H
 
-#include <QWidget>
+#include "qt/pivx/seedslot.h"
 #include <QDialog>
 #include <QPushButton>
-#include "qt/pivx/seedslot.h"
+#include <QWidget>
 class OptionsModel;
 
 namespace Ui {
@@ -45,7 +45,7 @@ private:
     QPushButton *icConfirm2;
     QPushButton *icConfirm3;
     QPushButton *icConfirm4;
-    QPushButton *icConfirm5;
+    QPushButton* icConfirm5;
     QPushButton *backButton;
     QPushButton *nextButton;
 
