@@ -1468,7 +1468,7 @@
                    <number>0</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>40</number>
+                   <number>30</number>
                   </property>
                   <item>
                    <spacer name="horizontalSpacer_10">
@@ -1554,20 +1554,68 @@
                  <number>12</number>
                 </property>
                 <item>
-                 <spacer name="verticalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
+                 <widget class="QWidget" name="widget" native="true">
+                  <property name="minimumSize">
                    <size>
-                    <width>20</width>
+                    <width>0</width>
                     <height>60</height>
                    </size>
                   </property>
-                 </spacer>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>60</height>
+                   </size>
+                  </property>
+                  <widget class="QWidget" name="verticalLayoutWidget">
+                   <property name="geometry">
+                    <rect>
+                     <x>-1</x>
+                     <y>0</y>
+                     <width>541</width>
+                     <height>61</height>
+                    </rect>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_12">
+                    <item>
+                     <spacer name="verticalSpacer_12">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="error_seed_phrase">
+                      <property name="text">
+                       <string>Error: seed phrase is not valid!</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_13">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
                 </item>
                 <item alignment="Qt::AlignHCenter">
                  <widget class="QLabel" name="labelTitle6">
@@ -1719,7 +1767,7 @@
                    <number>0</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>40</number>
+                   <number>30</number>
                   </property>
                   <item>
                    <spacer name="horizontalSpacer_10">

@@ -6,11 +6,11 @@
 #include "config/pivx-config.h"
 #endif
 
-#include "qt/pivx/welcomecontentwidget.h"
+#include "guiutil.h"
 #include "qt/pivx/forms/ui_welcomecontentwidget.h"
+#include "qt/pivx/welcomecontentwidget.h"
 #include "qwidget.h"
 #include "wallet/bip39.h"
-#include "guiutil.h"
 
 #include <QDir>
 #include <QFile>
@@ -104,6 +104,9 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->pushName4->setEnabled(false);
     ui->pushName5->setProperty("cssClass", "btn-welcome-name-check");
     ui->pushName5->setEnabled(false);
+
+    ui->error_seed_phrase->setProperty("cssClass","text-warning-small");
+    ui->error_seed_phrase->setVisible(false);
 
     ui->stackedWidget->setCurrentIndex(0);
     std::string recovery_phrase = CreateRandomSeedPhrase(true);
@@ -292,7 +295,7 @@ void WelcomeContentWidget::onNextClicked()
             icConfirm2->setVisible(true);
             break;
         }
-        case 3:{
+        case 3: {
             ui->stackedWidget->setCurrentIndex(4);
             ui->pushNumber4->setChecked(true);
             ui->pushName5->setChecked(false);
@@ -314,7 +317,7 @@ void WelcomeContentWidget::onNextClicked()
             icConfirm4->setVisible(true);
             nextButton->hide();
             nextButton->setDisabled(true);
-        break;
+            break;
         }
         case 5:{
             isOk = true;
@@ -389,7 +392,6 @@ void WelcomeContentWidget::onBackClicked()
             nextButton->show();
             nextButton->setDisabled(false);
         }
-
     }
 
     if (pos == 0) {
@@ -400,6 +402,7 @@ void WelcomeContentWidget::onBackClicked()
 void WelcomeContentWidget::onImportClicked()
 {
     ui->stackedWidget->setCurrentIndex(6);
+    ui->error_seed_phrase->setVisible(false);
 }
 void WelcomeContentWidget::onGenerateClicked()
 {
@@ -425,7 +428,7 @@ void WelcomeContentWidget::onImportSeedPhraseClicked()
         isOk = true;
         accept();
     } else {
-        // HANDLE ERROR
+        ui->error_seed_phrase->setVisible(true);
     }
 }
 
