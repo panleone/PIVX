@@ -424,10 +424,21 @@ void WelcomeContentWidget::onImportSeedPhraseClicked()
             input += " ";
         }
     }
-    if (CheckValidityOfSeedPhrase(input, true)) {
+    int result = CheckValidityOfSeedPhrase(input, true);
+    if (result == BIP39_ERRORS::BIP39_OK) {
         isOk = true;
         accept();
+    } else if (result == BIP39_ERRORS::WRONG_CHECKSUM) {
+        ui->error_seed_phrase->setText("Error: seed phrase is not valid!");
+    } else if (result == BIP39_ERRORS::WRONG_ENTROPY) {
+        ui->error_seed_phrase->setText("Error: seed phrase has not enough words");
+        ui->error_seed_phrase->setVisible(true);
     } else {
+        if (this->input_slots[result]->input_line->text().length() == 0) {
+            ui->error_seed_phrase->setText("Error: there is one or more empty words");
+        } else {
+            ui->error_seed_phrase->setText("Error: word " + this->input_slots[result]->input_line->text() + " not in wordlist");
+        }
         ui->error_seed_phrase->setVisible(true);
     }
 }

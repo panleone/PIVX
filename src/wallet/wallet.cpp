@@ -4251,8 +4251,8 @@ CWallet* CWallet::CreateWalletFromFile(const std::string& name, const fs::path& 
             LogPrintf("Creating HD Wallet\n");
 
             // if you are using pivxd
-            if (!CheckValidityOfSeedPhrase(getCachedSeedphrase(), false)) {
-                if (CheckValidityOfSeedPhrase(gArgs.GetArg("-seedphrase", ""), true)) {
+            if (CheckValidityOfSeedPhrase(getCachedSeedphrase(), false) != BIP39_ERRORS::BIP39_OK) {
+                if (CheckValidityOfSeedPhrase(gArgs.GetArg("-seedphrase", ""), true) == BIP39_ERRORS::BIP39_OK) {
                     LogPrintf("Valid seed phrase!");
 
                 } else {

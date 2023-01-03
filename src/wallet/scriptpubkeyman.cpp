@@ -18,7 +18,7 @@ bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
         return false;
     }
 
-    if (!CheckValidityOfSeedPhrase(getCachedSeedphrase(), false)) {
+    if (CheckValidityOfSeedPhrase(getCachedSeedphrase(), false) != BIP39_ERRORS::BIP39_OK) {
         SetHDSeed(GenerateNewSeed(), force, memOnly);
     } else {
         SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);

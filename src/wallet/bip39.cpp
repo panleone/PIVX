@@ -98,21 +98,23 @@ static int IsValidWord(const std::string& word)
     return std::find(_words.begin(), _words.end(), word) - _words.begin();
 }
 
-bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
+
+int CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
 {
     std::vector<std::string> words;
     boost::split(words, seedphrase, boost::is_any_of(" "));
 
     if (words.size() % 3 != 0) {
-        return false;
+        return BIP39_ERRORS::WRONG_ENTROPY;
     }
 
     std::vector<bool> word_bits;
 
-    for (auto&& word : words) {
+    for (size_t i = 0; i < words.size(); i++) {
+        const std::string& word = words[i];
         int index = IsValidWord(word);
         if (index == 2048) {
-            return false;
+            return i; // index of the wrong word
         }
         // Convert index to 11 bit word
         for (int i = WORD_SIZE - 1; i >= 0; i--) {
@@ -125,7 +127,7 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
     std::vector<bool> checksum_bits(word_bits.begin() + divider, word_bits.end());
 
     if (entropy_bytes.size() < 16 || entropy_bytes.size() > 32 || entropy_bytes.size() % 4 != 0) {
-        return false;
+        return BIP39_ERRORS::WRONG_ENTROPY;
     }
     std::array<uint8_t, 32> sha256;
     CSHA256().Write(&entropy_bytes[0], entropy_bytes.size()).Finalize(&sha256[0]);
@@ -136,13 +138,13 @@ bool CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
     }
     for (size_t i = 0; i < checksum_bits.size(); i++) {
         if (checksum_bits[i] != sha256_bits[i]) {
-            return false;
+            return BIP39_ERRORS::WRONG_CHECKSUM;
         }
     }
     if (wantToCache) {
         cached_seedphrase = seedphrase;
     }
-    return true;
+    return BIP39_ERRORS::BIP39_OK;
 }
 
 
