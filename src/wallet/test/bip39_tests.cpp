@@ -53,7 +53,7 @@ public:
 struct TestVector2 {
     std::string seedphrase;
     int isValid;
-    TestVector2(const std::string& seedphrase, bool is_valid)
+    TestVector2(const std::string& seedphrase, int is_valid)
     {
         this->isValid = is_valid;
         this->seedphrase = seedphrase;
@@ -65,7 +65,7 @@ TestVector1 b39_test2("7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f", "legal winner thank ye
 TestVector1 b39_test3("0000000000000000000000000000000000000000000000000000000000000000", "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art", "bda85446c68413707090a52022edd26a1c9462295029f2e60cd7c4f2bbd3097170af7a4d73245cafa9c3cca8d561a7c3de6f5d4a10be8ed2a5e608d68f92fcc8");
 
 TestVector2 b39_test1_2("legal winner thank year wave sausage worth useful legal winner thank yellow", BIP39_ERRORS::BIP39_OK);
-TestVector2 b39_test2_2("legal winner thank weak wave sausage worth useful legal winner thank yellow", BIP39_ERRORS::WRONG_CHECKSUM);
+TestVector2 b39_test2_2("legal winner thank wear wave sausage worth useful legal winner thank yellow", BIP39_ERRORS::WRONG_CHECKSUM);
 TestVector2 b39_test3_2("panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside", BIP39_ERRORS::BIP39_OK);
 static void RunTest(const TestVector1& test)
 {
