@@ -21,7 +21,7 @@
 
 /* -- Helper static functions -- */
 
-static bool CheckService(const CService& addr, CValidationState& state)
+bool CheckService(const CService& addr, CValidationState& state)
 {
     if (!addr.IsValid()) {
         return state.DoS(10, false, REJECT_INVALID, "bad-protx-ipaddr");
@@ -182,12 +182,9 @@ static bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev,
         // This is checked only when pindexPrev is not null (thus during ConnectBlock-->CheckSpecialTx),
         // because this is a contextual check: we need the updated utxo set, to verify that
         // the coin exists and it is unspent.
-        Coin coin;
-        if (!view->GetUTXOCoin(pl.collateralOutpoint, coin)) {
-            return state.DoS(10, false, REJECT_INVALID, "bad-protx-collateral");
-        }
+        CTxOut out = tx.vout[pl.collateralOutpoint.n];
         CTxDestination collateralTxDest;
-        if (!CheckCollateralOut(coin.out, pl, state, collateralTxDest)) {
+        if (!CheckCollateralOut(out, pl, state, collateralTxDest)) {
             // pass the state returned by the function above
             return false;
         }
@@ -641,18 +638,3 @@ bool UndoSpecialTxsInBlock(const CBlock& block, const CBlockIndex* pindex)
     return true;
 }
 
-uint256 CalcTxInputsHash(const CTransaction& tx)
-{
-    CHashWriter hw(CLIENT_VERSION, SER_GETHASH);
-    // transparent inputs
-    for (const CTxIn& in: tx.vin) {
-        hw << in.prevout;
-    }
-    // shield inputs
-    if (tx.hasSaplingData()) {
-        for (const SpendDescription& sd: tx.sapData->vShieldedSpend) {
-            hw << sd.nullifier;
-        }
-    }
-    return hw.GetHash();
-}

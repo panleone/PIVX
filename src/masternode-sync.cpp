@@ -107,39 +107,49 @@ int CMasternodeSync::GetNextAsset(int currentAsset)
 
 void CMasternodeSync::SwitchToNextAsset()
 {
-    int RequestedMasternodeAssets = g_tiertwo_sync_state.GetSyncPhase();
-    if (RequestedMasternodeAssets == MASTERNODE_SYNC_INITIAL ||
-            RequestedMasternodeAssets == MASTERNODE_SYNC_FAILED) {
+    int current_sync_phase = g_tiertwo_sync_state.GetSyncPhase();
+    if (current_sync_phase == MASTERNODE_SYNC_INITIAL ||
+            current_sync_phase == MASTERNODE_SYNC_FAILED) {
         ClearFulfilledRequest();
     }
-    const int nextAsset = GetNextAsset(RequestedMasternodeAssets);
-    if (nextAsset == MASTERNODE_SYNC_FINISHED) {
-        LogPrintf("%s - Sync has finished\n", __func__);
-    }
-    g_tiertwo_sync_state.SetCurrentSyncPhase(nextAsset);
+    const int next_sync_phase = GetNextAsset(current_sync_phase);
+    if (current_sync_phase == next_sync_phase) return; // nothing to do
+    g_tiertwo_sync_state.SetCurrentSyncPhase(next_sync_phase);
     RequestedMasternodeAttempt = 0;
     nAssetSyncStarted = GetTime();
+    LogPrintf("%s - %s\n", __func__, GetSyncStatus(next_sync_phase));
+
+    // Update the last sync finished time
+    if (next_sync_phase == MASTERNODE_SYNC_FINISHED) {
+        lastSyncFinishedTime = GetTime();
+    }
 }
 
 std::string CMasternodeSync::GetSyncStatus()
 {
-    switch (g_tiertwo_sync_state.GetSyncPhase()) {
-    case MASTERNODE_SYNC_INITIAL:
-        return _("MNs synchronization pending...");
-    case MASTERNODE_SYNC_SPORKS:
-        return _("Synchronizing sporks...");
-    case MASTERNODE_SYNC_LIST:
-        return _("Synchronizing masternodes...");
-    case MASTERNODE_SYNC_MNW:
-        return _("Synchronizing masternode winners...");
-    case MASTERNODE_SYNC_BUDGET:
-        return _("Synchronizing budgets...");
-    case MASTERNODE_SYNC_FAILED:
-        return _("Synchronization failed");
-    case MASTERNODE_SYNC_FINISHED:
-        return _("Synchronization finished");
+    return GetSyncStatus(g_tiertwo_sync_state.GetSyncPhase());
+}
+
+std::string CMasternodeSync::GetSyncStatus(int phase)
+{
+    switch (phase) {
+        case MASTERNODE_SYNC_INITIAL:
+            return _("MNs synchronization pending...");
+        case MASTERNODE_SYNC_SPORKS:
+            return _("Synchronizing sporks...");
+        case MASTERNODE_SYNC_LIST:
+            return _("Synchronizing masternodes...");
+        case MASTERNODE_SYNC_MNW:
+            return _("Synchronizing masternode winners...");
+        case MASTERNODE_SYNC_BUDGET:
+            return _("Synchronizing budgets...");
+        case MASTERNODE_SYNC_FAILED:
+            return _("Synchronization failed");
+        case MASTERNODE_SYNC_FINISHED:
+            return _("Synchronization finished");
+        default:
+            return _("Unknown sync phase");
     }
-    return "";
 }
 
 void CMasternodeSync::ProcessSyncStatusMsg(int nItemID, int nCount)
@@ -178,7 +188,7 @@ void CMasternodeSync::ProcessSyncStatusMsg(int nItemID, int nCount)
 
 void CMasternodeSync::ClearFulfilledRequest()
 {
-    g_netfulfilledman.Clear();
+    g_netfulfilledman.ClearRequestsGlobal({"getspork", "mnsync", "mnwsync", "busync"});
 }
 
 void CMasternodeSync::Process()
@@ -203,6 +213,12 @@ void CMasternodeSync::Process()
         if (isRegTestNet) {
             return;
         }
+
+        // Only try to reset the sync process if the node finished syncing an hour ago
+        if (lastSyncFinishedTime + 60 * 60 > now) {
+            return;
+        }
+
         bool legacy_obsolete = deterministicMNManager->LegacyMNObsolete();
         // Check if we lost all masternodes (except the local one in case the node is a MN)
         // from sleep/wake or failure to sync originally (after spork 21, check if we lost

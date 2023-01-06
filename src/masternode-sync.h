@@ -30,10 +30,13 @@ struct TierTwoPeerData {
 class CMasternodeSync
 {
 public:
-    int64_t lastFailure;
+    std::atomic<int64_t> lastFailure;
     int nCountFailures;
 
     std::atomic<int64_t> lastProcess;
+
+    // Last time when the node finished syncing
+    std::atomic<int64_t> lastSyncFinishedTime;
 
     // sum of all counts
     int sumMasternodeList;
@@ -98,6 +101,9 @@ private:
 
     // Mark sync timeout
     void syncTimeout(const std::string& reason);
+
+    // Return human-readable string for 'phase'
+    std::string GetSyncStatus(int phase);
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include "flatdb.h"
 #include "guiinterface.h"
 #include "guiinterfaceutil.h"
+#include "interfaces/tiertwo.h"
 #include "masternodeman.h"
 #include "masternode-payments.h"
 #include "masternodeconfig.h"
@@ -46,6 +47,9 @@ void InitTierTwoInterfaces()
 {
     pEvoNotificationInterface = std::make_unique<EvoNotificationInterface>();
     RegisterValidationInterface(pEvoNotificationInterface.get());
+
+    interfaces::g_tiertwo = std::make_unique<interfaces::TierTwo>();
+    RegisterValidationInterface(interfaces::g_tiertwo.get());
 }
 
 void ResetTierTwoInterfaces()
@@ -59,6 +63,11 @@ void ResetTierTwoInterfaces()
         UnregisterValidationInterface(activeMasternodeManager);
         delete activeMasternodeManager;
         activeMasternodeManager = nullptr;
+    }
+
+    if (interfaces::g_tiertwo) {
+        UnregisterValidationInterface(interfaces::g_tiertwo.get());
+        interfaces::g_tiertwo.reset();
     }
 }
 
@@ -82,6 +91,7 @@ void InitTierTwoChainTip()
     // force UpdatedBlockTip to initialize nCachedBlockHeight for DS, MN payments and budgets
     // but don't call it directly to prevent triggering of other listeners like zmq etc.
     pEvoNotificationInterface->InitializeCurrentBlockTip();
+    interfaces::g_tiertwo->init();
 }
 
 // Sets the last CACHED_BLOCK_HASHES hashes into masternode manager cache
@@ -162,12 +172,12 @@ bool LoadTierTwo(int chain_active_height, bool load_cache_files)
     CFlatDB<CMasternodeMetaMan> metadb(MN_META_CACHE_FILENAME, MN_META_CACHE_FILE_ID);
     if (load_cache_files) {
         if (!metadb.Load(g_mmetaman)) {
-            return UIError(strprintf(_("Failed to load masternode metadata cache from: %s"), metadb.GetDbPath().string()));
+            LogPrintf("Failed to load masternode metadata cache from: %s", metadb.GetDbPath().string());
         }
     } else {
         CMasternodeMetaMan mmetamanTmp;
         if (!metadb.Dump(mmetamanTmp)) {
-            return UIError(strprintf(_("Failed to clear masternode metadata cache at: %s"), metadb.GetDbPath().string()));
+            LogPrintf("Failed to clear masternode metadata cache at: %s", metadb.GetDbPath().string());
         }
     }
 
