@@ -891,7 +891,8 @@ bool IsCoinbaseValueValid(const CTransactionRef& tx, CAmount nBudgetAmt, CValida
     assert(tx->IsCoinBase());
     if (g_tiertwo_sync_state.IsSynced()) {
         const CAmount paid = tx->GetValueOut();
-        const CAmount expected = GetMasternodePayment() + nBudgetAmt;
+        int nHeight = mnodeman.GetBestHeight();
+        const CAmount expected = GetMasternodePayment(nHeight) + nBudgetAmt;
         // if enforcement is disabled, there could be no masternode payment
         bool sporkEnforced = sporkManager.IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT);
 
