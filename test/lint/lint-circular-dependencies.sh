@@ -11,6 +11,7 @@ export LC_ALL=C
 EXPECTED_CIRCULAR_DEPENDENCIES=(
     "activemasternode -> masternodeman -> activemasternode"
     "budget/budgetmanager -> validation -> budget/budgetmanager"
+    "budget/budgetmanager -> budget/budgetutil -> budget/budgetmanager"
     "chain -> legacy/stakemodifier -> chain"
     "chainparamsbase -> util/system -> chainparamsbase"
     "consensus/params -> consensus/upgrades -> consensus/params"
