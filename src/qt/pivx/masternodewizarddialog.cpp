@@ -411,13 +411,14 @@ bool MasterNodeWizardDialog::createMN()
     // Look for a valid collateral utxo
     COutPoint collateralOut;
 
+    if (!walletModel->getMNCollateralCandidate(collateralOut)) {
     // New receive address
     auto r = walletModel->getNewAddress(alias);
     if (!r) return errorOut(tr(r.getError().c_str()));
     if (!mnModel->createMNCollateral(addressLabel,
-            QString::fromStdString(r.getObjResult()->ToString()),
-            collateralOut,
-            returnStr)) {
+                                     QString::fromStdString(r.getObjResult()->ToString()),
+                                     collateralOut,
+                                     returnStr)) {
         // error str set internally
         return false;
     }
