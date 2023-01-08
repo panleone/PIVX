@@ -422,6 +422,7 @@ bool MasterNodeWizardDialog::createMN()
         // error str set internally
         return false;
     }
+    }
 
     if (isDeterministic) {
         // 1) Get or create the owner addr
