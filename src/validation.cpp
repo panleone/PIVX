@@ -2844,8 +2844,8 @@ bool CheckWork(const CBlock& block, const CBlockIndex* const pindexPrev)
 bool CheckBlockTime(const CBlockHeader& block, CValidationState& state, CBlockIndex* const pindexPrev)
 {
     // Not enforced on RegTest
-    //if (Params().IsRegTestNet())
-    //    return true;
+    if (Params().IsRegTestNet())
+        return true;
 
     const int64_t blockTime = block.GetBlockTime();
     const int blockHeight = pindexPrev->nHeight + 1;
