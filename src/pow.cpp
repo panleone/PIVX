@@ -20,13 +20,13 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 {
     const Consensus::Params& consensus = Params().GetConsensus();
 
-    /*if(Params().IsRegTestNet() && consensus.NetworkUpgradeActive(pindexLast->nHeight + 1, Consensus::UPGRADE_POS)) {
+    if(Params().IsRegTestNet() && consensus.NetworkUpgradeActive(pindexLast->nHeight + 1, Consensus::UPGRADE_POS)) {
         arith_uint256 bnNew;
-        bnNew.SetCompact(470120567);
+        bnNew.SetCompact(470420567);
         return bnNew.GetCompact();
     } else if (!consensus.NetworkUpgradeActive(pindexLast->nHeight + 1, Consensus::UPGRADE_POS)) {
         return pindexLast->nBits;
-    }*/
+    }
 
     if (consensus.fPowNoRetargeting)
         return pindexLast->nBits;
