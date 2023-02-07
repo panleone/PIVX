@@ -20,8 +20,10 @@ EXCLUDE = [
     'src/qt/pivxstrings.cpp',
     'src/chainparamsseeds.h',
     # other external copyrights:
+    'src/ctpl_stl.h',
     'src/tinyformat.h',
     'src/crypto/scrypt.cpp',
+    'src/crypto/scrypt.h',
     'test/functional/test_framework/bignum.py',
     # python init:
     '*__init__.py',
@@ -35,6 +37,9 @@ EXCLUDE_DIRS = [
     "src/secp256k1/",
     "src/univalue/",
     "src/crc32c",
+    "src/chiabls",
+    "src/immer",
+    "src/rust",
 ]
 
 INCLUDE = ['*.h', '*.cpp', '*.cc', '*.c', '*.py']
@@ -115,7 +120,11 @@ EXPECTED_HOLDER_NAMES = [
     r"Sam Rushing",
     r"ArtForz -- public domain half-a-node",
     r" Projet RNRT SAPHIR",
+    r"Jeremy Rubin",
+    r"André L. Maravilha",
     r"The Zcash developers",
+    r"The ZCash developers",
+    r"The Zcash Core developers",
     r"The Dash developers",
     r"The Dash Developers",
     r"The Dash Core developers",
