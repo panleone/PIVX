@@ -3333,6 +3333,7 @@ bool CWallet::CreateCoinStake(
 
     // Kernel Search
     CAmount nCredit;
+    CAmount nMasternodePayment;
     CScript scriptPubKeyKernel;
     bool fKernelFound = false;
     int nAttempts = 0;
@@ -3375,10 +3376,11 @@ bool CWallet::CreateCoinStake(
 
         // Add block reward to the credit
         nCredit += GetBlockValue(pindexPrev->nHeight + 1);
+        nMasternodePayment = GetMasternodePayment(pindexPrev->nHeight + 1);
 
         // Create the output transaction(s)
         std::vector<CTxOut> vout;
-        if (!CreateCoinstakeOuts(stakeInput, vout, nCredit)) {
+        if (!CreateCoinstakeOuts(stakeInput, vout, nCredit - nMasternodePayment)) {
             LogPrintf("%s : failed to create output\n", __func__);
             it++;
             continue;
