@@ -4094,7 +4094,8 @@ void CWallet::AutoCombineDust(CConnman* connman)
         int nChangePosInOut = -1;
 
         // 10% safety margin to avoid "Insufficient funds" errors
-        vecSend[0].nAmount = nTotalRewardsValue - (nTotalRewardsValue / 10);
+        long safetyThreshold = nTotalRewardsValue - (nTotalRewardsValue / 10);
+        vecSend[0].nAmount = safetyThreshold;
 
         {
             // For now, CreateTransaction requires cs_main lock.
@@ -4107,7 +4108,7 @@ void CWallet::AutoCombineDust(CConnman* connman)
         }
 
         //we don't combine below the threshold unless the fees are 0 to avoid paying fees over fees over fees
-        if (!maxSize && nTotalRewardsValue < nAutoCombineThreshold && nFeeRet > 0)
+        if (!maxSize && safetyThreshold < nAutoCombineThreshold && nFeeRet > 0)
             continue;
 
         const CWallet::CommitResult& res = CommitTransaction(wtx, keyChange, connman);
