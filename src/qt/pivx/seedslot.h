@@ -3,15 +3,15 @@
 
 #include <QWidget>
 #include <QLineEdit>
-#include "qt/pivx/colorlabel.h"
+#include "qlabel.h"
 class SeedSlot : public QWidget
 {
     Q_OBJECT
 public:
     explicit SeedSlot(bool isInput,const QString &number,const QString &word,QWidget *parent = nullptr);
-    ColorLabel* t_label;
-    ColorLabel* n_label;
-    ColorLabel* r_label;
+    QLabel* t_label;
+    QLabel* n_label;
+    QLabel* r_label;
     QLineEdit* input_line;
     int getWidth();
     int getHeight();

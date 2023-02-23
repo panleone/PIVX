@@ -117,7 +117,6 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     std::array<QWidget*, 24> input_seeds = {ui->seed1_2, ui->seed2_2, ui->seed3_2, ui->seed4_2, ui->seed5_2, ui->seed6_2, ui->seed7_2, ui->seed8_2, ui->seed9_2, ui->seed10_2, ui->seed11_2, ui->seed12_2, ui->seed13_2, ui->seed14_2, ui->seed15_2, ui->seed16_2, ui->seed17_2, ui->seed18_2, ui->seed19_2, ui->seed20_2, ui->seed21_2, ui->seed22_2, ui->seed23_2, ui->seed24_2};
 
     for (int i = 0; i < 24; i++) {
-        std::cout << i << seed_split.at(i) << std::endl;
         SeedSlot* seed1 = new SeedSlot(false, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), seeds[i]);
         SeedSlot* input_seed1 = new SeedSlot(true, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), input_seeds[i]);
 

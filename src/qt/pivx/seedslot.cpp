@@ -1,4 +1,5 @@
 #include "qt/pivx/seedslot.h"
+#include "qlabel.h"
 #include <QColor>
 SeedSlot::SeedSlot(bool isInput, const QString& number, const QString& word, QWidget* parent)
     : QWidget{parent}
@@ -7,24 +8,25 @@ SeedSlot::SeedSlot(bool isInput, const QString& number, const QString& word, QWi
     height = 40;
 
     setFixedSize(width, height);
-    n_label = new ColorLabel(number, this);
-    n_label->setTextColor(Qt::gray);
-    n_label->setGeometry(0, 1, 15, 20);
-    QFont t_Font("Arial", 8, QFont::Bold);
+    n_label = new QLabel(number, this);
+    n_label->setProperty("cssClass", "text-main-number-grey");
+    n_label->move(0,1);
+    QFont t_Font("Arial", 12, QFont::Bold);
     if (!isInput) {
-        t_label = new ColorLabel(word, this);
-
-        t_label->setFont(t_Font);
-        t_label->setTextColor(Qt::white);
-        t_label->setGeometry(20, 0, 55, 20);
+        t_label = new QLabel(word,this);
+        t_label->setProperty("cssClass","text-main-seed-phrase-white");
+        t_label->move(20,-4);
     } else {
         input_line = new QLineEdit(this);
-        input_line->setGeometry(20, 2, 50, 16);
-        input_line->setFont(t_Font);
+        input_line->setGeometry(20, 2, 80, 18);
+        input_line->setProperty("cssClass","text-main-seed-phrase-black");
     }
-    r_label = new ColorLabel("", this);
-    r_label->makeRec(Qt::gray);
-    r_label->setGeometry(0, 22, 75, 2);
+    r_label = new QLabel("", this);
+    r_label->setAutoFillBackground(true);
+    QPalette palette = r_label->palette();
+    palette.setColor(this->backgroundRole(), Qt::gray);
+    r_label->setPalette(palette);
+    r_label->setGeometry(0, 22, 100, 2);
 }
 int SeedSlot::getWidth()
 {

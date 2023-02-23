@@ -139,7 +139,6 @@ QT_MOC_CPP = \
   qt/pivx/moc_addresseswidget.cpp \
   qt/pivx/moc_defaultdialog.cpp \
   qt/pivx/moc_coldstakingwidget.cpp \
-  qt/pivx/moc_colorlabel.cpp \
   qt/pivx/moc_seedslot.cpp \
   qt/pivx/moc_proposalcard.cpp \
   qt/pivx/moc_mnselectiondialog.cpp \
@@ -257,7 +256,6 @@ BITCOIN_QT_H = \
   qt/pivx/addresseswidget.h \
   qt/pivx/defaultdialog.h \
   qt/pivx/coldstakingwidget.h \
-  qt/pivx/colorlabel.h \
   qt/pivx/seedslot.h \
   qt/pivx/governancemodel.h \
   qt/pivx/proposalcard.h \
@@ -597,7 +595,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/pivx/addresseswidget.cpp \
   qt/pivx/defaultdialog.cpp \
   qt/pivx/coldstakingwidget.cpp \
-  qt/pivx/colorlabel.cpp \
   qt/pivx/seedslot.cpp \
   qt/pivx/governancemodel.cpp \
   qt/pivx/proposalcard.cpp \
