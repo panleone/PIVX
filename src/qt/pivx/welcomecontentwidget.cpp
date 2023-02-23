@@ -105,7 +105,7 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->pushName5->setProperty("cssClass", "btn-welcome-name-check");
     ui->pushName5->setEnabled(false);
 
-    ui->error_seed_phrase->setProperty("cssClass","text-warning-small");
+    ui->error_seed_phrase->setProperty("cssClass", "text-warning");
     ui->error_seed_phrase->setVisible(false);
 
     ui->stackedWidget->setCurrentIndex(0);
