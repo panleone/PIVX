@@ -13,11 +13,6 @@ public:
     QLabel* n_label;
     QLabel* r_label;
     QLineEdit* input_line;
-    int getWidth();
-    int getHeight();
-private:
-    int width;
-    int height;
 };
 
 #endif // SEEDSLOT_H

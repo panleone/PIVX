@@ -3363,13 +3363,15 @@ QPushButton[cssClass="ic-step-confirm-welcome"] {
     font-size:20px;
 }
 
-
 *[cssClass="text-main-seed-phrase-white"] {
+    text-align: start;
+    padding-bottom: 3px;
     color:#FFFFFF;
-    font-size:16px;
+    font-size:15px;
 }
 
 *[cssClass="text-main-seed-phrase-black"] {
+    text-align: start;
     color:#000000;
     font-size:15px;
 }

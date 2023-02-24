@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1200</width>
-    <height>750</height>
+    <height>806</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,13 +52,13 @@
         <property name="minimumSize">
          <size>
           <width>880</width>
-          <height>520</height>
+          <height>600</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>880</width>
-          <height>520</height>
+          <height>600</height>
          </size>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1371,77 +1371,93 @@
                    <property name="sizeConstraint">
                     <enum>QLayout::SetMinimumSize</enum>
                    </property>
-                   <item row="0" column="3">
-                    <widget class="QWidget" name="seed4" native="true"/>
-                   </item>
-                   <item row="1" column="5">
-                    <widget class="QWidget" name="seed12" native="true"/>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QWidget" name="seed2" native="true"/>
-                   </item>
-                   <item row="0" column="5">
-                    <widget class="QWidget" name="seed6" native="true"/>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QWidget" name="seed8" native="true"/>
+                   <property name="leftMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>65</number>
+                   </property>
+                   <item row="2" column="2">
+                    <widget class="QWidget" name="seed15" native="true"/>
                    </item>
                    <item row="2" column="4">
                     <widget class="QWidget" name="seed17" native="true"/>
                    </item>
-                   <item row="3" column="3">
-                    <widget class="QWidget" name="seed22" native="true"/>
-                   </item>
-                   <item row="3" column="5">
-                    <widget class="QWidget" name="seed24" native="true"/>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QWidget" name="seed10" native="true"/>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QWidget" name="seed16" native="true"/>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QWidget" name="seed15" native="true"/>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QWidget" name="seed9" native="true"/>
-                   </item>
-                   <item row="0" column="4">
-                    <widget class="QWidget" name="seed5" native="true"/>
-                   </item>
-                   <item row="3" column="4">
-                    <widget class="QWidget" name="seed23" native="true"/>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QWidget" name="seed20" native="true"/>
-                   </item>
-                   <item row="1" column="4">
-                    <widget class="QWidget" name="seed11" native="true"/>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QWidget" name="seed14" native="true"/>
-                   </item>
-                   <item row="3" column="2">
-                    <widget class="QWidget" name="seed21" native="true"/>
-                   </item>
-                   <item row="2" column="5">
-                    <widget class="QWidget" name="seed18" native="true"/>
-                   </item>
                    <item row="0" column="0">
-                    <widget class="QWidget" name="seed1" native="true"/>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QWidget" name="seed7" native="true"/>
+                    <widget class="QWidget" name="seed1" native="true">
+                     <property name="layoutDirection">
+                      <enum>Qt::LeftToRight</enum>
+                     </property>
+                    </widget>
                    </item>
                    <item row="2" column="0">
                     <widget class="QWidget" name="seed13" native="true"/>
                    </item>
-                   <item row="3" column="0">
-                    <widget class="QWidget" name="seed19" native="true"/>
+                   <item row="0" column="4">
+                    <widget class="QWidget" name="seed5" native="true"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QWidget" name="seed7" native="true"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QWidget" name="seed4" native="true"/>
+                   </item>
+                   <item row="1" column="4">
+                    <widget class="QWidget" name="seed11" native="true"/>
                    </item>
                    <item row="0" column="2">
                     <widget class="QWidget" name="seed3" native="true"/>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QWidget" name="seed2" native="true"/>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QWidget" name="seed8" native="true"/>
+                   </item>
+                   <item row="0" column="5">
+                    <widget class="QWidget" name="seed6" native="true"/>
+                   </item>
+                   <item row="2" column="5">
+                    <widget class="QWidget" name="seed18" native="true"/>
+                   </item>
+                   <item row="3" column="3">
+                    <widget class="QWidget" name="seed22" native="true"/>
+                   </item>
+                   <item row="3" column="4">
+                    <widget class="QWidget" name="seed23" native="true"/>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QWidget" name="seed10" native="true"/>
+                   </item>
+                   <item row="3" column="5">
+                    <widget class="QWidget" name="seed24" native="true"/>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QWidget" name="seed14" native="true"/>
+                   </item>
+                   <item row="1" column="5">
+                    <widget class="QWidget" name="seed12" native="true"/>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QWidget" name="seed9" native="true"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QWidget" name="seed19" native="true"/>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QWidget" name="seed20" native="true"/>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QWidget" name="seed16" native="true"/>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QWidget" name="seed21" native="true"/>
                    </item>
                   </layout>
                  </widget>
@@ -1454,7 +1470,7 @@
                   <property name="sizeHint" stdset="0">
                    <size>
                     <width>20</width>
-                    <height>20</height>
+                    <height>30</height>
                    </size>
                   </property>
                  </spacer>
@@ -1468,7 +1484,7 @@
                    <number>0</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>30</number>
+                   <number>15</number>
                   </property>
                   <item>
                    <spacer name="horizontalSpacer_10">
@@ -1670,6 +1686,18 @@
                    <property name="sizeConstraint">
                     <enum>QLayout::SetMinimumSize</enum>
                    </property>
+                   <property name="leftMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>6</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>65</number>
+                   </property>
                    <item row="0" column="3">
                     <widget class="QWidget" name="seed4_2" native="true"/>
                    </item>
@@ -1753,7 +1781,7 @@
                   <property name="sizeHint" stdset="0">
                    <size>
                     <width>20</width>
-                    <height>20</height>
+                    <height>30</height>
                    </size>
                   </property>
                  </spacer>
@@ -1767,7 +1795,7 @@
                    <number>0</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>30</number>
+                   <number>15</number>
                   </property>
                   <item>
                    <spacer name="horizontalSpacer_10">
