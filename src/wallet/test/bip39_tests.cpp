@@ -1,8 +1,11 @@
-#include "wallet/bip39.h"
-#include <boost/test/unit_test.hpp>
+// Copyright (c) 2023 The PIVX Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "test/test_pivx.h"
+#include "wallet/bip39.h"
 
+#include <boost/test/unit_test.hpp>
 #include <cstdint>
 #include <string>
 #include <sys/types.h>
@@ -67,10 +70,11 @@ TestVector1 b39_test3("000000000000000000000000000000000000000000000000000000000
 TestVector2 b39_test1_2("legal winner thank year wave sausage worth useful legal winner thank yellow", BIP39_ERRORS::BIP39_OK);
 TestVector2 b39_test2_2("legal winner thank wear wave sausage worth useful legal winner thank yellow", BIP39_ERRORS::WRONG_CHECKSUM);
 TestVector2 b39_test3_2("panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside", BIP39_ERRORS::BIP39_OK);
-static void RunTest(const TestVector1& test)
+std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy, const std::string& lang);
+static void RunTest(const TestVector1& test, std::string lang)
 {
     // Test seedphrase
-    BOOST_CHECK(EntropyToSeedPhrase(test.entropy) == test.seedphrase);
+    BOOST_CHECK(EntropyToSeedPhrase(test.entropy, lang) == test.seedphrase);
 
     // Test seed
     BOOST_CHECK(GenerateSeedFromMnemonic(test.seedphrase, "TREZOR") == test.seed);
@@ -85,17 +89,17 @@ BOOST_FIXTURE_TEST_SUITE(bip39_tests, TestingSetup)
 
 BOOST_AUTO_TEST_CASE(bip39_test1)
 {
-    RunTest(b39_test1);
+    RunTest(b39_test1, "en");
 }
 
 BOOST_AUTO_TEST_CASE(bip39_test2)
 {
-    RunTest(b39_test2);
+    RunTest(b39_test2, "en");
 }
 
 BOOST_AUTO_TEST_CASE(bip39_test3)
 {
-    RunTest(b39_test3);
+    RunTest(b39_test3, "en");
 }
 
 BOOST_AUTO_TEST_CASE(bip39_test1_2)

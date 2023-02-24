@@ -17,7 +17,7 @@ bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
     if (CheckValidityOfSeedPhrase(getCachedSeedphrase(), false) != BIP39_ERRORS::BIP39_OK) {
         SetHDSeed(GenerateNewSeed(), force, memOnly);
     } else {
-        std::cout << getCachedSeedphrase() << std::endl;
+        std::cout << getCachedSeedphrase() << std::endl; // for testing only
         SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
         resetCachedSeedphrase();
     }
