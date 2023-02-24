@@ -440,6 +440,7 @@ void WelcomeContentWidget::setSeedPhrase(const std::string& lang, bool firstLoad
         for (int i = 0; i < 24; i++) {
             SeedSlot* seed1 = new SeedSlot(false, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), seeds[i]);
             SeedSlot* input_seed1 = new SeedSlot(true, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), input_seeds[i]);
+            seeds[i]->setStyleSheet("border-bottom:2px solid gray;");
             output_slots[i] = seed1;
             output_slots[i]->show();
             output_slots[i]->setStyleSheet("border-bottom:2px solid gray;");
