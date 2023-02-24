@@ -109,22 +109,8 @@ WelcomeContentWidget::WelcomeContentWidget(QWidget *parent) :
     ui->error_seed_phrase->setVisible(false);
 
     ui->stackedWidget->setCurrentIndex(0);
-    std::string recovery_phrase = CreateRandomSeedPhrase(true);
-    std::vector<std::string> seed_split;
 
-    split(recovery_phrase, seed_split, ' ');
-    std::array<QWidget*, 24> seeds = {ui->seed1, ui->seed2, ui->seed3, ui->seed4, ui->seed5, ui->seed6, ui->seed7, ui->seed8, ui->seed9, ui->seed10, ui->seed11, ui->seed12, ui->seed13, ui->seed14, ui->seed15, ui->seed16, ui->seed17, ui->seed18, ui->seed19, ui->seed20, ui->seed21, ui->seed22, ui->seed23, ui->seed24};
-    std::array<QWidget*, 24> input_seeds = {ui->seed1_2, ui->seed2_2, ui->seed3_2, ui->seed4_2, ui->seed5_2, ui->seed6_2, ui->seed7_2, ui->seed8_2, ui->seed9_2, ui->seed10_2, ui->seed11_2, ui->seed12_2, ui->seed13_2, ui->seed14_2, ui->seed15_2, ui->seed16_2, ui->seed17_2, ui->seed18_2, ui->seed19_2, ui->seed20_2, ui->seed21_2, ui->seed22_2, ui->seed23_2, ui->seed24_2};
-
-    for (int i = 0; i < 24; i++) {
-        SeedSlot* seed1 = new SeedSlot(false, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), seeds[i]);
-        SeedSlot* input_seed1 = new SeedSlot(true, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), input_seeds[i]);
-
-        seed1->show();
-        input_slots[i] = input_seed1;
-        input_slots[i]->show();
-    }
-
+    setSeedPhrase("en", true);
     // Frame 1
     ui->page_1->setProperty("cssClass", "container-welcome-step1");
     ui->labelTitle1->setProperty("cssClass", "text-title-welcome");
@@ -261,6 +247,7 @@ void WelcomeContentWidget::checkLanguage()
         Q_EMIT onLanguageSelected();
         ui->retranslateUi(this);
         ui->labelTitle2->setText(ui->labelTitle2->text().arg(PACKAGE_NAME));
+        setSeedPhrase(ui->comboBoxLanguage->currentData().toString().toStdString(), false);
     }
 }
 
@@ -439,6 +426,29 @@ void WelcomeContentWidget::onImportSeedPhraseClicked()
             ui->error_seed_phrase->setText("Error: word " + this->input_slots[result]->input_line->text() + " not in wordlist");
         }
         ui->error_seed_phrase->setVisible(true);
+    }
+}
+
+void WelcomeContentWidget::setSeedPhrase(const std::string& lang, bool firstLoad)
+{
+    std::vector<std::string> seed_split;
+    std::string recovery_phrase = CreateRandomSeedPhrase(true, lang);
+    split(recovery_phrase, seed_split, ' ');
+    std::array<QWidget*, 24> seeds = {ui->seed1, ui->seed2, ui->seed3, ui->seed4, ui->seed5, ui->seed6, ui->seed7, ui->seed8, ui->seed9, ui->seed10, ui->seed11, ui->seed12, ui->seed13, ui->seed14, ui->seed15, ui->seed16, ui->seed17, ui->seed18, ui->seed19, ui->seed20, ui->seed21, ui->seed22, ui->seed23, ui->seed24};
+    std::array<QWidget*, 24> input_seeds = {ui->seed1_2, ui->seed2_2, ui->seed3_2, ui->seed4_2, ui->seed5_2, ui->seed6_2, ui->seed7_2, ui->seed8_2, ui->seed9_2, ui->seed10_2, ui->seed11_2, ui->seed12_2, ui->seed13_2, ui->seed14_2, ui->seed15_2, ui->seed16_2, ui->seed17_2, ui->seed18_2, ui->seed19_2, ui->seed20_2, ui->seed21_2, ui->seed22_2, ui->seed23_2, ui->seed24_2};
+    if (firstLoad) {
+        for (int i = 0; i < 24; i++) {
+            SeedSlot* seed1 = new SeedSlot(false, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), seeds[i]);
+            SeedSlot* input_seed1 = new SeedSlot(true, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), input_seeds[i]);
+            output_slots[i] = seed1;
+            output_slots[i]->show();
+            input_slots[i] = input_seed1;
+            input_slots[i]->show();
+        }
+    } else {
+        for (int i = 0; i < 24; i++) {
+            output_slots[i]->t_label->setText(QString::fromStdString(seed_split.at(i)));
+        }
     }
 }
 

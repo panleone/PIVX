@@ -1,12 +1,14 @@
+// Copyright (c) 2023 The PIVX Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "wallet/bip39.h"
 
-#include "crypter.h"
-#include "crypto/hmac_sha512.h"
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
 #include "random.h"
-#include "script/standard.h"
 #include "wallet/bip39_english.json.h"
+
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -29,7 +31,7 @@ constexpr int SEED_LENGTH = 64;
 std::vector<std::string> _words;
 
 std::string cached_seedphrase = "";
-
+std::vector<std::string> langs = {"en", "it"};
 std::string getCachedSeedphrase()
 {
     return cached_seedphrase;
@@ -39,12 +41,11 @@ void resetCachedSeedphrase()
     cached_seedphrase = "";
 }
 // split a string into words
-void loadWords()
+void loadWords(const std::string& lang)
 {
-    if (_words.size() == 0) {
-        split(loadWordList(), _words, ' ');
-    }
+    split(loadWordList(lang), _words, ' ');
 }
+
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch)
 {
     size_t pos = txt.find(ch);
@@ -92,9 +93,9 @@ static std::vector<bool> BytesToBits(const std::vector<uint8_t>& bytes)
 }
 
 
-static int IsValidWord(const std::string& word)
+static int IsValidWord(const std::string& word, const std::string& lang)
 {
-    loadWords();
+    loadWords(lang);
     return std::find(_words.begin(), _words.end(), word) - _words.begin();
 }
 
@@ -108,11 +109,23 @@ int CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
         return BIP39_ERRORS::WRONG_ENTROPY;
     }
 
+    std::string lang;
+    bool lang_found = false;
+    for (std::string l : langs) {
+        if (IsValidWord(words[0], l) != 2048) {
+            lang = l;
+            lang_found = true;
+            break;
+        }
+    }
+    if (!lang_found) {
+        return BIP39_ERRORS::LANGUAGE_NOT_FOUND;
+    }
     std::vector<bool> word_bits;
 
     for (size_t i = 0; i < words.size(); i++) {
         const std::string& word = words[i];
-        int index = IsValidWord(word);
+        int index = IsValidWord(word, lang);
         if (index == 2048) {
             return i; // index of the wrong word
         }
@@ -148,7 +161,7 @@ int CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache)
 }
 
 
-std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
+std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy, const std::string& lang)
 {
     std::vector<uint8_t> data_vector(entropy.begin(), entropy.end());
     std::array<uint8_t, 32> sha256;
@@ -158,7 +171,7 @@ std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy)
     std::vector<bool> entropy_bits = BytesToBits(data_vector);
     std::string seedphrase;
 
-    loadWords();
+    loadWords(lang);
     for (size_t i = 0; i < data_vector.size() * BYTE_SIZE / WORD_SIZE; ++i) {
         if (i != 0) {
             seedphrase += " ";
@@ -184,14 +197,14 @@ std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const
 }
 
 // GENERATE SEEDPHRASE OF 24 WORDS
-std::string CreateRandomSeedPhrase(bool wantToCache)
+std::string CreateRandomSeedPhrase(bool wantToCache, const std::string& lang)
 {
     std::vector<uint8_t> random_bytes;
     random_bytes.resize(32);
 
     // Put 32 random bytes in buffer
     GetStrongRandBytes(&random_bytes[0], random_bytes.size());
-    std::string seedphrase = EntropyToSeedPhrase(random_bytes);
+    std::string seedphrase = EntropyToSeedPhrase(random_bytes, lang);
     if (wantToCache) {
         cached_seedphrase = seedphrase;
     }

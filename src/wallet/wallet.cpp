@@ -4251,15 +4251,14 @@ CWallet* CWallet::CreateWalletFromFile(const std::string& name, const fs::path& 
         if (!fLegacyWallet) {
             // Create new HD Wallet
             LogPrintf("Creating HD Wallet\n");
-
             // if you are using pivxd
             if (CheckValidityOfSeedPhrase(getCachedSeedphrase(), false) != BIP39_ERRORS::BIP39_OK) {
                 if (CheckValidityOfSeedPhrase(gArgs.GetArg("-seedphrase", ""), true) == BIP39_ERRORS::BIP39_OK) {
                     LogPrintf("Valid seed phrase!");
-
                 } else {
-                    std::string seed_phrase = CreateRandomSeedPhrase(true);
-                    LogPrintf("Your seed phrase is: %s \n", seed_phrase);
+                    std::string lang = "en";
+                    std::string seed_phrase = CreateRandomSeedPhrase(true, lang);
+                    LogPrintf("The seedphrase inserted is not valid, your new seed phrase is: %s \n", seed_phrase);
                 }
             }
 

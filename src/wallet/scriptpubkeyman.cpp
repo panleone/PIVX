@@ -8,10 +8,6 @@
 #include "script/standard.h"
 #include "wallet/bip39.h"
 
-#include "crypto/hmac_sha512.h"
-#include "crypto/scrypt.h"
-#include "crypto/sha256.h"
-
 bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
 {
     if (CanGenerateKeys() && !force) {
@@ -21,6 +17,7 @@ bool ScriptPubKeyMan::SetupGeneration(bool newKeypool, bool force, bool memOnly)
     if (CheckValidityOfSeedPhrase(getCachedSeedphrase(), false) != BIP39_ERRORS::BIP39_OK) {
         SetHDSeed(GenerateNewSeed(), force, memOnly);
     } else {
+        std::cout << getCachedSeedphrase() << std::endl;
         SetHDSeed(AssignNewSeed(GenerateSeedFromMnemonic(getCachedSeedphrase())), force, memOnly);
         resetCachedSeedphrase();
     }

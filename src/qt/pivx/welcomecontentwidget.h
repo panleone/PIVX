@@ -51,8 +51,10 @@ private:
 
     OptionsModel *model;
     SeedSlot* input_slots[24];
+    SeedSlot* output_slots[24];
 
     void initLanguages();
+    void setSeedPhrase(const std::string& lang, bool firstLoad);
 };
 
 #endif // WELCOMECONTENTWIDGET_H
