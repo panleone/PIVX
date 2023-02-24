@@ -442,12 +442,15 @@ void WelcomeContentWidget::setSeedPhrase(const std::string& lang, bool firstLoad
             SeedSlot* input_seed1 = new SeedSlot(true, QString::number(i + 1), QString::fromStdString(seed_split.at(i)), input_seeds[i]);
             output_slots[i] = seed1;
             output_slots[i]->show();
+            output_slots[i]->setStyleSheet("border-bottom:2px solid gray;");
             input_slots[i] = input_seed1;
             input_slots[i]->show();
+            input_seeds[i]->setStyleSheet("border-bottom:2px solid gray;");
         }
     } else {
         for (int i = 0; i < 24; i++) {
             output_slots[i]->t_label->setText(QString::fromStdString(seed_split.at(i)));
+            input_seeds[i]->setStyleSheet("border-bottom:2px solid gray;");
         }
     }
 }

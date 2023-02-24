@@ -20,12 +20,6 @@ SeedSlot::SeedSlot(bool isInput, const QString& number, const QString& word, QWi
         input_line->setProperty("cssClass", "text-main-seed-phrase-black");
         seedGrid->addWidget(input_line, 0, 2, 1, 1);
     }
-    r_label = new QLabel("", this);
-    r_label->setAutoFillBackground(true);
-    QPalette palette = r_label->palette();
-    palette.setColor(this->backgroundRole(), Qt::gray);
-    r_label->setPalette(palette);
-    r_label->setGeometry(0, 35, 105, 2);
     parent->setLayout(seedGrid);
     adjustSize();
 }

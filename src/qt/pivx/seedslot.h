@@ -11,7 +11,6 @@ public:
     explicit SeedSlot(bool isInput,const QString &number,const QString &word,QWidget *parent = nullptr);
     QLabel* t_label;
     QLabel* n_label;
-    QLabel* r_label;
     QLineEdit* input_line;
 };
 
