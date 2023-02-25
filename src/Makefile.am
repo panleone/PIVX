@@ -325,7 +325,7 @@ BITCOIN_CORE_H = \
   wallet/rpcwallet.h \
   wallet/scriptpubkeyman.h \
   wallet/bip39.h \
-  wallet/bip39_english.json.h \
+  wallet/bip39_word_lists.json.h \
   destination_io.h \
   wallet/fees.h \
   wallet/init.h \

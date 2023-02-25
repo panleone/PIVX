@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "wallet/scriptpubkeyman.h"
+
 #include "crypter.h"
 #include "script/standard.h"
 #include "wallet/bip39.h"

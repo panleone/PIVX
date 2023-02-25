@@ -451,7 +451,6 @@ void WelcomeContentWidget::setSeedPhrase(const std::string& lang, bool firstLoad
     } else {
         for (int i = 0; i < 24; i++) {
             output_slots[i]->t_label->setText(QString::fromStdString(seed_split.at(i)));
-            input_seeds[i]->setStyleSheet("border-bottom:2px solid gray;");
         }
     }
 }

@@ -7,7 +7,7 @@
 #include "crypto/scrypt.h"
 #include "crypto/sha256.h"
 #include "random.h"
-#include "wallet/bip39_english.json.h"
+#include "wallet/bip39_word_lists.json.h"
 
 #include <algorithm>
 #include <array>

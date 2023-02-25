@@ -17,7 +17,7 @@ enum BIP39_ERRORS {
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch);
 std::string getCachedSeedphrase();
 void resetCachedSeedphrase();
-std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy);
+std::string EntropyToSeedPhrase(const std::vector<uint8_t>& entropy, const std::string& lang);
 std::string CreateRandomSeedPhrase(bool wantToCache, const std::string& lang);
 int CheckValidityOfSeedPhrase(const std::string& seedphrase, bool wantToCache);
 std::vector<uint8_t> GenerateSeedFromMnemonic(const std::string& mnemonic, const std::string& passphrase = "");
