@@ -21,6 +21,7 @@
 #include "wallet/db.h"
 #include "wallet/wallet.h"
 #endif
+#include "warnings.h"
 
 #include <univalue.h>
 
@@ -235,7 +236,7 @@ UniValue GetNetworkHashPS(int lookup, int height)
     if (minTime == maxTime)
         return 0;
 
-    uint256 workDiff = pb->nChainWork - pb0->nChainWork;
+    arith_uint256 workDiff = pb->nChainWork - pb0->nChainWork;
     int64_t timeDiff = maxTime - minTime;
 
     return (int64_t)(workDiff.getdouble() / timeDiff);
