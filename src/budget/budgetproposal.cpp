@@ -226,20 +226,21 @@ bool CBudgetProposal::AddOrUpdateVote(const CBudgetVote& vote, std::string& strE
 {
     std::string strAction = "New vote inserted:";
     const COutPoint& mnId = vote.GetVin().prevout;
-    const int64_t voteTime = vote.GetTime();
+    const int64_t voteTimeNormalized = vote.GetTime() - vote.GetTime() % BUDGET_VOTE_UPDATE_MIN;
 
     if (mapVotes.count(mnId)) {
-        const int64_t& oldTime = mapVotes[mnId].GetTime();
-        if (oldTime > voteTime) {
+        const int64_t oldTimeNormaized = mapVotes[mnId].GetTime() - mapVotes[mnId].GetTime() % BUDGET_VOTE_UPDATE_MIN;
+        const CBudgetVote::VoteDirection oldVote = mapVotes[mnId].GetDirection();
+        if (oldTimeNormaized > voteTimeNormalized) {
             strError = strprintf("new vote older than existing vote - %s\n", vote.GetHash().ToString());
             LogPrint(BCLog::MNBUDGET, "%s: %s\n", __func__, strError);
             return false;
         }
-        if (voteTime - oldTime < BUDGET_VOTE_UPDATE_MIN) {
-            strError = strprintf("time between votes is too soon - %s - %lli sec < %lli sec\n",
-                    vote.GetHash().ToString(), voteTime - oldTime, BUDGET_VOTE_UPDATE_MIN);
-            LogPrint(BCLog::MNBUDGET, "%s: %s\n", __func__, strError);
-            return false;
+        if (oldTimeNormaized == voteTimeNormalized) {
+            if (vote.GetDirection() != CBudgetVote::VOTE_YES || oldVote == CBudgetVote::VOTE_YES) {
+                strError = strprintf("time between votes is too soon, taking the yes by convention");
+                return false;
+            }
         }
         strAction = "Existing vote updated:";
     }
