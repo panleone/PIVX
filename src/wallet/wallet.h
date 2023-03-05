@@ -742,6 +742,7 @@ public:
     //Auto Combine Inputs
     bool fCombineDust;
     CAmount nAutoCombineThreshold;
+    int frequency;
 
     /** Get database handle used by this wallet. Ideally this function would
      * not be necessary.
