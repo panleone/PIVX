@@ -445,7 +445,7 @@ bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
     CMasternode* pmn = mnodeman.Find(vin.prevout);
 
     // no such masternode, nothing to update
-    if (pmn == NULL) return true;
+    if (pmn == nullptr) return true;
 
     // this broadcast is older or equal than the one that we already have - it's bad and should never happen
     // unless someone is doing something fishy

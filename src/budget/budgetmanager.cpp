@@ -624,7 +624,7 @@ void CBudgetManager::VoteOnFinalizedBudgets()
             }
         }
         std::string strError = "";
-        if (!UpdateFinalizedBudget(vote, NULL, strError)) {
+        if (!UpdateFinalizedBudget(vote, nullptr, strError)) {
             LogPrintf("%s: Error submitting vote - %s\n", __func__, strError);
             continue;
         }
