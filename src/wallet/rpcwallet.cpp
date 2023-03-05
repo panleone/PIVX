@@ -4450,54 +4450,6 @@ UniValue getstakesplitthreshold(const JSONRPCRequest& request)
     return ValueFromAmount(pwallet->GetStakeSplitThreshold());
 }
 
-UniValue autocombinerewards(const JSONRPCRequest& request)
-{
-    if (!IsDeprecatedRPCEnabled("autocombinerewards")) {
-        if (request.fHelp) {
-            throw std::runtime_error("autocombinerewards (Deprecated, will be removed in v6.0. To use this command, start pivxd with -deprecatedrpc=autocombinerewards)");
-        }
-        throw JSONRPCError(RPC_METHOD_DEPRECATED, "autocombinerewards is deprecated and will be removed in v6.0. To use this command, start pivxd with -deprecatedrpc=autocombinerewards");
-    }
-
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
-
-    if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
-        return NullUniValue;
-
-    bool fEnable = !request.params.empty() && request.params[0].get_bool();
-
-    if (request.fHelp || request.params.empty() || (fEnable && request.params.size() != 2) || request.params.size() > 2)
-        throw std::runtime_error(
-            "autocombinerewards enable ( threshold )\n"
-            "\nDEPRECATED!!! This command has been replaced with setautocombinethreshold and getautocombinethreshold and will be removed in a future version!!!\n"
-            "\nWallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same PIVX address\n"
-            "When autocombinerewards runs it will create a transaction, and therefore will be subject to transaction fees.\n"
-
-            "\nArguments:\n"
-            "1. enable          (boolean, required) Enable auto combine (true) or disable (false)\n"
-            "2. threshold       (numeric, optional, required if enable=True) Threshold amount (default: 0)\n"
-
-            "\nExamples:\n" +
-            HelpExampleCli("autocombinerewards", "true 500") + HelpExampleRpc("autocombinerewards", "true 500"));
-
-    WalletBatch batch(pwallet->GetDBHandle());
-    CAmount nThreshold = 0;
-
-    if (fEnable && request.params.size() > 1) {
-        nThreshold = AmountFromValue(request.params[1]);
-        if (nThreshold < COIN)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("The threshold value cannot be less than %s", FormatMoney(COIN)));
-    }
-
-    pwallet->fCombineDust = fEnable;
-    pwallet->nAutoCombineThreshold = nThreshold;
-
-    if (!batch.WriteAutoCombineSettings(fEnable, nThreshold))
-        throw std::runtime_error("Changed settings in wallet but failed to save to database\n");
-
-    return NullUniValue;
-}
-
 UniValue setautocombinethreshold(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -4738,7 +4690,6 @@ static const CRPCCommand commands[] =
 { //  category              name                        actor (function)           okSafe argNames
   //  --------------------- ------------------------    -----------------------    ------ --------
     { "wallet",             "getaddressinfo",           &getaddressinfo,           true,  {"address"} },
-    { "wallet",             "autocombinerewards",       &autocombinerewards,       false, {"enable","threshold"} },
     { "wallet",             "setautocombinethreshold",  &setautocombinethreshold,  false, {"enable","threshold"} },
     { "wallet",             "getautocombinethreshold",  &getautocombinethreshold,  false, {} },
     { "wallet",             "abandontransaction",       &abandontransaction,       false, {"txid"} },
