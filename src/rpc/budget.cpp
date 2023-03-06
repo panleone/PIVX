@@ -331,7 +331,7 @@ UniValue getbudgetvotes(const JSONRPCRequest& request)
 
     std::string strProposalName = SanitizeString(request.params[0].get_str());
     const CBudgetProposal* pbudgetProposal = g_budgetman.FindProposalByName(strProposalName);
-    if (pbudgetProposal == NULL) throw std::runtime_error("Unknown proposal name");
+    if (pbudgetProposal == nullptr) throw std::runtime_error("Unknown proposal name");
     return pbudgetProposal->GetVotesArray();
 }
 
@@ -455,7 +455,7 @@ UniValue getbudgetinfo(const JSONRPCRequest& request)
     if (request.params.size() == 1) {
         std::string strProposalName = SanitizeString(request.params[0].get_str());
         const CBudgetProposal* pbudgetProposal = g_budgetman.FindProposalByName(strProposalName);
-        if (pbudgetProposal == NULL) throw std::runtime_error("Unknown proposal name");
+        if (pbudgetProposal == nullptr) throw std::runtime_error("Unknown proposal name");
         UniValue bObj(UniValue::VOBJ);
         budgetToJSON(pbudgetProposal, bObj, nCurrentHeight);
         ret.push_back(bObj);
@@ -704,7 +704,7 @@ UniValue mnfinalbudget(const JSONRPCRequest& request)
 
         LOCK(g_budgetman.cs_budgets);
         CFinalizedBudget* pfinalBudget = g_budgetman.FindFinalizedBudget(hash);
-        if (pfinalBudget == NULL) return "Unknown budget hash";
+        if (pfinalBudget == nullptr) return "Unknown budget hash";
         return pfinalBudget->GetVotesObject();
     }
 

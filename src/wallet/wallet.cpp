@@ -799,7 +799,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         encrypted_batch = new WalletBatch(*database);
         if (!encrypted_batch->TxnBegin()) {
             delete encrypted_batch;
-            encrypted_batch = NULL;
+            encrypted_batch = nullptr;
             return false;
         }
         encrypted_batch->WriteMasterKey(nMasterKeyMaxID, kMasterKey);
@@ -824,7 +824,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         }
 
         delete encrypted_batch;
-        encrypted_batch = NULL;
+        encrypted_batch = nullptr;
 
         Lock();
         Unlock(strWalletPassphrase);
@@ -1052,7 +1052,7 @@ void CWallet::AddExternalNotesDataToTx(CWalletTx& wtx) const
 /**
  * Add a transaction to the wallet, or update it. pIndex and posInBlock should
  * be set when the transaction was known to be included in a block.  When
- * pIndex == NULL, then wallet state is not updated in AddToWallet, but
+ * pIndex == nullptr, then wallet state is not updated in AddToWallet, but
  * notifications happen and cached balances are marked dirty.
  *
  * If fUpdate is true, existing transactions will be updated.
@@ -2023,7 +2023,7 @@ void CWalletTx::RelayWalletTransaction(CConnman* connman)
 std::set<uint256> CWalletTx::GetConflicts() const
 {
     std::set<uint256> result;
-    if (pwallet != NULL) {
+    if (pwallet != nullptr) {
         uint256 myHash = GetHash();
         result = pwallet->GetConflicts(myHash);
         result.erase(myHash);
@@ -2703,7 +2703,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
     // List of values less than target
     std::pair<CAmount, std::pair<const CWalletTx*, unsigned int> > coinLowestLarger;
     coinLowestLarger.first = std::numeric_limits<CAmount>::max();
-    coinLowestLarger.second.first = NULL;
+    coinLowestLarger.second.first = nullptr;
     std::vector<std::pair<CAmount, std::pair<const CWalletTx*, unsigned int> > > vValue;
     CAmount nTotalLower = 0;
 
@@ -2749,7 +2749,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
     }
 
     if (nTotalLower < nTargetValue) {
-        if (coinLowestLarger.second.first == NULL)
+        if (coinLowestLarger.second.first == nullptr)
                 return false;
         setCoinsRet.insert(coinLowestLarger.second);
         nValueRet += coinLowestLarger.first;
@@ -4457,7 +4457,7 @@ void CWallet::SetNull()
     nWalletVersion = FEATURE_BASE;
     nWalletMaxVersion = FEATURE_BASE;
     nMasterKeyMaxID = 0;
-    encrypted_batch = NULL;
+    encrypted_batch = nullptr;
     nOrderPosNext = 0;
     nNextResend = 0;
     nLastResend = 0;

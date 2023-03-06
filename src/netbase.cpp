@@ -115,13 +115,13 @@ bool static LookupIntern(const std::string& name, std::vector<CNetAddr>& vIP, un
 #else
     aiHint.ai_flags = fAllowLookup ? AI_ADDRCONFIG : AI_NUMERICHOST;
 #endif
-    struct addrinfo* aiRes = NULL;
-    int nErr = getaddrinfo(name.c_str(), NULL, &aiHint, &aiRes);
+    struct addrinfo* aiRes = nullptr;
+    int nErr = getaddrinfo(name.c_str(), nullptr, &aiHint, &aiRes);
     if (nErr)
         return false;
 
     struct addrinfo* aiTrav = aiRes;
-    while (aiTrav != NULL && (nMaxSolutions == 0 || vIP.size() < nMaxSolutions)) {
+    while (aiTrav != nullptr && (nMaxSolutions == 0 || vIP.size() < nMaxSolutions)) {
         CNetAddr resolved;
         if (aiTrav->ai_family == AF_INET) {
             assert(aiTrav->ai_addrlen >= sizeof(sockaddr_in));

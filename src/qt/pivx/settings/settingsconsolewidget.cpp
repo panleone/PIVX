@@ -45,7 +45,7 @@ const struct {
         {"cmd-reply", ":/icons/ic-transaction-sent"},
         {"cmd-error", ":/icons/ic-transaction-sent"},
         {"misc", ":/icons/ic-transaction-staked"},
-        {NULL, NULL}};
+        {nullptr, nullptr}};
 
 SettingsConsoleWidget::SettingsConsoleWidget(PIVXGUI* _window, QWidget *parent) :
     PWidget(_window,parent),
