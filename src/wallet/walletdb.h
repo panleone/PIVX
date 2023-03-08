@@ -165,7 +165,7 @@ public:
     bool WriteStakeSplitThreshold(const CAmount& nStakeSplitThreshold);
     bool WriteUseCustomFee(bool fUse);
     bool WriteCustomFeeValue(const CAmount& nCustomFee);
-    bool WriteAutoCombineSettings(bool fEnable, CAmount nCombineThreshold);
+    bool WriteAutoCombineSettings(bool fEnable, CAmount nCombineThreshold, int frequency);
 
     bool ReadPool(int64_t nPool, CKeyPool& keypool);
     bool WritePool(int64_t nPool, const CKeyPool& keypool);

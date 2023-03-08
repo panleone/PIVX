@@ -4267,6 +4267,7 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
     // Autocombine settings
     obj.pushKV("autocombine_enabled", pwallet->fCombineDust);
     obj.pushKV("autocombine_threshold", ValueFromAmount(pwallet->nAutoCombineThreshold));
+    obj.pushKV("autocombine_frequency", pwallet->frequency);
 
     // Keypool information
     obj.pushKV("keypoololdest", pwallet->GetOldestKeyPoolTime());
@@ -4449,54 +4450,6 @@ UniValue getstakesplitthreshold(const JSONRPCRequest& request)
     return ValueFromAmount(pwallet->GetStakeSplitThreshold());
 }
 
-UniValue autocombinerewards(const JSONRPCRequest& request)
-{
-    if (!IsDeprecatedRPCEnabled("autocombinerewards")) {
-        if (request.fHelp) {
-            throw std::runtime_error("autocombinerewards (Deprecated, will be removed in v6.0. To use this command, start pivxd with -deprecatedrpc=autocombinerewards)");
-        }
-        throw JSONRPCError(RPC_METHOD_DEPRECATED, "autocombinerewards is deprecated and will be removed in v6.0. To use this command, start pivxd with -deprecatedrpc=autocombinerewards");
-    }
-
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
-
-    if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
-        return NullUniValue;
-
-    bool fEnable = !request.params.empty() && request.params[0].get_bool();
-
-    if (request.fHelp || request.params.empty() || (fEnable && request.params.size() != 2) || request.params.size() > 2)
-        throw std::runtime_error(
-            "autocombinerewards enable ( threshold )\n"
-            "\nDEPRECATED!!! This command has been replaced with setautocombinethreshold and getautocombinethreshold and will be removed in a future version!!!\n"
-            "\nWallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same PIVX address\n"
-            "When autocombinerewards runs it will create a transaction, and therefore will be subject to transaction fees.\n"
-
-            "\nArguments:\n"
-            "1. enable          (boolean, required) Enable auto combine (true) or disable (false)\n"
-            "2. threshold       (numeric, optional, required if enable=True) Threshold amount (default: 0)\n"
-
-            "\nExamples:\n" +
-            HelpExampleCli("autocombinerewards", "true 500") + HelpExampleRpc("autocombinerewards", "true 500"));
-
-    WalletBatch batch(pwallet->GetDBHandle());
-    CAmount nThreshold = 0;
-
-    if (fEnable && request.params.size() > 1) {
-        nThreshold = AmountFromValue(request.params[1]);
-        if (nThreshold < COIN)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("The threshold value cannot be less than %s", FormatMoney(COIN)));
-    }
-
-    pwallet->fCombineDust = fEnable;
-    pwallet->nAutoCombineThreshold = nThreshold;
-
-    if (!batch.WriteAutoCombineSettings(fEnable, nThreshold))
-        throw std::runtime_error("Changed settings in wallet but failed to save to database\n");
-
-    return NullUniValue;
-}
-
 UniValue setautocombinethreshold(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -4504,7 +4457,7 @@ UniValue setautocombinethreshold(const JSONRPCRequest& request)
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
         return NullUniValue;
 
-    if (request.fHelp || request.params.empty() || request.params.size() > 2)
+    if (request.fHelp || request.params.empty() || request.params.size() > 3)
         throw std::runtime_error(
             "setautocombinethreshold enable ( value )\n"
             "\nThis will set the auto-combine threshold value.\n"
@@ -4514,21 +4467,24 @@ UniValue setautocombinethreshold(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. enable          (boolean, required) Enable auto combine (true) or disable (false).\n"
             "2. threshold       (numeric, optional. required if enable is true) Threshold amount. Must be greater than 1.\n"
+            "3. frequency       (numeric, optional. default value is 30 if not provided). Check for UTXOs to autocombine each N blocks where N is the frequency.\n"
 
             "\nResult:\n"
             "{\n"
             "  \"enabled\": true|false,      (boolean) true if auto-combine is enabled, otherwise false\n"
             "  \"threshold\": n.nnn,         (numeric) auto-combine threshold in PIV\n"
+            "  \"frequency\": n.nnn,         (numeric) auto-combine frequency in blocks\n"
             "  \"saved\": true|false         (boolean) true if setting was saved to the database, otherwise false\n"
             "}\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("setautocombinethreshold", "true 500.12") + HelpExampleRpc("setautocombinethreshold", "true, 500.12"));
+            HelpExampleCli("setautocombinethreshold", "true 500.12 40") + HelpExampleRpc("setautocombinethreshold", "true, 500.12, 40"));
 
-    RPCTypeCheck(request.params, {UniValue::VBOOL, UniValue::VNUM});
+    RPCTypeCheck(request.params, {UniValue::VBOOL, UniValue::VNUM, UniValue::VNUM});
 
     bool fEnable = request.params[0].get_bool();
     CAmount nThreshold = 0;
+    int frequency = 30;
 
     if (fEnable) {
         if (request.params.size() < 2) {
@@ -4537,6 +4493,12 @@ UniValue setautocombinethreshold(const JSONRPCRequest& request)
         nThreshold = AmountFromValue(request.params[1]);
         if (nThreshold < COIN)
             throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("The threshold value cannot be less than %s", FormatMoney(COIN)));
+        if (request.params.size() == 3) {
+            frequency = request.params[2].get_int();
+            if (frequency <= 0) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Frequency must be greater than 0"));
+            }
+        }
     }
 
     WalletBatch batch(pwallet->GetDBHandle());
@@ -4545,11 +4507,13 @@ UniValue setautocombinethreshold(const JSONRPCRequest& request)
         LOCK(pwallet->cs_wallet);
         pwallet->fCombineDust = fEnable;
         pwallet->nAutoCombineThreshold = nThreshold;
+        pwallet->frequency = frequency;
 
         UniValue result(UniValue::VOBJ);
         result.pushKV("enabled", fEnable);
         result.pushKV("threshold", ValueFromAmount(pwallet->nAutoCombineThreshold));
-        if (batch.WriteAutoCombineSettings(fEnable, nThreshold)) {
+        result.pushKV("frequency", frequency);
+        if (batch.WriteAutoCombineSettings(fEnable, nThreshold, frequency)) {
             result.pushKV("saved", "true");
         } else {
             result.pushKV("saved", "false");
@@ -4569,12 +4533,13 @@ UniValue getautocombinethreshold(const JSONRPCRequest& request)
     if (request.fHelp || !request.params.empty())
         throw std::runtime_error(
             "getautocombinethreshold\n"
-            "\nReturns the current threshold for auto combining UTXOs, if any\n"
+            "\nReturns the current threshold and frequency for auto combining UTXOs, if any\n"
 
             "\nResult:\n"
             "{\n"
             "  \"enabled\": true|false,        (boolean) true if auto-combine is enabled, otherwise false\n"
             "  \"threshold\": n.nnn            (numeric) the auto-combine threshold amount in PIV\n"
+            "  \"frequency\": n.nnn            (numeric) the auto-combine frequency in blocks\n"
             "}\n"
 
             "\nExamples:\n" +
@@ -4585,6 +4550,7 @@ UniValue getautocombinethreshold(const JSONRPCRequest& request)
     UniValue result(UniValue::VOBJ);
     result.pushKV("enabled", pwallet->fCombineDust);
     result.pushKV("threshold", ValueFromAmount(pwallet->nAutoCombineThreshold));
+    result.pushKV("frequency", pwallet->frequency);
 
     return result;
 }
@@ -4724,7 +4690,6 @@ static const CRPCCommand commands[] =
 { //  category              name                        actor (function)           okSafe argNames
   //  --------------------- ------------------------    -----------------------    ------ --------
     { "wallet",             "getaddressinfo",           &getaddressinfo,           true,  {"address"} },
-    { "wallet",             "autocombinerewards",       &autocombinerewards,       false, {"enable","threshold"} },
     { "wallet",             "setautocombinethreshold",  &setautocombinethreshold,  false, {"enable","threshold"} },
     { "wallet",             "getautocombinethreshold",  &getautocombinethreshold,  false, {} },
     { "wallet",             "abandontransaction",       &abandontransaction,       false, {"txid"} },

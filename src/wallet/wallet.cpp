@@ -1340,7 +1340,7 @@ void CWallet::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const 
     // If turned on Auto Combine will scan wallet for dust to combine
     // Outside of the cs_wallet lock because requires cs_main for now
     // due CreateTransaction/CommitTransaction dependency.
-    if (fCombineDust) {
+    if (fCombineDust && pindex->nHeight % frequency == 0) {
         AutoCombineDust(g_connman.get());
     }
 }
@@ -4054,8 +4054,8 @@ void CWallet::AutoCombineDust(CConnman* connman)
             vRewardCoins.push_back(out);
             nTotalRewardsValue += out.Value();
 
-            // Combine to the threshold and not way above
-            if (nTotalRewardsValue > nAutoCombineThreshold)
+            // Combine to the threshold and not way above considering the safety margin.
+            if ((nTotalRewardsValue - (nTotalRewardsValue / 10)) > nAutoCombineThreshold)
                 break;
 
             // Around 180 bytes per input. We use 190 to be certain
@@ -4107,7 +4107,7 @@ void CWallet::AutoCombineDust(CConnman* connman)
         }
 
         //we don't combine below the threshold unless the fees are 0 to avoid paying fees over fees over fees
-        if (!maxSize && nTotalRewardsValue < nAutoCombineThreshold && nFeeRet > 0)
+        if (!maxSize && vecSend[0].nAmount < nAutoCombineThreshold && nFeeRet > 0)
             continue;
 
         const CWallet::CommitResult& res = CommitTransaction(wtx, keyChange, connman);
@@ -4116,7 +4116,7 @@ void CWallet::AutoCombineDust(CConnman* connman)
             continue;
         }
 
-        LogPrintf("AutoCombineDust sent transaction\n");
+        LogPrintf("AutoCombineDust sent transaction. Fee=%d, Total value=%d, Sending=%d\n", nFeeRet, nTotalRewardsValue, vecSend[0].nAmount);
 
         delete coinControl;
     }
@@ -4483,6 +4483,7 @@ void CWallet::SetNull()
     //Auto Combine Dust
     fCombineDust = false;
     nAutoCombineThreshold = 0;
+    frequency = 30;
 
     // Sapling.
     m_sspk_man->nWitnessCacheSize = 0;
