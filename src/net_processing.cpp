@@ -632,6 +632,18 @@ void Misbehaving(NodeId pnode, int howmuch, const std::string& message) EXCLUSIV
     }
 }
 
+// Requires cs_main.
+bool IsBanned(NodeId pnode)
+{
+    CNodeState* state = State(pnode);
+    if (state == nullptr)
+        return false;
+    if (state->fShouldBan) {
+        return true;
+    }
+    return false;
+}
+
 static void CheckBlockSpam(NodeId nodeId, const uint256& hashBlock)
 {
     // Block spam filtering
