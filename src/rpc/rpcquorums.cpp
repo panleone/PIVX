@@ -10,10 +10,98 @@
 #include "llmq/quorums_commitment.h"
 #include "llmq/quorums_debug.h"
 #include "llmq/quorums_dkgsession.h"
+#include "llmq/quorums_signing.h"
 #include "rpc/server.h"
 #include "validation.h"
 
 #include <string>
+
+UniValue signsession(const JSONRPCRequest& request)
+{
+    if (!Params().IsTestChain()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "command available only for RegTest and TestNet network");
+    }
+    if (request.fHelp || (request.params.size() != 3)) {
+        throw std::runtime_error(
+            "signsession llmqType \"id\" \"msgHash\"\n"
+            "\nArguments:\n"
+            "1. llmqType              (int, required) LLMQ type.\n"
+            "2. \"id\"                  (string, required) Request id.\n"
+            "3. \"msgHash\"             (string, required) Message hash.\n"
+
+            "\nResult:\n"
+            "n      (bool) True if the sign was succesfull false otherwise\n"
+
+            "\nExample:\n" +
+            HelpExampleRpc("signsession", "100 \"xxx\", \"xxx\"") + HelpExampleCli("signsession", "100 \"xxx\", \"xxx\""));
+    }
+    Consensus::LLMQType llmqType = static_cast<Consensus::LLMQType>(request.params[0].get_int());
+    if (!Params().GetConsensus().llmqs.count(llmqType)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LLMQ type");
+    }
+
+    uint256 id = ParseHashV(request.params[1], "id");
+    uint256 msgHash = ParseHashV(request.params[2], "msgHash");
+    return llmq::quorumSigningManager->AsyncSignIfMember(llmqType, id, msgHash);
+}
+
+UniValue hasrecoverysignature(const JSONRPCRequest& request)
+{
+    if (!Params().IsTestChain()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "command available only for RegTest and TestNet network");
+    }
+    if (request.fHelp || (request.params.size() != 3)) {
+        throw std::runtime_error(
+            "hasrecoverysignature llmqType \"id\" \"msgHash\"\n"
+            "\nArguments:\n"
+            "1. llmqType              (int, required) LLMQ type.\n"
+            "2. \"id\"                  (string, required) Request id.\n"
+            "3. \"msgHash\"             (string, required) Message hash.\n"
+
+            "\nResult:\n"
+            "n      (bool) True if you have already received a recovery signature for the given signing session\n"
+
+            "\nExample:\n" +
+            HelpExampleRpc("hasrecoverysignature", "100 \"xxx\", \"xxx\"") + HelpExampleCli("hasrecoverysignature", "100 \"xxx\", \"xxx\""));
+    }
+    Consensus::LLMQType llmqType = static_cast<Consensus::LLMQType>(request.params[0].get_int());
+    if (!Params().GetConsensus().llmqs.count(llmqType)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LLMQ type");
+    }
+
+    uint256 id = ParseHashV(request.params[1], "id");
+    uint256 msgHash = ParseHashV(request.params[2], "msgHash");
+    return llmq::quorumSigningManager->HasRecoveredSig(llmqType, id, msgHash);
+}
+
+UniValue issessionconflicting(const JSONRPCRequest& request)
+{
+    if (!Params().IsTestChain()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "command available only for RegTest and TestNet network");
+    }
+    if (request.fHelp || (request.params.size() != 3)) {
+        throw std::runtime_error(
+            "issessionconflicting llmqType \"id\" \"msgHash\"\n"
+            "\nArguments:\n"
+            "1. llmqType              (int, required) LLMQ type.\n"
+            "2. \"id\"                  (string, required) Request id.\n"
+            "3. \"msgHash\"             (string, required) Message hash.\n"
+
+            "\nResult:\n"
+            "n      (bool) True if you have the recovery signature of an another signing session with same id but different msgHash\n"
+
+            "\nExample:\n" +
+            HelpExampleRpc("issessionconflicting", "100 \"xxx\", \"xxx\"") + HelpExampleCli("issessionconflicting", "100 \"xxx\", \"xxx\""));
+    }
+    Consensus::LLMQType llmqType = static_cast<Consensus::LLMQType>(request.params[0].get_int());
+    if (!Params().GetConsensus().llmqs.count(llmqType)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LLMQ type");
+    }
+
+    uint256 id = ParseHashV(request.params[1], "id");
+    uint256 msgHash = ParseHashV(request.params[2], "msgHash");
+    return llmq::quorumSigningManager->IsConflicting(llmqType, id, msgHash);
+}
 
 UniValue listquorums(const JSONRPCRequest& request)
 {
@@ -297,6 +385,9 @@ static const CRPCCommand commands[] =
     { "evo",         "quorumdkgstatus",        &quorumdkgstatus,     true,  {"detail_level"}  },
     { "evo",         "listquorums",            &listquorums,         true,  {"count"}  },
     { "evo",         "getquoruminfo",          &getquoruminfo,       true,  {"llmqType", "quorumHash", "includeSkShare"}  },
+    { "hidden",      "signsession",            &signsession,         true,  {"llmqType", "id", "msgHash"}},
+    { "hidden",      "hasrecoverysignature",   &hasrecoverysignature,true,  {"llmqType", "id", "msgHash"}},
+    { "hidden",      "issessionconflicting",   &issessionconflicting,true,  {"llmqType", "id", "msgHash"}},
  };
 
 void RegisterQuorumsRPCCommands(CRPCTable& tableRPC)
