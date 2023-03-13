@@ -13,9 +13,10 @@
 #include "evo/mnauth.h"
 #include "llmq/quorums_blockprocessor.h"
 #include "llmq/quorums_dkgsessionmgr.h"
-#include "masternodeman.h"
+#include "llmq/quorums_signing.h"
 #include "masternode-payments.h"
 #include "masternode-sync.h"
+#include "masternodeman.h"
 #include "merkleblock.h"
 #include "netbase.h"
 #include "netmessagemaker.h"
@@ -25,8 +26,8 @@
 #include "sporkdb.h"
 #include "streams.h"
 #include "tiertwo/tiertwo_sync_state.h"
-#include "validation.h"
 #include "util/validation.h"
+#include "validation.h"
 
 int64_t nTimeBestReceived = 0;  // Used only to inform the wallet of when we last received a block
 
@@ -857,8 +858,8 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     case MSG_QUORUM_JUSTIFICATION:
     case MSG_QUORUM_PREMATURE_COMMITMENT:
         return llmq::quorumDKGSessionManager->AlreadyHave(inv);
-    case MSG_QUORUM_RECOVERED_SIG: {
-    } // TODO: implement};
+    case MSG_QUORUM_RECOVERED_SIG:
+        return llmq::quorumSigningManager->AlreadyHave(inv);
     }
 
     // Don't know what it is, just say we already got one
@@ -1033,7 +1034,11 @@ bool static PushTierTwoGetDataRequest(const CInv& inv,
     }
     if (inv.type == MSG_QUORUM_RECOVERED_SIG) {
         if (!deterministicMNManager->IsDIP3Enforced()) return false;
-        // TODO: IMPLEMENT THIS CASE
+        llmq::CRecoveredSig o;
+        if (llmq::quorumSigningManager->GetRecoveredSigForGetData(inv.hash, o)) {
+            connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::QSIGREC, o));
+            return true;
+        }
     }
     // nothing was pushed.
     return false;

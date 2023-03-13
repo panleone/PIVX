@@ -74,7 +74,7 @@ void InitTierTwoPreChainLoad(bool fReindex)
 void InitTierTwoPostCoinsCacheLoad()
 {
     // Initialize LLMQ system
-    llmq::InitLLMQSystem(*evoDb);
+    llmq::InitLLMQSystem(*evoDb, false);
 }
 
 void InitTierTwoChainTip()

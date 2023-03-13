@@ -41,10 +41,9 @@ std::set<uint256> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType)
 
 std::set<NodeId> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType, uint256 quorumHash)
 {
-    LOCK(cs_vPendingMasternodes);
     std::set<NodeId> result;
-    auto it = masternodeQuorumNodes.find(std::make_pair(llmqType, quorumHash));
-    if (it == masternodeQuorumNodes.end()) {
+    auto it = WITH_LOCK(cs_vPendingMasternodes, return masternodeQuorumRelayMembers.find(std::make_pair(llmqType, quorumHash)));
+    if (WITH_LOCK(cs_vPendingMasternodes, return it == masternodeQuorumRelayMembers.end())) {
         return {};
     }
     for (const auto pnode : connman->GetvNodes()) {

@@ -95,6 +95,7 @@ UniValue CDKGDebugSessionStatus::ToJson(int detailLevel) const
     push(receivedComplaints, "receivedComplaints");
     push(receivedJustifications, "receivedJustifications");
     push(receivedPrematureCommitments, "receivedPrematureCommitments");
+    ret.pushKV("receivedFinalCommitment", receivedFinalCommitment);
 
     if (detailLevel == 2) {
         UniValue arr(UniValue::VARR);

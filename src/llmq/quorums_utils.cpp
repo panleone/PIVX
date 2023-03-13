@@ -5,7 +5,12 @@
 #include "llmq/quorums_utils.h"
 
 #include "bls/bls_wrapper.h"
+#include "chainparams.h"
 #include "hash.h"
+#include "quorums.h"
+#include "quorums_utils.h"
+#include "random.h"
+#include "validation.h"
 
 namespace llmq
 {
@@ -41,6 +46,24 @@ std::string ToHexStr(const std::vector<bool>& vBits)
         vBytes[i / 8] |= vBits[i] << (i % 8);
     }
     return HexStr(vBytes);
+}
+
+bool IsQuorumActive(Consensus::LLMQType llmqType, const uint256& quorumHash)
+{
+    AssertLockHeld(cs_main);
+
+    auto& params = Params().GetConsensus().llmqs.at(llmqType);
+
+    // sig shares and recovered sigs are only accepted from recent/active quorums
+    // we allow one more active quorum as specified in consensus, as otherwise there is a small window where things could
+    // fail while we are on the brink of a new quorum
+    auto quorums = quorumManager->ScanQuorums(llmqType, (int)params.signingActiveQuorumCount + 1);
+    for (auto& q : quorums) {
+        if (q->pindexQuorum->GetBlockHash() == quorumHash) {
+            return true;
+        }
+    }
+    return false;
 }
 
 } // namespace llmq::utils

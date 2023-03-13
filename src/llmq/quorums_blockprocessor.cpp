@@ -9,11 +9,12 @@
 #include "chain.h"
 #include "chainparams.h"
 #include "consensus/validation.h"
-#include "llmq/quorums_utils.h"
 #include "evo/evodb.h"
 #include "evo/specialtx_validation.h"
+#include "llmq/quorums_utils.h"
 #include "net.h"
 #include "primitives/block.h"
+#include "quorums_debug.h"
 #include "spork.h"
 #include "validation.h"
 
@@ -404,6 +405,13 @@ void CQuorumBlockProcessor::AddAndRelayMinableCommitment(const CFinalCommitment&
         }
         // add new commitment
         minableCommitments.emplace(commitmentHash, fqc);
+        quorumDKGDebugManager->UpdateLocalSessionStatus((Consensus::LLMQType)fqc.llmqType, [&](CDKGDebugSessionStatus& status) {
+            if (status.quorumHash != fqc.quorumHash || status.receivedFinalCommitment) {
+                return false;
+            }
+            status.receivedFinalCommitment = true;
+            return true;
+        });
     }
     // relay commitment inv (if DKG is not in maintenance)
     if (!sporkManager.IsSporkActive(SPORK_22_LLMQ_DKG_MAINTENANCE)) {
