@@ -7,10 +7,11 @@
 
 #include "chainparams.h"
 #include "evo/deterministicmns.h"
+#include "llmq/quorums.h"
+#include "netmessagemaker.h"
 #include "scheduler.h"
 #include "tiertwo/masternode_meta_manager.h" // for g_mmetaman
 #include "tiertwo/tiertwo_sync_state.h"
-#include "netmessagemaker.h"
 
 TierTwoConnMan::TierTwoConnMan(CConnman* _connman) : connman(_connman) {}
 TierTwoConnMan::~TierTwoConnMan() { connman = nullptr; }
@@ -51,6 +52,13 @@ std::set<NodeId> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType, ui
             continue;
         }
         if (!it->second.count(pnode->verifiedProRegTxHash)) {
+            continue;
+        }
+        // is it a valid member?
+        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)) {
+            continue;
+        }
+        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)->IsValidMember(pnode->verifiedProRegTxHash)) {
             continue;
         }
         result.emplace(pnode->GetId());
