@@ -10,7 +10,6 @@
 #include "scheduler.h"
 #include "tiertwo/masternode_meta_manager.h" // for g_mmetaman
 #include "tiertwo/tiertwo_sync_state.h"
-#include "net.h"
 #include "netmessagemaker.h"
 
 TierTwoConnMan::TierTwoConnMan(CConnman* _connman) : connman(_connman) {}
@@ -36,6 +35,26 @@ std::set<uint256> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType)
             continue;
         }
         result.emplace(p.first.second);
+    }
+    return result;
+}
+
+std::set<NodeId> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType, uint256 quorumHash)
+{
+    LOCK(cs_vPendingMasternodes);
+    std::set<NodeId> result;
+    auto it = masternodeQuorumNodes.find(std::make_pair(llmqType, quorumHash));
+    if (it == masternodeQuorumNodes.end()) {
+        return {};
+    }
+    for (const auto pnode : connman->GetvNodes()) {
+        if (pnode->fDisconnect) {
+            continue;
+        }
+        if (!it->second.count(pnode->verifiedProRegTxHash)) {
+            continue;
+        }
+        result.emplace(pnode->GetId());
     }
     return result;
 }

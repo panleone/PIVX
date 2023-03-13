@@ -324,6 +324,7 @@ public:
     bool RemoveAddedNode(const std::string& node);
     std::vector<AddedNodeInfo> GetAddedNodeInfo();
 
+    std::vector<CNode*> GetvNodes();
     size_t GetNodeCount(NumConnections num);
     size_t GetMaxOutboundNodeCount();
     void GetNodeStats(std::vector<CNodeStats>& vstats);
@@ -886,7 +887,7 @@ public:
         }
     }
 
-    void AskFor(const CInv& inv);
+    void AskFor(const CInv& inv, int64_t doubleRequestDelay = 2 * 60 * 1000000);
     // inv response received, clear it from the waiting inv set.
     void AskForInvReceived(const uint256& invHash);
 
