@@ -150,6 +150,7 @@ BITCOIN_CORE_H = \
   bip38.h \
   bloom.h \
   blocksignature.h \
+  bls/bls_batchverifier.h \
   bls/bls_ies.h \
   bls/bls_worker.h \
   bls/bls_wrapper.h \
