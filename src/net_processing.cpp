@@ -857,7 +857,10 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     case MSG_QUORUM_JUSTIFICATION:
     case MSG_QUORUM_PREMATURE_COMMITMENT:
         return llmq::quorumDKGSessionManager->AlreadyHave(inv);
+    case MSG_QUORUM_RECOVERED_SIG: {
+    } // TODO: implement};
     }
+
     // Don't know what it is, just say we already got one
     return true;
 }
@@ -1028,7 +1031,10 @@ bool static PushTierTwoGetDataRequest(const CInv& inv,
             return true;
         }
     }
-
+    if (inv.type == MSG_QUORUM_RECOVERED_SIG) {
+        if (!deterministicMNManager->IsDIP3Enforced()) return false;
+        // TODO: IMPLEMENT THIS CASE
+    }
     // nothing was pushed.
     return false;
 }
@@ -1116,7 +1122,8 @@ bool static IsTierTwoInventoryTypeKnown(int type)
            type == MSG_QUORUM_CONTRIB ||
            type == MSG_QUORUM_COMPLAINT ||
            type == MSG_QUORUM_JUSTIFICATION ||
-           type == MSG_QUORUM_PREMATURE_COMMITMENT;
+           type == MSG_QUORUM_PREMATURE_COMMITMENT ||
+           type == MSG_QUORUM_RECOVERED_SIG;
 }
 
 void static ProcessGetData(CNode* pfrom, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
@@ -1566,7 +1573,14 @@ bool static ProcessMessage(CNode* pfrom, std::string strCommand, CDataStream& vR
                 if (!fAlreadyHave) {
                     bool allowWhileInIBD = allowWhileInIBDObjs.count(inv.type);
                     if (allowWhileInIBD || !IsInitialBlockDownload()) {
-                        pfrom->AskFor(inv);
+                        int64_t doubleRequestDelay = 2 * 60 * 1000000;
+                        // some messages need to be re-requested faster when the first announcing peer did not answer to GETDATA
+                        switch (inv.type) {
+                        case MSG_QUORUM_RECOVERED_SIG:
+                            doubleRequestDelay = 5 * 1000000;
+                            break;
+                        }
+                        pfrom->AskFor(inv, doubleRequestDelay);
                     }
                 }
             }

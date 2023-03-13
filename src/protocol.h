@@ -293,6 +293,10 @@ extern const char* QCONTRIB;
 extern const char* QCOMPLAINT;
 extern const char* QJUSTIFICATION;
 extern const char* QPCOMMITMENT;
+extern const char* QSIGSHARESINV;
+extern const char* QGETSIGSHARES;
+extern const char* QBSIGSHARES;
+extern const char* QSIGREC;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -424,16 +428,15 @@ public:
 };
 
 /** getdata message types */
-enum GetDataMsg
-{
+enum GetDataMsg {
     UNDEFINED = 0,
     MSG_TX,
     MSG_BLOCK,
     // Nodes may always request a MSG_FILTERED_BLOCK in a getdata, however,
     // MSG_FILTERED_BLOCK should not appear in any invs except as a part of getdata.
     MSG_FILTERED_BLOCK,
-    MSG_TXLOCK_REQUEST,     // Deprecated
-    MSG_TXLOCK_VOTE,        // Deprecated
+    MSG_TXLOCK_REQUEST, // Deprecated
+    MSG_TXLOCK_VOTE,    // Deprecated
     MSG_SPORK,
     MSG_MASTERNODE_WINNER,
     MSG_MASTERNODE_SCANNING_ERROR,
@@ -444,13 +447,14 @@ enum GetDataMsg
     MSG_MASTERNODE_QUORUM,
     MSG_MASTERNODE_ANNOUNCE,
     MSG_MASTERNODE_PING,
-    MSG_DSTX,               // Deprecated
+    MSG_DSTX, // Deprecated
     MSG_QUORUM_FINAL_COMMITMENT,
     MSG_QUORUM_CONTRIB,
     MSG_QUORUM_COMPLAINT,
     MSG_QUORUM_JUSTIFICATION,
     MSG_QUORUM_PREMATURE_COMMITMENT,
-    MSG_TYPE_MAX = MSG_QUORUM_PREMATURE_COMMITMENT
+    MSG_QUORUM_RECOVERED_SIG,
+    MSG_TYPE_MAX = MSG_QUORUM_RECOVERED_SIG,
 };
 
 /** inv message data */
