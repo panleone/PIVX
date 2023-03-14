@@ -389,7 +389,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: ARM 32-bit [GOAL:install]  [no unit or functional tests]
+          - name: ARM 32-bit [GOAL:install] [no unit or functional tests]
             id: ARM32
             os: ubuntu-20.04
             host: arm-linux-gnueabihf
@@ -411,7 +411,7 @@ jobs:
             goal: install
             BITCOIN_CONFIG: "--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
 
-          - name: Win64  [GOAL:deploy] [no unit or functional tests]
+          - name: Win64 [GOAL:deploy] [no unit or functional tests]
             id: Win64
             os: ubuntu-20.04
             host: x86_64-w64-mingw32
@@ -421,7 +421,7 @@ jobs:
             goal: deploy
             BITCOIN_CONFIG: "--with-gui=auto --enable-reduce-exports --disable-online-rust"
 
-          - name: x86_64 Linux  [GOAL:install]  [focal]
+          - name: x86_64 Linux [GOAL:install]
             id: Linux-x86_64
             os: ubuntu-20.04
             host: x86_64-unknown-linux-gnu
@@ -432,7 +432,7 @@ jobs:
             test_runner_extra: "--coverage --all  --exclude feature_dbcrash"
             BITCOIN_CONFIG: "--enable-zmq --with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
 
-          - name: x86_64 Linux  [GOAL:install]  [focal] [no GUI no unit tests - only functional tests on legacy pre-HD wallets]
+          - name: x86_64 Linux [GOAL:install] [no GUI, no unit tests, only functional tests on legacy pre-HD wallets]
             id: Linux-x86_64-nogui
             os: ubuntu-20.04
             host: x86_64-unknown-linux-gnu
@@ -443,7 +443,7 @@ jobs:
             test_runner_extra: "--legacywallet"
             BITCOIN_CONFIG: "--enable-zmq --with-gui=no --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
 
-          - name: macOS 10.12  [GOAL:deploy] [no functional tests]
+          - name: macOS 10.12 [GOAL:deploy] [no unit or functional tests]
             id: macOS10.12
             os: ubuntu-20.04
             host: x86_64-apple-darwin16
