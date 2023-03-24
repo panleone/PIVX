@@ -1592,7 +1592,7 @@ fi
 
 AC_CONFIG_SUBDIRS([src/chiabls])
 
-ac_configure_args="${ac_configure_args} --disable-shared --with-pic --with-bignum=no --enable-module-recovery --disable-jni"
+ac_configure_args="${ac_configure_args} --disable-shared --with-pic --with-bignum=no --enable-module-recovery --disable-jni --disable-openssl-tests"
 AC_CONFIG_SUBDIRS([src/secp256k1])
 
 AC_OUTPUT
