@@ -123,11 +123,11 @@ bool CBudgetProposal::CheckAmount(const CAmount& nTotalBudget)
     return true;
 }
 
-bool CBudgetProposal::CheckAddress()
+bool CBudgetProposal::CheckAddress(const int nCurrentHeight)
 {
-    // !TODO: There might be an issue with multisig in the coinbase on mainnet
-    // we will add support for it in a future release.
-    if (address.IsPayToScriptHash()) {
+    // Multisig is supported only after v6
+    bool isV6Enforced = Params().GetConsensus().NetworkUpgradeActive(nCurrentHeight, Consensus::UPGRADE_V6_0);
+    if (!isV6Enforced && address.IsPayToScriptHash()) {
         strInvalid = "Multisig is not currently supported.";
         return false;
     }
@@ -160,9 +160,9 @@ bool CBudgetProposal::CheckStrings()
     }
 }
 
-bool CBudgetProposal::IsWellFormed(const CAmount& nTotalBudget)
+bool CBudgetProposal::IsWellFormed(const CAmount& nTotalBudget, const int nCurrentHeight)
 {
-    return CheckStartEnd() && CheckAmount(nTotalBudget) && CheckAddress();
+    return CheckStartEnd() && CheckAmount(nTotalBudget) && CheckAddress(nCurrentHeight);
 }
 
 bool CBudgetProposal::updateExpired(int nCurrentHeight)
