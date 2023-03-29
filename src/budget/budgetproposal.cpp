@@ -5,6 +5,7 @@
 
 #include "budget/budgetproposal.h"
 #include "chainparams.h"
+#include "logging.h"
 #include "script/standard.h"
 #include "utilstrencodings.h"
 
@@ -146,9 +147,6 @@ bool CBudgetProposal::CheckAddress(const int nCurrentHeight)
     return true;
 }
 
-/* TODO: Add this to IsWellFormed() for the next hard-fork
- * This will networkly reject malformed proposal names and URLs
- */
 bool CBudgetProposal::CheckStrings()
 {
     if (strProposalName != SanitizeString(strProposalName)) {
@@ -157,11 +155,17 @@ bool CBudgetProposal::CheckStrings()
     }
     if (strURL != SanitizeString(strURL)) {
         strInvalid = "Proposal URL contains illegal characters.";
+        return false;
     }
+    return true;
 }
 
 bool CBudgetProposal::IsWellFormed(const CAmount& nTotalBudget, const int nCurrentHeight)
 {
+    bool isV6Enforced = Params().GetConsensus().NetworkUpgradeActive(nCurrentHeight, Consensus::UPGRADE_V6_0);
+    if (isV6Enforced && !CheckStrings()) {
+        return false;
+    }
     return CheckStartEnd() && CheckAmount(nTotalBudget) && CheckAddress(nCurrentHeight);
 }
 
