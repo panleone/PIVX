@@ -1030,7 +1030,7 @@ class PivxTestFramework():
 
 
     def controller_start_masternode(self, mnOwner, masternodeAlias):
-        ret = mnOwner.startmasternode("alias", "false", masternodeAlias, True)
+        ret = mnOwner.startmasternode("alias", False, masternodeAlias, True)
         assert_equal(ret["result"], "success")
         time.sleep(1)
 

@@ -413,46 +413,40 @@ UniValue startmasternode(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_MISC_ERROR, "startmasternode is not supported when deterministic masternode list is active (DIP3)");
     }
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
         return NullUniValue;
 
     std::string strCommand;
-    if (request.params.size() >= 1) {
+    if (!request.params.empty()) {
         strCommand = request.params[0].get_str();
-
-        // Backwards compatibility with legacy 'masternode' super-command forwarder
-        if (strCommand == "start") strCommand = "local";
-        if (strCommand == "start-alias") strCommand = "alias";
-        if (strCommand == "start-all") strCommand = "all";
-        if (strCommand == "start-many") strCommand = "many";
-        if (strCommand == "start-missing") strCommand = "missing";
-        if (strCommand == "start-disabled") strCommand = "disabled";
     }
 
+    if (strCommand == "local")
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Local start is deprecated. Start your masternode from the controller wallet instead.");
+    if (strCommand == "many")
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Many set is deprecated. Use either 'all', 'missing', or 'disabled'.");
+
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 4 ||
-        (request.params.size() == 2 && (strCommand != "local" && strCommand != "all" && strCommand != "many" && strCommand != "missing" && strCommand != "disabled")) ||
-        ( (request.params.size() == 3 || request.params.size() == 4) && strCommand != "alias"))
+        (strCommand == "alias" && request.params.size() < 3))
         throw std::runtime_error(
-            "startmasternode \"local|all|many|missing|disabled|alias\" lockwallet ( \"alias\" reload_conf )\n"
-            "\nAttempts to start one or more masternode(s)\n"
+            "startmasternode \"all|missing|disabled|alias\" lock_wallet ( \"alias\" reload_conf )\n"
+            "\nAttempts to start one or more masternode(s)\n" +
+            HelpRequiringPassphrase(pwallet) + "\n"
 
             "\nArguments:\n"
-            "1. set         (string, required) Specify which set of masternode(s) to start.\n"
-            "2. lockwallet  (boolean, required) Lock wallet after completion.\n"
-            "3. alias       (string) Masternode alias. Required if using 'alias' as the set.\n"
-            "4. reload_conf (boolean) if true and \"alias\" was selected, reload the masternodes.conf data from disk"
+            "1. set          (string, required) Specify which set of masternode(s) to start.\n"
+            "2. lock_wallet  (boolean, required) Lock wallet after completion.\n"
+            "3. alias        (string, optional) Masternode alias. Required if using 'alias' as the set.\n"
+            "4. reload_conf  (boolean, optional, default=False) reload the masternodes.conf data from disk"
 
-            "\nResult: (for 'local' set):\n"
-            "\"status\"     (string) Masternode status message\n"
-
-            "\nResult: (for other sets):\n"
+            "\nResult:\n"
             "{\n"
             "  \"overall\": \"xxxx\",     (string) Overall status message\n"
             "  \"detail\": [\n"
             "    {\n"
-            "      \"node\": \"xxxx\",    (string) Node name or alias\n"
+            "      \"alias\": \"xxxx\",   (string) Node alias\n"
             "      \"result\": \"xxxx\",  (string) 'success' or 'failed'\n"
             "      \"error\": \"xxxx\"    (string) Error message, if failed\n"
             "    }\n"
@@ -461,25 +455,25 @@ UniValue startmasternode(const JSONRPCRequest& request)
             "}\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("startmasternode", "\"alias\" \"0\" \"my_mn\"") + HelpExampleRpc("startmasternode", "\"alias\" \"0\" \"my_mn\""));
+            HelpExampleCli("startmasternode", "\"alias\" false \"my_mn\"") + HelpExampleRpc("startmasternode", "\"alias\" false \"my_mn\""));
 
-    bool fLock = (request.params[1].get_str() == "true" ? true : false);
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL, UniValue::VSTR, UniValue::VBOOL}, true);
 
     EnsureWalletIsUnlocked(pwallet);
 
-    if (strCommand == "local") {
-        if (!fMasterNode) throw std::runtime_error("you must set masternode=1 in the configuration\n");
+    bool fLock = request.params[1].get_bool();
+    bool fReload = request.params.size() > 3 ? request.params[3].get_bool() : false;
 
-        if (activeMasternode.GetStatus() != ACTIVE_MASTERNODE_STARTED) {
-            activeMasternode.ResetStatus();
-            if (fLock)
-                pwallet->Lock();
+    // Check reload param
+    if (fReload) {
+        masternodeConfig.clear();
+        std::string error;
+        if (!masternodeConfig.read(error)) {
+            throw std::runtime_error("Error reloading masternode.conf, " + error);
         }
-
-        return activeMasternode.GetStatusMessage();
     }
 
-    if (strCommand == "all" || strCommand == "many" || strCommand == "missing" || strCommand == "disabled") {
+    if (strCommand == "all" || strCommand == "missing" || strCommand == "disabled") {
         if ((strCommand == "missing" || strCommand == "disabled") &&
             (g_tiertwo_sync_state.GetSyncPhase() <= MASTERNODE_SYNC_LIST ||
                     g_tiertwo_sync_state.GetSyncPhase() == MASTERNODE_SYNC_FAILED)) {
@@ -491,7 +485,7 @@ UniValue startmasternode(const JSONRPCRequest& request)
 
         UniValue resultsObj(UniValue::VARR);
 
-        for (CMasternodeConfig::CMasternodeEntry mne : masternodeConfig.getEntries()) {
+        for (const CMasternodeConfig::CMasternodeEntry& mne : masternodeConfig.getEntries()) {
             UniValue statusObj(UniValue::VOBJ);
             CMasternodeBroadcast mnb;
             std::string errorMessage;
@@ -514,28 +508,19 @@ UniValue startmasternode(const JSONRPCRequest& request)
     if (strCommand == "alias") {
         std::string alias = request.params[2].get_str();
 
-        // Check reload param
-        if(request.params[3].getBool()) {
-            masternodeConfig.clear();
-            std::string error;
-            if (!masternodeConfig.read(error)) {
-                throw std::runtime_error("Error reloading masternode.conf, " + error);
-            }
-        }
-
         bool found = false;
 
         UniValue resultsObj(UniValue::VARR);
         UniValue statusObj(UniValue::VOBJ);
 
-        for (CMasternodeConfig::CMasternodeEntry mne : masternodeConfig.getEntries()) {
+        for (const CMasternodeConfig::CMasternodeEntry& mne : masternodeConfig.getEntries()) {
             if (mne.getAlias() == alias) {
                 CMasternodeBroadcast mnb;
                 found = true;
                 std::string errorMessage;
                 bool fSuccess = false;
                 if (!StartMasternodeEntry(statusObj, mnb, fSuccess, mne, errorMessage, strCommand))
-                        continue;
+                    continue;
                 RelayMNB(mnb, fSuccess);
                 break;
             }
@@ -552,7 +537,7 @@ UniValue startmasternode(const JSONRPCRequest& request)
 
         return statusObj;
     }
-    return NullUniValue;
+    throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid set name %s.", strCommand));
 }
 
 UniValue createmasternodekey(const JSONRPCRequest& request)
@@ -1125,7 +1110,7 @@ static const CRPCCommand commands[] =
     { "masternode",         "listmasternodes",           &listmasternodes,           true,  {"filter"} },
     { "masternode",         "masternodecurrent",         &masternodecurrent,         true,  {} },
     { "masternode",         "relaymasternodebroadcast",  &relaymasternodebroadcast,  true,  {"hexstring"}  },
-    { "masternode",         "startmasternode",           &startmasternode,           true,  {"set","lockwallet","alias","reload_conf"} },
+    { "masternode",         "startmasternode",           &startmasternode,           true,  {"set","lock_wallet","alias","reload_conf"} },
 
     /* Not shown in help */
     { "hidden",             "getcachedblockhashes",      &getcachedblockhashes,      true,  {} },
