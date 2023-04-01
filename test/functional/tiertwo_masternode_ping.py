@@ -16,6 +16,7 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_greater_than,
+    assert_raises_rpc_error,
     Decimal,
     p2p_port,
 )
@@ -90,6 +91,12 @@ class MasternodePingTest(PivxTestFramework):
         self.sync_blocks()
         time.sleep(1)
 
+        # Exercise invalid startmasternode methods
+        self.log.info("exercising invalid startmasternode methods...")
+        assert_raises_rpc_error(-8, "Local start is deprecated.", remote.startmasternode, "local", False)
+        assert_raises_rpc_error(-8, "Many set is deprecated.", owner.startmasternode, "many", False)
+        assert_raises_rpc_error(-8, "Invalid set name", owner.startmasternode, "foo", False)
+
         # Send Start message
         self.log.info("sending masternode broadcast...")
         self.controller_start_masternode(owner, masternodeAlias)
@@ -117,7 +124,6 @@ class MasternodePingTest(PivxTestFramework):
         for i in range(self.num_nodes):
             assert_greater_than(new_last_seen[i], last_seen[i])
         self.log.info("All good.")
-
 
 
 if __name__ == '__main__':
