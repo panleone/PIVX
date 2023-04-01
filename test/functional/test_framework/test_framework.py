@@ -1035,6 +1035,14 @@ class PivxTestFramework():
         time.sleep(1)
 
 
+    def controller_start_masternodes(self, mnOwner, aliases=[]):
+        ret = mnOwner.startmasternode(set="all", lock_wallet=False, reload_conf=True)
+        for i in range(len(aliases)):
+            assert_equal(ret["detail"][i]["alias"], aliases[i])
+            assert_equal(ret["detail"][i]["result"], "success")
+        time.sleep(1)
+
+
     def send_pings(self, mnodes):
         for node in mnodes:
             try:
