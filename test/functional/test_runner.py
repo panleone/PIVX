@@ -231,7 +231,9 @@ LEGACY_SKIP_TESTS = [
     'rpc_users.py',
     'wallet_hd.py',         # no HD tests for pre-HD wallets
     'wallet_upgrade.py',    # can't upgrade to pre-HD wallet
+    'sapling_supply.py',
     'sapling_wallet_persistence.py',
+    'sapling_wallet_send.py',
     'sapling_wallet.py',
     'sapling_changeaddresses.py',
     'sapling_key_import_export.py',
@@ -345,7 +347,7 @@ def main():
             if len(test_list) == 0:
                 # No individual tests (or sub-list) have been specified.
                 # Run all base tests, and optionally run extended tests.
-                test_list = BASE_SCRIPTS
+                test_list = TIERTWO_SCRIPTS + SAPLING_SCRIPTS + BASE_SCRIPTS
                 if args.extended:
                     # place the EXTENDED_SCRIPTS first since the three longest ones
                     # are there and the list is shorter
