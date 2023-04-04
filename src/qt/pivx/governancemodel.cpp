@@ -363,6 +363,7 @@ void GovernanceModel::txLoaded(const QString& id, const int txType, const int tx
             CDataStream ss(vec, SER_DISK, CLIENT_VERSION);
             CBudgetProposal proposal;
             ss >> proposal;
+            proposal.SetFeeTxHash(wtx->GetHash());
             if (!g_budgetman.HaveProposal(proposal.GetHash()) &&
                 !proposal.IsExpired(clientModel->getNumBlocks()) &&
                 proposal.GetBlockStart() > clientModel->getNumBlocks()) {
