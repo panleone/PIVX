@@ -112,6 +112,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.log.info("Owner Address: %s" % owner_address)
         staker_address = self.nodes[1].getnewstakingaddress()
         staker_privkey = self.nodes[1].dumpprivkey(staker_address)
+        assert_equal(self.nodes[1].liststakingaddresses()[0]["address"], staker_address)
         self.log.info("Staking Address: %s" % staker_address)
 
         # 4) Check enforcement.
@@ -206,11 +207,13 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         print("*** 7 ***")
         self.log.info("Trying to generate a cold-stake block before whitelisting the owner...")
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)
+        assert_equal(self.nodes[1].listdelegators(), [])
         self.log.info("Nice. Cold staker was NOT able to create the block yet.")
 
         self.log.info("Whitelisting the owner...")
         ret = self.nodes[1].delegatoradd(owner_address)
         assert(ret)
+        assert_equal(self.nodes[1].listdelegators()[0]["address"], owner_address)
         self.log.info("Delegator address %s whitelisted" % owner_address)
 
         # 8) check that the staker CANNOT spend the coins.
@@ -331,6 +334,17 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.mocktime = self.generate_pos(2, self.mocktime)
         self.sync_blocks()
         print("*** 13 ***")
+        self.log.info("Invalidate delegation")
+        ret = self.nodes[1].delegatorremove(owner_address)
+        assert(ret)
+        assert_equal(self.nodes[1].listdelegators(), [])
+        assert_equal(self.nodes[1].listdelegators(True)[0]["address"], owner_address)
+        assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)
+        self.log.info("Re-enable delegation")
+        ret = self.nodes[1].delegatoradd(owner_address)
+        assert(ret)
+        assert_equal(self.nodes[1].listdelegators()[0]["address"], owner_address)
+        assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], len(stakeable_coins))
         self.log.info("Cancel the stake delegation spending the delegated utxos...")
         delegated_utxos = getDelegatedUtxos(self.nodes[0].listunspent())
         # remove one utxo to spend later
@@ -367,7 +381,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         print("*** 14 ***")
         self.log.info("Trying to generate one cold-stake block again...")
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)
-        self.log.info("Cigar. Cold staker was NOT able to create any more blocks.")
+        self.log.info("Good. Cold staker was NOT able to create any more blocks.")
 
         # 15) check balances when mature.
         # -----------------------------------------------------------
