@@ -752,6 +752,7 @@ UniValue cleanbudget(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -766,12 +767,12 @@ static const CRPCCommand commands[] =
     { "budget",             "preparebudget",          &preparebudget,          true,  {"name","url","npayments","start","address","monthly_payment"} },
     { "budget",             "submitbudget",           &submitbudget,           true,  {"name","url","npayments","start","address","monthly_payment","fee_txid"}  },
 
-    /* Not shown in help */
+    /** Not shown in help */
     { "hidden",             "mnfinalbudgetsuggest",   &mnfinalbudgetsuggest,   true,  {} },
     { "hidden",             "createrawmnfinalbudget", &createrawmnfinalbudget, true,  {"budgetname", "blockstart", "proposals", "feetxid"} },
     { "hidden",             "cleanbudget",            &cleanbudget,            true,  {"try_sync"} },
-
 };
+// clang-format on
 
 void RegisterBudgetRPCCommands(CRPCTable &tableRPC)
 {

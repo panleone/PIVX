@@ -376,6 +376,7 @@ UniValue quorumdkgsimerror(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category       name                      actor (function)      okSafe argNames
   //  -------------- ------------------------- --------------------- ------ --------
@@ -385,10 +386,13 @@ static const CRPCCommand commands[] =
     { "evo",         "quorumdkgstatus",        &quorumdkgstatus,     true,  {"detail_level"}  },
     { "evo",         "listquorums",            &listquorums,         true,  {"count"}  },
     { "evo",         "getquoruminfo",          &getquoruminfo,       true,  {"llmqType", "quorumHash", "includeSkShare"}  },
-    { "hidden",      "signsession",            &signsession,         true,  {"llmqType", "id", "msgHash"}},
-    { "hidden",      "hasrecoverysignature",   &hasrecoverysignature,true,  {"llmqType", "id", "msgHash"}},
-    { "hidden",      "issessionconflicting",   &issessionconflicting,true,  {"llmqType", "id", "msgHash"}},
+
+    /** Not shown in help */
+    { "hidden",      "signsession",            &signsession,         true,  {"llmqType", "id", "msgHash"} },
+    { "hidden",      "hasrecoverysignature",   &hasrecoverysignature,true,  {"llmqType", "id", "msgHash"} },
+    { "hidden",      "issessionconflicting",   &issessionconflicting,true,  {"llmqType", "id", "msgHash"} },
  };
+// clang-format on
 
 void RegisterQuorumsRPCCommands(CRPCTable& tableRPC)
 {

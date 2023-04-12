@@ -832,6 +832,7 @@ UniValue mnconnect(const JSONRPCRequest& request)
     return false;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -845,12 +846,13 @@ static const CRPCCommand commands[] =
     { "util",               "validateaddress",        &validateaddress,        true,  {"pivxaddress"} }, /* uses wallet if enabled */
     { "util",               "verifymessage",          &verifymessage,          true,  {"pivxaddress","signature","message"} },
 
-    /* Not shown in help */
-    { "hidden",             "echo",                   &echo,                   true,  {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"}},
-    { "hidden",             "echojson",               &echo,                   true,  {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"}},
+    /** Not shown in help */
+    { "hidden",             "echo",                   &echo,                   true,  {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
+    { "hidden",             "echojson",               &echo,                   true,  {"arg0","arg1","arg2","arg3","arg4","arg5","arg6","arg7","arg8","arg9"} },
     { "hidden",             "setmocktime",            &setmocktime,            true,  {"timestamp"} },
     { "hidden",             "mnconnect",              &mnconnect,              true,  {"op_type", "mn_list", "llmq_type", "quorum_hash"} },
 };
+// clang-format on
 
 void RegisterMiscRPCCommands(CRPCTable &tableRPC)
 {

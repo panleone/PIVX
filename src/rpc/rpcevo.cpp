@@ -1060,22 +1060,23 @@ UniValue generateblskeypair(const JSONRPCRequest& request)
     return ret;
 }
 
-
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category       name                              actor (function)         okSafe argNames
   //  -------------- --------------------------------- ------------------------ ------ --------
-    { "evo",         "generateblskeypair",             &generateblskeypair,     true,  {}  },
-    { "evo",         "protx_list",                     &protx_list,             true,  {"detailed","wallet_only","valid_only","height"}  },
+    { "evo",         "generateblskeypair",             &generateblskeypair,     true,  {} },
+    { "evo",         "protx_list",                     &protx_list,             true,  {"detailed","wallet_only","valid_only","height"} },
 #ifdef ENABLE_WALLET
     { "evo",         "protx_register",                 &protx_register,         true,  {"collateralHash","collateralIndex","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
     { "evo",         "protx_register_fund",            &protx_register_fund,    true,  {"collateralAddress","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
     { "evo",         "protx_register_prepare",         &protx_register_prepare, true,  {"collateralHash","collateralIndex","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
-    { "evo",         "protx_register_submit",          &protx_register_submit,  true,  {"tx","sig"}  },
-    { "evo",         "protx_revoke",                   &protx_revoke,           true,  {"proTxHash","operatorKey","reason"}  },
-    { "evo",         "protx_update_registrar",         &protx_update_registrar, true,  {"proTxHash","operatorPubKey","votingAddress","payoutAddress","ownerKey"}  },
-    { "evo",         "protx_update_service",           &protx_update_service,   true,  {"proTxHash","ipAndPort","operatorPayoutAddress","operatorKey"}  },
+    { "evo",         "protx_register_submit",          &protx_register_submit,  true,  {"tx","sig"} },
+    { "evo",         "protx_revoke",                   &protx_revoke,           true,  {"proTxHash","operatorKey","reason"} },
+    { "evo",         "protx_update_registrar",         &protx_update_registrar, true,  {"proTxHash","operatorPubKey","votingAddress","payoutAddress","ownerKey"} },
+    { "evo",         "protx_update_service",           &protx_update_service,   true,  {"proTxHash","ipAndPort","operatorPayoutAddress","operatorKey"} },
 #endif  //ENABLE_WALLET
 };
+// clang-format on
 
 void RegisterEvoRPCCommands(CRPCTable& _tableRPC)
 {

@@ -701,6 +701,7 @@ UniValue setnetworkactive(const JSONRPCRequest& request)
     return g_connman->GetNetworkActive();
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -716,11 +717,12 @@ static const CRPCCommand commands[] =
     { "network",            "listbanned",             &listbanned,             true,  {} },
     { "network",            "ping",                   &ping,                   true,  {} },
     { "network",            "setban",                 &setban,                 true,  {"subnet", "command", "bantime", "absolute"} },
-    { "network",            "setnetworkactive",       &setnetworkactive,       true,  {"active"}},
+    { "network",            "setnetworkactive",       &setnetworkactive,       true,  {"active"} },
 
-    // Hidden, for testing only
+    /** Not shown in help */
     { "hidden",             "addpeeraddress",         &addpeeraddress,         true,  {"address", "port"} },
 };
+// clang-format on
 
 void RegisterNetRPCCommands(CRPCTable &tableRPC)
 {
