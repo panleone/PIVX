@@ -7,9 +7,9 @@
 
 #include "core_io.h"
 #include "evo/providertx.h"
-#include "keystore.h"
 #include "key_io.h"
-#include "validationinterface.h"
+#include "keystore.h"
+#include "llmq/quorums_chainlocks.h"
 #include "net.h"
 #include "policy/policy.h"
 #include "primitives/transaction.h"
@@ -20,6 +20,7 @@
 #include "script/standard.h"
 #include "uint256.h"
 #include "utilmoneystr.h"
+#include "validationinterface.h"
 #ifdef ENABLE_WALLET
 #include "sapling/address.h"
 #include "sapling/key_io_sapling.h"
@@ -105,6 +106,7 @@ void TxToJSON(CWallet* const pwallet, const CTransaction& tx, const CBlockIndex*
         PayloadToJSON(tx, entry);
     }
 
+    bool chainLock = false;
     if (blockindex && tip) {
         entry.pushKV("blockhash", blockindex->GetBlockHash().ToString());
         int confirmations = ComputeConfirmations(tip, blockindex);
@@ -112,10 +114,12 @@ void TxToJSON(CWallet* const pwallet, const CTransaction& tx, const CBlockIndex*
             entry.pushKV("confirmations", confirmations);
             entry.pushKV("time", blockindex->GetBlockTime());
             entry.pushKV("blocktime", blockindex->GetBlockTime());
+            chainLock = llmq::chainLocksHandler->HasChainLock(blockindex->nHeight, blockindex->GetBlockHash());
         } else {
             entry.pushKV("confirmations", 0);
         }
     }
+    entry.pushKV("chainlock", chainLock);
 }
 
 std::string GetSaplingTxHelpInfo()
