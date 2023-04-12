@@ -3043,6 +3043,8 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
 
     CheckBlockIndex();
 
+    // Notify external listeners about accepted block header
+    GetMainSignals().AcceptedBlockHeader(pindex);
     return true;
 }
 
