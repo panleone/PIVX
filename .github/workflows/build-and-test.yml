@@ -144,7 +144,6 @@ jobs:
           - name: x64-Linux
             id: Linux-x86_64-nodepends
             os: ubuntu-20.04
-            host: x86_64-unknown-linux-gnu
             apt_get: python3-zmq qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
             unit_tests: true
             functional_tests: true
@@ -154,7 +153,6 @@ jobs:
           - name: x64-macOS-11
             id: macOS11-nodepends
             os: macos-11
-            host: x86_64-apple-darwin20.6.0
             brew_install: autoconf automake ccache berkeley-db4 libtool boost miniupnpc pkg-config python@3.8 qt5 zmq libevent qrencode gmp libsodium rust librsvg
             unit_tests: true
             functional_tests: true
@@ -208,8 +206,8 @@ jobs:
           fi
 
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
-            OUTDIR_PATH="$GITHUB_WORKSPACE/$GITHUB_RUN_NUMBER-${{ matrix.config.host }}"
-            BITCOIN_CONFIG_ALL="--disable-dependency-tracking --prefix=$GITHUB_WORKSPACE/${{ matrix.config.host }} --bindir=$OUTDIR_PATH/bin --libdir=$OUTDIR_PATH/lib"
+            OUTDIR_PATH="$GITHUB_WORKSPACE/$GITHUB_RUN_NUMBER"
+            BITCOIN_CONFIG_ALL="--disable-dependency-tracking --prefix=$GITHUB_WORKSPACE --bindir=$OUTDIR_PATH/bin --libdir=$OUTDIR_PATH/lib"
           fi
 
           if [ "${{ matrix.config.unit_tests }}" = "true" ] || [ "${{ matrix.config.functional_tests }}" = "true" ]; then
@@ -221,20 +219,8 @@ jobs:
           ./autogen.sh
           echo ::endgroup::
 
-          mkdir build && cd build
-
           echo ::group::Configure
-          ../configure --cache-file=config.cache $BITCOIN_CONFIG_ALL ${{ matrix.config.BITCOIN_CONFIG }} $PARAMS_FLAGS || ( cat config.log && false)
-          echo ::endgroup::
-
-          echo ::group::Distdir
-          make distdir VERSION=${{ matrix.config.host }}
-          echo ::endgroup::
-
-          cd pivx-${{ matrix.config.host }}
-
-          echo ::group::Configure
-          ./configure --cache-file=../config.cache $BITCOIN_CONFIG_ALL ${{ matrix.config.BITCOIN_CONFIG }} $PARAMS_FLAGS || ( cat config.log && false)
+          ./configure --cache-file=config.cache $BITCOIN_CONFIG_ALL ${{ matrix.config.BITCOIN_CONFIG }} $PARAMS_FLAGS || ( cat config.log && false)
           echo ::endgroup
 
           echo ::group::Build
