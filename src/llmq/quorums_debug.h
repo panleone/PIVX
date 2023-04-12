@@ -69,6 +69,7 @@ public:
     };
 
     std::vector<CDKGDebugMemberStatus> members;
+    bool receivedFinalCommitment{false};
 
 public:
     CDKGDebugSessionStatus() : statusBitset(0) {}

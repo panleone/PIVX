@@ -150,6 +150,7 @@ BITCOIN_CORE_H = \
   bip38.h \
   bloom.h \
   blocksignature.h \
+  bls/bls_batchverifier.h \
   bls/bls_ies.h \
   bls/bls_worker.h \
   bls/bls_wrapper.h \
@@ -201,6 +202,8 @@ BITCOIN_CORE_H = \
   llmq/quorums_dkgsession.h \
   llmq/quorums_init.h \
   llmq/quorums_utils.h \
+  llmq/quorums_signing.h \
+  llmq/quorums_signing_shares.h \
   tiertwo/masternode_meta_manager.h \
   tiertwo/net_masternodes.h \
   addressbook.h \
@@ -378,6 +381,8 @@ libbitcoin_server_a_SOURCES = \
   llmq/quorums_dkgsession.cpp \
   llmq/quorums_init.cpp \
   llmq/quorums_utils.cpp \
+  llmq/quorums_signing.cpp \
+  llmq/quorums_signing_shares.cpp \
   tiertwo/masternode_meta_manager.cpp \
   tiertwo/net_masternodes.cpp \
   httprpc.cpp \

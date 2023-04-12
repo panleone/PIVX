@@ -60,6 +60,10 @@ const char* QCONTRIB = "qcontrib";
 const char* QCOMPLAINT = "qcomplaint";
 const char* QJUSTIFICATION = "qjustify";
 const char* QPCOMMITMENT = "qpcommit";
+const char* QSIGSHARESINV = "qsigsinv";
+const char* QGETSIGSHARES = "qgetsigs";
+const char* QBSIGSHARES = "qbsigs";
+const char* QSIGREC = "qsigrec";
 }; // namespace NetMsgType
 
 
@@ -90,10 +94,10 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::FILTERADD,
     NetMsgType::FILTERCLEAR,
     NetMsgType::SENDHEADERS,
-    "filtered block", // Should never occur
-    "ix",   // deprecated
-    "txlvote", // deprecated
-    NetMsgType::SPORK,           // --- tiertwoNetMessageTypes start here ---
+    "filtered block",  // Should never occur
+    "ix",              // deprecated
+    "txlvote",         // deprecated
+    NetMsgType::SPORK, // --- tiertwoNetMessageTypes start here ---
     NetMsgType::MNWINNER,
     "mnodescanerr",
     NetMsgType::BUDGETVOTE,
@@ -103,7 +107,7 @@ const static std::string allNetMessageTypes[] = {
     "mnq",
     NetMsgType::MNBROADCAST,
     NetMsgType::MNPING,
-    "dstx",  // deprecated
+    "dstx", // deprecated
     NetMsgType::GETMNWINNERS,
     NetMsgType::GETMNLIST,
     NetMsgType::BUDGETVOTESYNC,
@@ -116,7 +120,11 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::QCONTRIB,
     NetMsgType::QCOMPLAINT,
     NetMsgType::QJUSTIFICATION,
-    NetMsgType::QPCOMMITMENT
+    NetMsgType::QPCOMMITMENT,
+    NetMsgType::QSIGSHARESINV,
+    NetMsgType::QGETSIGSHARES,
+    NetMsgType::QBSIGSHARES,
+    NetMsgType::QSIGREC,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes + ARRAYLEN(allNetMessageTypes));
 const static std::vector<std::string> tiertwoNetMessageTypesVec(std::find(allNetMessageTypesVec.begin(), allNetMessageTypesVec.end(), NetMsgType::SPORK), allNetMessageTypesVec.end());
@@ -220,6 +228,8 @@ std::string CInv::GetCommand() const
         case MSG_QUORUM_COMPLAINT: return cmd.append(NetMsgType::QCOMPLAINT);
         case MSG_QUORUM_JUSTIFICATION: return cmd.append(NetMsgType::QJUSTIFICATION);
         case MSG_QUORUM_PREMATURE_COMMITMENT: return cmd.append(NetMsgType::QPCOMMITMENT);
+        case MSG_QUORUM_RECOVERED_SIG:
+        return cmd.append(NetMsgType::QSIGREC);
         default:
             throw std::out_of_range(strprintf("%s: type=%d unknown type", __func__, type));
     }

@@ -164,6 +164,7 @@ TIERTWO_SCRIPTS = [
     'tiertwo_dkg_errors.py',                    # ~ 486 sec
     'tiertwo_dkg_pose.py',                      # ~ 444 sec
     'tiertwo_mn_compatibility.py',              # ~ 413 sec
+    'tiertwo_signing_session.py',               # ~ 390 sec
     'tiertwo_deterministicmns.py',              # ~ 366 sec
     'tiertwo_governance_reorg.py',              # ~ 361 sec
     'tiertwo_masternode_activation.py',         # ~ 352 sec

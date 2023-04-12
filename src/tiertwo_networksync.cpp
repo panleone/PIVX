@@ -6,11 +6,13 @@
 
 #include "llmq/quorums_blockprocessor.h"
 #include "llmq/quorums_dkgsessionmgr.h"
-#include "masternodeman.h"          // for mnodeman
+#include "llmq/quorums_signing.h"
+#include "llmq/quorums_signing_shares.h"
+#include "masternodeman.h"  // for mnodeman
+#include "net_processing.h" // for Misbehaving
 #include "netmessagemaker.h"
-#include "net_processing.h"         // for Misbehaving
-#include "spork.h"                  // for sporkManager
-#include "streams.h"                // for CDataStream
+#include "spork.h"   // for sporkManager
+#include "streams.h" // for CDataStream
 #include "tiertwo/tiertwo_sync_state.h"
 
 
@@ -67,6 +69,14 @@ bool CMasternodeSync::MessageDispatcher(CNode* pfrom, std::string& strCommand, C
         if (!llmq::quorumDKGSessionManager->ProcessMessage(pfrom, strCommand, vRecv)) {
             WITH_LOCK(cs_main, Misbehaving(pfrom->GetId(), 100));
         }
+        return true;
+    }
+    if (strCommand == NetMsgType::QSIGSHARESINV || strCommand == NetMsgType::QGETSIGSHARES || strCommand == NetMsgType::QBSIGSHARES) {
+        llmq::quorumSigSharesManager->ProcessMessage(pfrom, strCommand, vRecv, *g_connman);
+        return true;
+    }
+    if (strCommand == NetMsgType::QSIGREC) {
+        llmq::quorumSigningManager->ProcessMessage(pfrom, strCommand, vRecv, *g_connman);
         return true;
     }
 

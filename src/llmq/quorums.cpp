@@ -330,8 +330,6 @@ CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const uint25
 
 CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const CBlockIndex* pindexQuorum)
 {
-    AssertLockHeld(cs_main);
-
     assert(pindexQuorum);
 
     auto quorumHash = pindexQuorum->GetBlockHash();

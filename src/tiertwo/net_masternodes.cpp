@@ -7,11 +7,11 @@
 
 #include "chainparams.h"
 #include "evo/deterministicmns.h"
+#include "llmq/quorums.h"
+#include "netmessagemaker.h"
 #include "scheduler.h"
 #include "tiertwo/masternode_meta_manager.h" // for g_mmetaman
 #include "tiertwo/tiertwo_sync_state.h"
-#include "net.h"
-#include "netmessagemaker.h"
 
 TierTwoConnMan::TierTwoConnMan(CConnman* _connman) : connman(_connman) {}
 TierTwoConnMan::~TierTwoConnMan() { connman = nullptr; }
@@ -36,6 +36,32 @@ std::set<uint256> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType)
             continue;
         }
         result.emplace(p.first.second);
+    }
+    return result;
+}
+
+std::set<NodeId> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType, uint256 quorumHash)
+{
+    std::set<NodeId> result;
+    auto it = WITH_LOCK(cs_vPendingMasternodes, return masternodeQuorumRelayMembers.find(std::make_pair(llmqType, quorumHash)));
+    if (WITH_LOCK(cs_vPendingMasternodes, return it == masternodeQuorumRelayMembers.end())) {
+        return {};
+    }
+    for (const auto pnode : connman->GetvNodes()) {
+        if (pnode->fDisconnect) {
+            continue;
+        }
+        if (!it->second.count(pnode->verifiedProRegTxHash)) {
+            continue;
+        }
+        // is it a valid member?
+        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)) {
+            continue;
+        }
+        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)->IsValidMember(pnode->verifiedProRegTxHash)) {
+            continue;
+        }
+        result.emplace(pnode->GetId());
     }
     return result;
 }
