@@ -1537,7 +1537,7 @@ bool AppInitMain()
                 // The on-disk coinsdb is now in a good state, create the cache
                 pcoinsTip.reset(new CCoinsViewCache(pcoinscatcher.get()));
 
-                InitTierTwoPostCoinsCacheLoad();
+                InitTierTwoPostCoinsCacheLoad(&scheduler);
 
                 bool is_coinsview_empty = fReset || fReindexChainState || pcoinsTip->GetBestBlock().IsNull();
                 if (!is_coinsview_empty) {

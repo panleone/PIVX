@@ -12,6 +12,7 @@
 #include "evo/deterministicmns.h"
 #include "evo/mnauth.h"
 #include "llmq/quorums_blockprocessor.h"
+#include "llmq/quorums_chainlocks.h"
 #include "llmq/quorums_dkgsessionmgr.h"
 #include "llmq/quorums_signing.h"
 #include "masternode-payments.h"
@@ -860,6 +861,8 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         return llmq::quorumDKGSessionManager->AlreadyHave(inv);
     case MSG_QUORUM_RECOVERED_SIG:
         return llmq::quorumSigningManager->AlreadyHave(inv);
+    case MSG_CLSIG:
+        return llmq::chainLocksHandler->AlreadyHave(inv);
     }
 
     // Don't know what it is, just say we already got one
@@ -1040,6 +1043,12 @@ bool static PushTierTwoGetDataRequest(const CInv& inv,
             return true;
         }
     }
+    if (inv.type == MSG_CLSIG) {
+        llmq::CChainLockSig o;
+        if (llmq::chainLocksHandler->GetChainLockByHash(inv.hash, o)) {
+            connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::CLSIG, o));
+        }
+    }
     // nothing was pushed.
     return false;
 }
@@ -1128,7 +1137,8 @@ bool static IsTierTwoInventoryTypeKnown(int type)
            type == MSG_QUORUM_COMPLAINT ||
            type == MSG_QUORUM_JUSTIFICATION ||
            type == MSG_QUORUM_PREMATURE_COMMITMENT ||
-           type == MSG_QUORUM_RECOVERED_SIG;
+           type == MSG_QUORUM_RECOVERED_SIG ||
+           type == MSG_CLSIG;
 }
 
 void static ProcessGetData(CNode* pfrom, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
@@ -1582,6 +1592,9 @@ bool static ProcessMessage(CNode* pfrom, std::string strCommand, CDataStream& vR
                         // some messages need to be re-requested faster when the first announcing peer did not answer to GETDATA
                         switch (inv.type) {
                         case MSG_QUORUM_RECOVERED_SIG:
+                            doubleRequestDelay = 5 * 1000000;
+                            break;
+                        case MSG_CLSIG:
                             doubleRequestDelay = 5 * 1000000;
                             break;
                         }
