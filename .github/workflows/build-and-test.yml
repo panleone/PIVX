@@ -101,17 +101,12 @@ jobs:
             brew install "$APT_BASE" ${{ matrix.config.packages }}
           fi
 
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        run: echo "timestamp=$(date +%Y-%m-%dT%H:%M:%S%z)" >> $GITHUB_OUTPUT
-
       - name: ccache cache files
         uses: actions/cache@v3
         with:
           path: .ccache
-          key: cmake-${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            cmake-${{ matrix.config.name }}-ccache-
+          key: ${{ runner.os }}-cmake-${{ matrix.config.name }}-ccache
+          restore-keys: ${{ runner.os }}-cmake-${{ matrix.config.name }}-ccache
 
       - name: build
         run: |
@@ -184,19 +179,14 @@ jobs:
             pip3.8 install ds_store mac_alias
           fi
 
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        run: echo "timestamp=$(date +%Y-%m-%dT%H:%M:%S%z)" >> $GITHUB_OUTPUT
-
       - name: ccache cache files
         uses: actions/cache@v3
         with:
           path: |
             .ccache
             .pivx-params
-          key: ${{ matrix.config.id }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.config.id }}-ccache-
+          key: ${{ runner.os }}-${{ matrix.config.id }}-native-ccache
+          restore-keys: ${{ runner.os }}-${{ matrix.config.id }}-native-ccache
 
       - name: Build Syslib Wallet
         run: |
@@ -325,10 +315,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.apt_get }}
 
-      - name: Prepare Depends timestamp
-        id: depends_cache_timestamp
-        run: echo "timestamp=$(date +%Y-%m-%dT%H:%M:%S%z)" >> $GITHUB_OUTPUT
-
       - name: depends cache files
         uses: actions/cache@v3
         with:
@@ -336,9 +322,8 @@ jobs:
             depends/built
             depends/sdk-sources
             depends/${{ matrix.config.host }}
-          key: ${{ runner.os }}-depends-${{ matrix.config.host }}-${{ steps.depends_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ runner.os }}-depends-${{ matrix.config.host }}-
+          key: ${{ runner.os }}-depends-${{ matrix.config.host }}
+          restore-keys: ${{ runner.os }}-depends-${{ matrix.config.host }}
 
       - name: Build Depends
         run: |
@@ -480,13 +465,8 @@ jobs:
             depends/built
             depends/sdk-sources
             depends/${{ matrix.config.host }}
-          key: ${{ runner.os }}-depends-${{ matrix.config.host }}-
-          restore-keys: |
-            ${{ runner.os }}-depends-${{ matrix.config.host }}-
-
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        run: echo "timestamp=$(date +%Y-%m-%dT%H:%M:%S%z)" >> $GITHUB_OUTPUT
+          key: ${{ runner.os }}-depends-${{ matrix.config.host }}
+          restore-keys: ${{ runner.os }}-depends-${{ matrix.config.host }}
 
       - name: ccache cache files
         uses: actions/cache@v3
@@ -494,9 +474,8 @@ jobs:
           path: |
             .ccache
             .pivx-params
-          key: ${{ matrix.config.id }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.config.id }}-ccache-
+          key: ${{ runner.os }}-depbuild-${{ matrix.config.id }}-ccache
+          restore-keys: ${{ runner.os }}-depbuilt-${{ matrix.config.id }}-ccache
 
       - name: Build Wallet
         run: |
