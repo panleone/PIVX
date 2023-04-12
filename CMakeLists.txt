@@ -237,6 +237,7 @@ set(SERVER_SOURCES
         ./src/dbwrapper.cpp
         ./src/legacy/validation_zerocoin_legacy.cpp
         ./src/llmq/quorums.cpp
+        ./src/llmq/quorums_chainlocks.cpp
         ./src/llmq/quorums_signing.cpp
         ./src/llmq/quorums_signing_shares.cpp
         ./src/mapport.cpp
