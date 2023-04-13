@@ -150,10 +150,10 @@ jobs:
             goal: install
             BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER'"
 
-          - name: x64-macOS-11
-            id: macOS11-nodepends
+          - name: x64-macOS
+            id: macOS-nodepends
             os: macos-11
-            brew_install: autoconf automake ccache berkeley-db4 libtool boost miniupnpc pkg-config python@3.8 qt5 zmq libevent qrencode gmp libsodium rust librsvg
+            brew_install: autoconf automake ccache berkeley-db@4 libtool boost miniupnpc libnatpmp pkg-config python@3.8 qt5 zmq libevent qrencode gmp libsodium rust librsvg
             unit_tests: true
             functional_tests: true
             goal: deploy
