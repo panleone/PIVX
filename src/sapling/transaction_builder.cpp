@@ -221,6 +221,11 @@ void TransactionBuilder::SetFee(CAmount _fee)
     this->fee = _fee;
 }
 
+uint256 TransactionBuilder::GetShieldStakeRandomness()
+{
+    return spends[0].alpha;
+}
+
 void TransactionBuilder::SendChangeTo(const libzcash::SaplingPaymentAddress& changeAddr, const uint256& ovk)
 {
     saplingChangeAddr = std::make_pair(ovk, changeAddr);

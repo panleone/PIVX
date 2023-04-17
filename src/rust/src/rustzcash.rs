@@ -942,6 +942,63 @@ pub extern "system" fn librustzcash_sapling_output_proof(
 }
 
 #[no_mangle]
+pub extern "system" fn librustzcash_verify_block_signature(
+    rk: *const [c_uchar; 32],
+    sighash: *const [c_uchar; 32],
+    sign: *const [c_uchar; 64],
+) -> bool {
+    // Deserialize rk
+    let rk = match redjubjub::PublicKey::read(&(unsafe { &*rk })[..]) {
+        Ok(p) => p,
+        Err(_) => return false,
+    };
+
+    // Deserialize the signature
+    let signature = match Signature::read(&(unsafe { &*sign })[..]) {
+        Ok(sig) => sig,
+        Err(_) => return false,
+    };
+    rk.verify(unsafe { &*sighash }, &signature, SPENDING_KEY_GENERATOR)
+}
+
+#[no_mangle]
+pub extern "system" fn librustzcash_sign_block(
+    ask: *const [c_uchar; 32],
+    ar: *const [c_uchar; 32],
+    sighash: *const [c_uchar; 32],
+    result: *mut [c_uchar; 64],
+) -> bool {
+    // The caller provides the re-randomization of `ak`.
+    let ar = {
+        let ar = Fr::from_repr(unsafe { *ar });
+        if ar.is_some().into() {
+            ar.unwrap()
+        } else {
+            return false;
+        }
+    };
+
+    // The caller provides `ask`, the spend authorizing key.
+    let ask = match redjubjub::PrivateKey::read(&(unsafe { &*ask })[..]) {
+        Ok(p) => p,
+        Err(_) => return false,
+    };
+
+    // Initialize secure RNG
+    let mut rng = OsRng;
+
+    // Do the signing
+    let rsk = ask.randomize(ar);
+    let sig = rsk.sign(unsafe { &*sighash }, &mut rng, SPENDING_KEY_GENERATOR);
+
+    // Write out the signature
+    sig.write(&mut (unsafe { &mut *result })[..])
+        .expect("result should be 64 bytes");
+
+    return true;
+}
+
+#[no_mangle]
 pub extern "system" fn librustzcash_sapling_spend_sig(
     ask: *const [c_uchar; 32],
     ar: *const [c_uchar; 32],

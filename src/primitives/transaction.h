@@ -274,6 +274,10 @@ public:
     Optional<SaplingTxData> sapData{SaplingTxData()}; // Future: Don't initialize it by default
     Optional<std::vector<uint8_t>> extraPayload{nullopt};     // only available for special transaction types
 
+    // It's very convenient having shield stake signing keys here
+    Optional<uint256> shieldStakeRandomness = boost::none;
+    Optional<uint256> shieldStakePrivKey = boost::none;
+
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
 
@@ -413,6 +417,10 @@ struct CMutableTransaction
     uint32_t nLockTime;
     Optional<SaplingTxData> sapData{SaplingTxData()}; // Future: Don't initialize it by default
     Optional<std::vector<uint8_t>> extraPayload{nullopt};
+
+    // It's very convenient having shield stake signing keys here
+    Optional<uint256> shieldStakeRandomness = boost::none;
+    Optional<uint256> shieldStakePrivKey = boost::none;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);

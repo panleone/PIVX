@@ -25,6 +25,7 @@
 #include "primitives/transaction.h"
 #include "sapling/address.h"
 #include "sapling/saplingscriptpubkeyman.h"
+#include "sapling/transaction_builder.h"
 #include "script/ismine.h"
 #include "stakeinput.h"
 #include "util/system.h"

@@ -130,7 +130,7 @@ public:
     {
         READWRITEAS(CBlockHeader, obj);
         READWRITE(obj.vtx);
-        if(obj.vtx.size() > 1 && obj.vtx[1]->IsCoinStake())
+        if (obj.vtx.size() > 1 && (obj.vtx[1]->IsCoinStake() || obj.vtx[1]->IsCoinShieldStake()))
             READWRITE(obj.vchBlockSig);
 
         // Shield Staking Proof
