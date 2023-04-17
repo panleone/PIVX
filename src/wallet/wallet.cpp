@@ -3441,7 +3441,6 @@ CStakeableInterface* CWallet::CreateCoinStake(const CBlockIndex& indexPrev, unsi
 bool CWallet::CreateShieldReward(const CBlockIndex& indexPrev, const CStakeableShieldNote& shieldNote, CMutableTransaction& txNew)
 {
     CAmount nMasternodePayment = GetMasternodePayment(indexPrev.nHeight + 1);
-
     TransactionBuilder txBuilder(Params().GetConsensus(), this);
     txBuilder.SetFee(0);
     txBuilder.AddStakeInput();
@@ -3460,6 +3459,8 @@ bool CWallet::CreateShieldReward(const CBlockIndex& indexPrev, const CStakeableS
     const auto& txTrial = txBuilder.Build().GetTx();
     if (txTrial) {
         txNew = CMutableTransaction(*txTrial);
+        txNew.shieldStakePrivKey = sk.expsk.ask;
+        txNew.shieldStakeRandomness = txBuilder.GetShieldStakeRandomness();
         return true;
     } else {
         return false;
