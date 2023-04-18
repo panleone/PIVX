@@ -64,7 +64,7 @@ void ResetTierTwoInterfaces()
 
 void InitTierTwoPreChainLoad(bool fReindex)
 {
-    int64_t nEvoDbCache = 1024 * 1024 * 16; // TODO
+    int64_t nEvoDbCache = 1024 * 1024 * 64; // Max cache is 64MB
     deterministicMNManager.reset();
     evoDb.reset();
     evoDb.reset(new CEvoDB(nEvoDbCache, false, fReindex));
