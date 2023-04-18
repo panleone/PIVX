@@ -5,10 +5,11 @@
 
 #include "sapling/transaction_builder.h"
 
-#include "script/sign.h"
-#include "utilmoneystr.h"
 #include "consensus/upgrades.h"
 #include "policy/policy.h"
+#include "script/script.h"
+#include "script/sign.h"
+#include "utilmoneystr.h"
 #include "validation.h"
 
 #include <librustzcash.h>
@@ -148,6 +149,11 @@ void TransactionBuilder::Clear()
     saplingChangeAddr = nullopt;
     tChangeAddr = nullopt;
     fee = -1;   // Verified in Build(). Must be set before.
+}
+
+void TransactionBuilder::AddStakeInput()
+{
+    mtx.vout.emplace_back(0, CScript());
 }
 
 void TransactionBuilder::AddSaplingSpend(
@@ -409,7 +415,8 @@ TransactionBuilderResult TransactionBuilder::Build(bool fDummySig)
     for (auto& tOut : mtx.vout) {
         change -= tOut.nValue;
     }
-    if (change < 0) {
+    // Change cannot be negative unless  the tx is shield staking
+    if (change < 0 && !(mtx.vout.size() > 0 && mtx.vout[0].IsEmpty())) {
         return TransactionBuilderResult("Change cannot be negative");
     }
 

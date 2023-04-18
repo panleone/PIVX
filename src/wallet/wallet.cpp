@@ -25,8 +25,9 @@
 #include "guiinterfaceutil.h"
 #include "policy/policy.h"
 #include "sapling/key_io_sapling.h"
-#include "script/sign.h"
+#include "sapling/transaction_builder.h"
 #include "scheduler.h"
+#include "script/sign.h"
 #include "shutdown.h"
 #include "spork.h"
 #include "util/validation.h"
@@ -3419,12 +3420,39 @@ CStakeableInterface* CWallet::CreateCoinStake(const CBlockIndex& indexPrev, unsi
 
         // Add block reward to the credit
         if (stakeOutput->CreateReward(*this, indexPrev, txNew)) {
-            // TODO: change once the coin shield stake builder is ready
-            return false;
+            return stakeOutput.get();
         }
     }
 
     return nullptr;
+}
+
+bool CWallet::CreateShieldReward(const CBlockIndex& indexPrev, const CStakeableShieldNote& shieldNote, CMutableTransaction& txNew)
+{
+    CAmount nMasternodePayment = GetMasternodePayment(indexPrev.nHeight + 1);
+
+    TransactionBuilder txBuilder(Params().GetConsensus(), this);
+    txBuilder.SetFee(0);
+    txBuilder.AddStakeInput();
+    txBuilder.AddSaplingOutput(m_sspk_man->getCommonOVK(), GenerateNewSaplingZKey(), shieldNote.note.value() + GetBlockValue(indexPrev.nHeight + 1) - nMasternodePayment);
+    libzcash::SaplingExtendedSpendingKey sk;
+    if (!GetSaplingExtendedSpendingKey(shieldNote.address, sk)) {
+        return false;
+    }
+
+    uint256 anchor;
+    std::vector<Optional<SaplingWitness>> witnesses;
+    std::vector<SaplingOutPoint> noteop;
+    noteop.emplace_back(shieldNote.op);
+    m_sspk_man->GetSaplingNoteWitnesses(noteop, witnesses, anchor);
+    txBuilder.AddSaplingSpend(sk.expsk, shieldNote.note, anchor, witnesses[0].get());
+    const auto& txTrial = txBuilder.Build().GetTx();
+    if (txTrial) {
+        txNew = CMutableTransaction(*txTrial);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool CWallet::CreateTransparentReward(const CBlockIndex& indexPrev, const CStakeableOutput& stakeOutput, CMutableTransaction& txNew)

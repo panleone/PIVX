@@ -1116,6 +1116,7 @@ public:
     CWallet::CommitResult CommitTransaction(CTransactionRef tx, CReserveKey& opReservekey, CConnman* connman);
     CWallet::CommitResult CommitTransaction(CTransactionRef tx, CReserveKey* reservekey, CConnman* connman, mapValue_t* extraValues=nullptr);
 
+    bool CreateShieldReward(const CBlockIndex& indexPrev, const CStakeableShieldNote& shieldInput, CMutableTransaction& txNew);
     bool CreateTransparentReward(const CBlockIndex& indexPrev, const CStakeableOutput& stakeInput, CMutableTransaction& txNew);
 
     bool CreateCoinstakeOuts(const CStakeInput& stakeInput, std::vector<CTxOut>& vout, CAmount nTotal) const;
@@ -1349,8 +1350,7 @@ public:
     }
     bool CreateReward(CWallet& wallet, const CBlockIndex& indexPrev, CMutableTransaction& txNew) const override
     {
-        // TODO: build shield transaction
-        return true;
+        return wallet.CreateShieldReward(indexPrev, *this, txNew);
     }
 };
 
