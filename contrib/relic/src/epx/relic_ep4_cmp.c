@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2013 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,50 +24,59 @@
 /**
  * @file
  *
- * Implementation of the low-le&vel in&version functions.
+ * Implementation of utilities for prime elliptic curves over quadratic
+ * extensions.
  *
- * @&version $Id$
- * @ingroup fp
+ * @ingroup epx
  */
 
-#include "relic_bn.h"
-#include "relic_fp.h"
-#include "relic_fp_low.h"
 #include "relic_core.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_invn_asm(dig_t *, const dig_t *, const dig_t *);
+int ep4_cmp(ep4_t p, ep4_t q) {
+    ep4_t r, s;
+    int result = RLC_NE;
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	fp_t t, x1;
-	int j, k;
-
-	fp_null(t);
-	fp_null(x1);
-
-	RLC_TRY {
-		fp_new(t);
-		fp_new(x1);
-
-		/* u = a, v = p, x1 = 1, x2 = 0, k = 0. */
-		k = fp_invn_asm(x1, a, c);
-		if (k > RLC_FP_DIGS * RLC_DIG) {
-			t[0] = t[1] = t[2] = t[3] = 0;
-			k = 512 - k;
-			j = k % 64;
-			k = k / 64;
-			t[k] = (dig_t)1 << j;
-			fp_mul(c, x1, t);
-		}
+	if (ep4_is_infty(p) && ep4_is_infty(q)) {
+		return RLC_EQ;
 	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp_free(t);
-		fp_free(x1);
-	}
+
+    ep4_null(r);
+    ep4_null(s);
+
+    RLC_TRY {
+        ep4_new(r);
+        ep4_new(s);
+
+        if ((p->coord != BASIC) && (q->coord != BASIC)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
+            fp4_sqr(r->z, p->z);
+            fp4_sqr(s->z, q->z);
+            fp4_mul(r->x, p->x, s->z);
+            fp4_mul(s->x, q->x, r->z);
+            fp4_mul(r->z, r->z, p->z);
+            fp4_mul(s->z, s->z, q->z);
+            fp4_mul(r->y, p->y, s->z);
+            fp4_mul(s->y, q->y, r->z);
+        } else {
+			ep4_norm(r, p);
+            ep4_norm(s, q);
+        }
+
+        if ((fp4_cmp(r->x, s->x) == RLC_EQ) &&
+				(fp4_cmp(r->y, s->y) == RLC_EQ)) {
+            result = RLC_EQ;
+        }
+    } RLC_CATCH_ANY {
+        RLC_THROW(ERR_CAUGHT);
+    } RLC_FINALLY {
+        ep4_free(r);
+        ep4_free(s);
+    }
+
+    return result;
 }
