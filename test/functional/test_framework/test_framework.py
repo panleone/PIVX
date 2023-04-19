@@ -1030,8 +1030,16 @@ class PivxTestFramework():
 
 
     def controller_start_masternode(self, mnOwner, masternodeAlias):
-        ret = mnOwner.startmasternode("alias", "false", masternodeAlias, True)
+        ret = mnOwner.startmasternode("alias", False, masternodeAlias, True)
         assert_equal(ret["result"], "success")
+        time.sleep(1)
+
+
+    def controller_start_masternodes(self, mnOwner, aliases=[]):
+        ret = mnOwner.startmasternode(set="all", lock_wallet=False, reload_conf=True)
+        for i in range(len(aliases)):
+            assert_equal(ret["detail"][i]["alias"], aliases[i])
+            assert_equal(ret["detail"][i]["result"], "success")
         time.sleep(1)
 
 
