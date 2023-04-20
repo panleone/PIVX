@@ -2187,6 +2187,17 @@ CAmount CWallet::GetStakingBalance(const bool fIncludeColdStaking) const
     }));
 }
 
+CAmount CWallet::GetShieldStakingBalance()
+{
+    std::vector<CStakeableShieldNote> vShieldCoins;
+    CAmount total = 0;
+    this->StakeableNotes(&vShieldCoins);
+    for (auto it = vShieldCoins.begin(); it < vShieldCoins.end(); it++) {
+        total += it->note.value();
+    }
+    return total;
+}
+
 CAmount CWallet::GetDelegatedBalance() const
 {
     return loopTxsBalance([](const uint256& id, const CWalletTx& pcoin, CAmount& nTotal) {
