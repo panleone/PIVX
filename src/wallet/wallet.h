@@ -1065,6 +1065,7 @@ public:
     CAmount GetColdStakingBalance() const;  // delegated coins for which we have the staking key
     CAmount GetImmatureColdStakingBalance() const;
     CAmount GetStakingBalance(const bool fIncludeColdStaking = true) const;
+    CAmount GetShieldStakingBalance();
     CAmount GetDelegatedBalance() const;    // delegated coins for which we have the spending key
     CAmount GetImmatureDelegatedBalance() const;
     CAmount GetLockedCoins() const;
