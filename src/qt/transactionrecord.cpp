@@ -208,12 +208,12 @@ bool TransactionRecord::decomposeSendToSelfTransaction(const CWalletTx& wtx, con
         // we know that all of the inputs and outputs are mine and that have shielded data.
         // Let's see if only have transparent inputs, so we know that this is a
         // transparent -> shield transaction
+        const auto& sspkm = wallet->GetSaplingScriptPubKeyMan();
         if (wtx.tx->sapData->vShieldedSpend.empty()) {
             sub.type = TransactionRecord::SendToSelfShieldedAddress;
             sub.shieldedCredit = wtx.GetCredit(ISMINE_SPENDABLE_SHIELDED);
             nChange += wtx.GetShieldedChange();
 
-            const auto& sspkm = wallet->GetSaplingScriptPubKeyMan();
             SaplingOutPoint out(sub.hash, 0);
             auto opAddr = sspkm->GetOutPointAddress(wtx, out);
             if (opAddr) {
@@ -235,8 +235,10 @@ bool TransactionRecord::decomposeSendToSelfTransaction(const CWalletTx& wtx, con
                 sub.shieldedCredit = wtx.GetCredit(ISMINE_SPENDABLE_TRANSPARENT);
             } else {
                 // we know that the outputs are only shield, this is purely a change address tx.
-                // show only the fee.
+                // show only the fee and eventually the memo (that for self s->s txs is put at 0 position).
                 sub.type = TransactionRecord::SendToSelfShieldToShieldChangeAddress;
+                SaplingOutPoint out(sub.hash, 0);
+                sub.memo = sspkm->GetOutPointMemo(wtx, out);
             }
         }
     }
