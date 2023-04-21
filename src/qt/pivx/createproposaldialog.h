@@ -36,6 +36,7 @@ public Q_SLOTS:
     void propAmountChanged(const QString& newText);
     bool propaddressChanged(const QString& newText);
     void onAddrListClicked();
+    void onGenAddressClicked();
     void monthsEditDeselect(int i);
 
 private:
