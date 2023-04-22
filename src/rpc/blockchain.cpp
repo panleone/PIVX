@@ -1670,6 +1670,7 @@ UniValue scantxoutset(const JSONRPCRequest& request)
     return result;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -1689,9 +1690,8 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getsupplyinfo",          &getsupplyinfo,          true,  {"force_update"} },
     { "blockchain",         "gettxout",               &gettxout,               true,  {"txid","n","include_mempool"} },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true,  {} },
-    { "blockchain",         "verifychain",            &verifychain,            true,  {"nblocks"} },
-
     { "blockchain",         "scantxoutset",           &scantxoutset,           true,  {"action", "scanobjects"} },
+    { "blockchain",         "verifychain",            &verifychain,            true,  {"nblocks"} },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,  {"blockhash"} },
@@ -1700,9 +1700,8 @@ static const CRPCCommand commands[] =
     { "hidden",             "waitforblockheight",     &waitforblockheight,     true,  {"height","timeout"} },
     { "hidden",             "waitfornewblock",        &waitfornewblock,        true,  {"timeout"} },
     { "hidden",             "syncwithvalidationinterfacequeue", &syncwithvalidationinterfacequeue, true,  {} },
-
-
 };
+// clang-format on
 
 void RegisterBlockchainRPCCommands(CRPCTable &tableRPC)
 {

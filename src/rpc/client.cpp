@@ -19,6 +19,7 @@ public:
     std::string paramName; //!< parameter name
 };
 
+// clang-format off
 /**
  * Specifiy a (method, idx, name) here if the argument is a non-string RPC
  * argument and needs to be converted from JSON.
@@ -35,8 +36,8 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "createrawtransaction", 0, "inputs" },
     { "createrawtransaction", 1, "outputs" },
     { "createrawtransaction", 2, "locktime" },
-    {"createrawmnfinalbudget", 1, "blockstart"},
-    {"createrawmnfinalbudget", 2, "proposals"},
+    { "createrawmnfinalbudget", 1, "blockstart" },
+    { "createrawmnfinalbudget", 2, "proposals" },
     { "delegatestake", 1, "amount" },
     { "delegatestake", 3, "ext_owner" },
     { "delegatestake", 4, "include_delegated" },
@@ -127,12 +128,12 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "prioritisetransaction", 1, "fee_delta" },
     { "quorumdkgsimerror", 1, "rate" },
     { "quorumdkgstatus", 0, "detail_level" },
-    { "listquorums", 0, "count"},
-    { "getquoruminfo", 0, "llmqType"},
-    { "getquoruminfo", 2, "includeSkShare"},
+    { "listquorums", 0, "count" },
+    { "getquoruminfo", 0, "llmqType" },
+    { "getquoruminfo", 2, "includeSkShare" },
     { "signsession", 0, "llmqType"},
-    { "hasrecoverysignature", 0, "llmqType"},
-    { "issessionconflicting", 0, "llmqType"},
+    { "hasrecoverysignature", 0, "llmqType" },
+    { "issessionconflicting", 0, "llmqType" },
     { "rawdelegatestake", 1, "amount" },
     { "rawdelegatestake", 3, "ext_owner" },
     { "rawdelegatestake", 4, "include_delegated" },
@@ -154,7 +155,7 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "setautocombinethreshold", 0, "enable" },
     { "setautocombinethreshold", 1, "threshold" },
     { "setautocombinethreshold", 2, "frequency"},
-    { "setnetworkactive", 0, "active"},
+    { "setnetworkactive", 0, "active" },
     { "setban", 2, "bantime" },
     { "setban", 3, "absolute" },
     { "setgenerate", 0, "generate" },
@@ -196,6 +197,7 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "echojson", 8, "arg8" },
     { "echojson", 9, "arg9" },
 };
+// clang-format on
 
 class CRPCConvertTable
 {

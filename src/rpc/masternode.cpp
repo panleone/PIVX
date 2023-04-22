@@ -1094,6 +1094,7 @@ UniValue relaymasternodebroadcast(const JSONRPCRequest& request)
     return strprintf("Masternode broadcast sent (service %s, vin %s)", mnb.addr.ToString(), mnb.vin.ToString());
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                         actor (function)            okSafe argNames
   //  --------------------- ---------------------------  --------------------------  ------ --------
@@ -1109,13 +1110,14 @@ static const CRPCCommand commands[] =
     { "masternode",         "listmasternodeconf",        &listmasternodeconf,        true,  {"filter"} },
     { "masternode",         "listmasternodes",           &listmasternodes,           true,  {"filter"} },
     { "masternode",         "masternodecurrent",         &masternodecurrent,         true,  {} },
-    { "masternode",         "relaymasternodebroadcast",  &relaymasternodebroadcast,  true,  {"hexstring"}  },
+    { "masternode",         "relaymasternodebroadcast",  &relaymasternodebroadcast,  true,  {"hexstring"} },
     { "masternode",         "startmasternode",           &startmasternode,           true,  {"set","lock_wallet","alias","reload_conf"} },
 
-    /* Not shown in help */
+    /** Not shown in help */
     { "hidden",             "getcachedblockhashes",      &getcachedblockhashes,      true,  {} },
     { "hidden",             "mnping",                    &mnping,                    true,  {} },
 };
+// clang-format on
 
 void RegisterMasternodeRPCCommands(CRPCTable &tableRPC)
 {

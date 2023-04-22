@@ -892,6 +892,7 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
     return hashTx.GetHex();
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -902,6 +903,7 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     false, {"hexstring","allowhighfees"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     false, {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
 };
+// clang-format on
 
 void RegisterRawTransactionRPCCommands(CRPCTable &tableRPC)
 {

@@ -857,6 +857,7 @@ UniValue estimatesmartfee(const JSONRPCRequest& request)
     return result;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -864,7 +865,7 @@ static const CRPCCommand commands[] =
     { "util",               "estimatesmartfee",       &estimatesmartfee,       true,  {"nblocks"} },
     { "mining",             "prioritisetransaction",  &prioritisetransaction,  true,  {"txid","priority_delta","fee_delta"} },
 
-    /* Not shown in help */
+    /** Not shown in help */
 #ifdef ENABLE_WALLET
     { "hidden",             "generate",               &generate,               true,  {"nblocks"} },
     { "hidden",             "generatetoaddress",      &generatetoaddress,      true,  {"nblocks","address"} },
@@ -881,7 +882,8 @@ static const CRPCCommand commands[] =
 #endif // ENABLE_WALLET
 #endif // ENABLE_MINING_RPC
 
-    };
+};
+// clang-format on
 
 void RegisterMiningRPCCommands(CRPCTable &tableRPC)
 {

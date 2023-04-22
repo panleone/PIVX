@@ -4686,6 +4686,7 @@ extern UniValue importsaplingkey(const JSONRPCRequest& request);
 extern UniValue importsaplingviewingkey(const JSONRPCRequest& request);
 extern UniValue exportsaplingviewingkey(const JSONRPCRequest& request);
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                        actor (function)           okSafe argNames
   //  --------------------- ------------------------    -----------------------    ------ --------
@@ -4769,6 +4770,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "listreceivedbylabel",      &listreceivedbylabel,      false, {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "setlabel",                 &setlabel,                 true,  {"address","label"} },
 };
+// clang-format on
 
 void RegisterWalletRPCCommands(CRPCTable &tableRPC)
 {
