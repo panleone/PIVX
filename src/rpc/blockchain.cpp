@@ -24,6 +24,7 @@
 #include "util/system.h"
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
+#include "validation.h"
 #include "validationinterface.h"
 #include "wallet/wallet.h"
 #include "warnings.h"
@@ -1214,7 +1215,7 @@ UniValue invalidateblock(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "invalidateblock \"blockhash\"\n"
-            "\nPermanently marks a block as invalid, as if it violated a consensus rule.\n"
+            "\nPermanently marks a block as invalid, as if it violated a consensus rule. Note: Your oldest sapling note must not be more than 43200 blocks behind the chain tip\n"
 
             "\nArguments:\n"
             "1. blockhash   (string, required) the hash of the block to mark as invalid\n"
@@ -1231,6 +1232,16 @@ UniValue invalidateblock(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
 
         CBlockIndex* pblockindex = mapBlockIndex[hash];
+        //For each walllet in your wallet list
+        std::string errString = "";
+        for (auto* pwallet : vpwallets) {
+            //Do we need to recreate the witnesscache or is the current one enough?
+            if (pwallet->GetSaplingScriptPubKeyMan()->nWitnessCacheSize <= (chainActive.Height() - pblockindex->nHeight + 1)) {
+                if (!pwallet->GetSaplingScriptPubKeyMan()->BuildWitnessChain(pblockindex)) {
+                    throw JSONRPCError(RPC_DATABASE_ERROR, "Sapling notes are too old!");
+                }
+            }
+        }
         InvalidateBlock(state, Params(), pblockindex);
     }
 

@@ -6,11 +6,14 @@
 #define PIVX_SAPLINGSCRIPTPUBKEYMAN_H
 
 #include "consensus/consensus.h"
+#include "sapling/incrementalmerkletree.h"
 #include "sapling/note.h"
+#include "uint256.h"
 #include "wallet/hdchain.h"
+#include "wallet/scriptpubkeyman.h"
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
-#include "sapling/incrementalmerkletree.h"
+#include <map>
 
 //! Size of witness cache
 //  Should be large enough that we can expect not to reorg beyond our cache
@@ -47,6 +50,7 @@ public:
 
     /* witnesses/ivk: only for own (received) outputs */
     std::list<SaplingWitness> witnesses;
+
     Optional<libzcash::SaplingIncomingViewingKey> ivk {nullopt};
     inline bool IsMyNote() const { return ivk != nullopt; }
 
@@ -155,15 +159,20 @@ public:
     bool IsSaplingSpent(const uint256& nullifier) const;
 
     /**
+     * Build the old witness chain.
+     */
+    bool BuildWitnessChain(const CBlockIndex* pTargetBlock);
+
+    /**
      * pindex is the new tip being connected.
      */
     void IncrementNoteWitnesses(const CBlockIndex* pindex,
                                 const CBlock* pblock,
                                 SaplingMerkleTree& saplingTree);
     /**
-     * nChainHeight is the old tip height being disconnected.
+     * pindex is the old tip being disconnected.
      */
-    void DecrementNoteWitnesses(int nChainHeight);
+    void DecrementNoteWitnesses(const CBlockIndex* pindex);
 
     /**
      * Update mapSaplingNullifiersToNotes
@@ -407,6 +416,9 @@ public:
     std::map<uint256, SaplingOutPoint> mapSaplingNullifiersToNotes;
 
 private:
+    /* Map hash nullifiers, list Sapling Witness*/
+    std::map<uint256, std::list<SaplingWitness>> cachedWitnessMap;
+    int rollbackTargetHeight = -1;
     /* Parent wallet */
     CWallet* wallet{nullptr};
     /* the HD chain data model (external/internal chain counters) */
