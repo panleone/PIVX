@@ -39,14 +39,6 @@ HelpMessageDialog::HelpMessageDialog(QWidget* parent, bool about) : QDialog(pare
     GUIUtil::restoreWindowGeometry("nHelpMessageDialogWindow", this->size(), this);
 
     QString version = QString{PACKAGE_NAME} + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
-/* On x86 add a bit specifier to the version so that users can distinguish between
-     * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambigious.
-     */
-#if defined(__x86_64__)
-    version += " " + tr("(%1-bit)").arg(64);
-#elif defined(__i386__)
-    version += " " + tr("(%1-bit)").arg(32);
-#endif
 
     setCssBtnPrimary(ui->pushButtonOk);
     connect(ui->pushButtonOk, &QPushButton::clicked, this, &HelpMessageDialog::close);
