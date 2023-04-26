@@ -161,7 +161,7 @@ public:
     /**
      * Build the old witness chain.
      */
-    bool BuildWitnessChain(const CBlockIndex* pTargetBlock);
+    bool BuildWitnessChain(const CBlockIndex* pTargetBlock, const Consensus::Params& params, std::string& errorStr);
 
     /**
      * pindex is the new tip being connected.

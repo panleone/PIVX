@@ -7,6 +7,7 @@
 
 #include "chain.h" // for CBlockIndex
 #include "primitives/transaction.h"
+#include "consensus/params.h"
 #include "primitives/block.h"
 #include "sapling/incrementalmerkletree.h"
 #include "uint256.h"
@@ -14,6 +15,7 @@
 #include "wallet/wallet.h"
 #include <algorithm>
 #include <map>
+#include <string>
 #include <vector>
 
 void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid)
@@ -201,7 +203,7 @@ void WitnessNoteIfMine(SaplingNoteData* nd,
     assert(nWitnessCacheSize >= (int64_t) nd->witnesses.size());
 }
 
-template<typename NoteDataMap>
+template <typename NoteDataMap>
 void UpdateWitnessHeights(NoteDataMap& noteDataMap, int indexHeight, int64_t nWitnessCacheSize)
 {
     for (auto& item : noteDataMap) {
@@ -217,8 +219,13 @@ void UpdateWitnessHeights(NoteDataMap& noteDataMap, int indexHeight, int64_t nWi
     }
 }
 
-bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock)
+bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock, const Consensus::Params& params, std::string& errorStr)
 {
+    // If V5 is not enforced building the witness cache is useless
+    if (!params.NetworkUpgradeActive(chainActive.Height(), Consensus::UPGRADE_V5_0)) {
+        return true;
+    }
+
     LOCK2(cs_main, wallet->cs_wallet);
     // Target is the last block we want to invalidate
     rollbackTargetHeight = pTargetBlock->nHeight;
@@ -234,13 +241,6 @@ bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock)
         minHeight = std::min(wtx.m_confirm.block_height, minHeight);
     }
 
-    // For the moment as a maximum rollback span we use 1 month or 43200 blocks
-    if ((chainActive.Height() - minHeight) > 43200) {
-        cachedWitnessMap.clear();
-        rollbackTargetHeight = -1;
-        return false;
-    }
-
     // Read blocks from the disk from chaintip to the minimum found height
     std::vector<CBlock> cblocks;
     const CBlockIndex* pIndex = GetChainTip();
@@ -253,12 +253,14 @@ bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock)
         currentHeight = pIndex->nHeight;
     }
 
-    // Load the SaplingMerkleTree for the block before the oldest note
-    SaplingMerkleTree initialSaplingTree;
-    if (!pcoinsTip->GetSaplingAnchorAt(pIndex->hashFinalSaplingRoot, initialSaplingTree)) {
+    SaplingMerkleTree initialSaplingTree = SaplingMerkleTree();
+    // Load the SaplingMerkleTree for the block before the oldest note (if the hash is zero then continue with an empty merkle tree)
+    if (!(pIndex->hashFinalSaplingRoot == UINT256_ZERO) && !pcoinsTip->GetSaplingAnchorAt(pIndex->hashFinalSaplingRoot, initialSaplingTree)) {
+        errorStr = "Cannot fetch the sapling anchor!";
         return false;
     }
     // Finally build the witness cache for each sapling note of your wallet
+    int height = minHeight;
     for (CBlock& block : cblocks) {
         // Finally build the witness cache for each sapling note
         std::vector<uint256> noteCommitments;
@@ -288,7 +290,10 @@ bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock)
             }
         }
         for (auto& it2 : cachedWitnessMap) {
-            it2.second.emplace_front(it2.second.front());
+            // Don't duplicate if the block is too old
+            if (height >= rollbackTargetHeight) {
+                it2.second.emplace_front(it2.second.front());
+            }
             for (auto& noteComm : noteCommitments) {
                 it2.second.front().append(noteComm);
             }
@@ -300,6 +305,7 @@ bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock)
                 cachedWitnessMap.emplace(*(nd->nullifier), witnesses);
             }
         }
+        height++;
     }
     return true;
 }
