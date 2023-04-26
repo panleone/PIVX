@@ -80,8 +80,20 @@ jobs:
             cc: gcc
             cxx: g++
 
+          - name: Linux-latest
+            os: ubuntu-latest
+            packages: python3-zmq qttools5-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
+            cc: gcc
+            cxx: g++
+
           - name: macOS
             os: macos-11
+            packages: llvm@13 python3 autoconf automake berkeley-db@4 libtool boost miniupnpc libnatpmp pkg-config qt5 zmq libevent qrencode gmp libsodium rust
+            cc: $(brew --prefix llvm@13)/bin/clang
+            cxx: $(brew --prefix llvm@13)/bin/clang++
+
+          - name: macOS-latest
+            os: macos-latest
             packages: llvm@13 python3 autoconf automake berkeley-db@4 libtool boost miniupnpc libnatpmp pkg-config qt5 zmq libevent qrencode gmp libsodium rust
             cc: $(brew --prefix llvm@13)/bin/clang
             cxx: $(brew --prefix llvm@13)/bin/clang++
