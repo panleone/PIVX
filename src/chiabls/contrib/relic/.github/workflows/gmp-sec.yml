@@ -1,6 +1,12 @@
-name: Continuous Integration
+name: Faster configuration (constant-time GMP)
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'         # all branches
+  pull_request:
+    branches:
+      - '**'         # all branches
 
 jobs:
   build:
@@ -10,12 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {
-            name: "Windows Latest - MSVC",
-            artifact: "windows-msvc.tar.xz",
-            os: windows-latest,
-            cc: "cl",
-          }
           - {
             name: "Windows Latest - MinGW",
             artifact: "windows-mingw.tar.xz",
@@ -46,9 +46,9 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt install libgmp-dev
 
-      - name: Set Windows enviroment
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        uses: ilammy/msvc-dev-cmd@v1
+      - name: Install MacOS Dependencies
+        if: runner.os == 'MacOS'
+        run: brew install gmp
 
       - name: Set MinGW enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
@@ -60,15 +60,8 @@ jobs:
             base-devel
             gcc
             cmake
+            gmp
           update: true
-
-      - name: Run CMake (Win)
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        shell: bash
-        run: |
-          mkdir build
-          cd build
-          cmake -DSEED= -DBENCH=0 -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
@@ -76,7 +69,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp-sec -G "MinGW Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
@@ -84,7 +77,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -DARITH=gmp-sec ..
 
       - name: CMake Build
         run: cmake --build build
