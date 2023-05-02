@@ -808,15 +808,24 @@ void RPCConsole::banSelectedNode(int bantime)
     if (!clientModel || !g_connman)
         return;
 
+    // No node selected exit out
+    if (cachedNodeid == -1)
+        return;
+
     // Get currently selected peer address
-    QString strNode = GUIUtil::getEntryData(ui->peerWidget, 0, PeerTableModel::Address).toString();
-    // Find possible nodes, ban it and clear the selected node
-    std::string nStr = strNode.toStdString();
+    int selectedNodeRow = clientModel->getPeerTableModel()->getRowByNodeId(cachedNodeid);
+    if (selectedNodeRow < 0)
+        return;
+
+    // Get nodeStats and we will use the addrName string(ip address)
+    const CNodeCombinedStats* stats = clientModel->getPeerTableModel()->getNodeStats(selectedNodeRow);
+
+    std::string nStr = stats->nodeStats.addrName;
     std::string addr;
     int port = 0;
     SplitHostPort(nStr, port, addr);
-
     CNetAddr resolved;
+
     if (!LookupHost(addr.c_str(), resolved, false))
         return;
     g_connman->Ban(resolved, BanReasonManuallyAdded, bantime);
