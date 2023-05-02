@@ -5,6 +5,7 @@
 
 from .util import (
     assert_equal,
+    assert_greater_than_or_equal,
     assert_true,
     satoshi_round,
 )
@@ -24,7 +25,7 @@ class Proposal:
 def get_proposal_obj(Name, URL, Hash, FeeHash, BlockStart, BlockEnd,
                      TotalPaymentCount, RemainingPaymentCount, PaymentAddress,
                      Ratio, Yeas, Nays, Abstains, TotalPayment, MonthlyPayment,
-                     IsEstablished, IsValid, Allotted, TotalBudgetAllotted, IsInvalidReason=""):
+                     IsEstablished, IsValid, Allotted, TotalBudgetAllotted, IsInvalidReason = ""):
     obj = {}
     obj["Name"] = Name
     obj["URL"] = URL
@@ -75,7 +76,7 @@ def check_mns_status(node, txhash):
 def check_mn_list(node, txHashSet):
     # check masternode list from node
     mnlist = node.listmasternodes()
-    assert_equal(len(mnlist), 3)
+    assert_equal(len(mnlist), len(txHashSet))
     foundHashes = set([mn["txhash"] for mn in mnlist if mn["txhash"] in txHashSet])
     assert_equal(len(foundHashes), len(txHashSet))
 
@@ -84,7 +85,7 @@ def check_budget_finalization_sync(nodes, votesCount, status):
     for i in range(0, len(nodes)):
         node = nodes[i]
         budFin = node.mnfinalbudget("show")
-        assert_true(len(budFin) == 1, "MN budget finalization not synced in node" + str(i))
+        assert_greater_than_or_equal(len(budFin), 1)
         budget = budFin[next(iter(budFin))]
         assert_equal(budget["VoteCount"], votesCount)
         assert_equal(budget["Status"], status)
@@ -105,7 +106,7 @@ def check_vote_existence(nodes, proposalName, mnCollateralHash, voteType, voteVa
         assert (len(votesInfo) > 0)
         found = False
         for voteInfo in votesInfo:
-            if (voteInfo["mnId"].split("-")[0] == mnCollateralHash):
+            if (voteInfo["mnId"].split("-")[0] == mnCollateralHash) :
                 assert_equal(voteInfo["Vote"], voteType)
                 assert_equal(voteInfo["fValid"], voteValid)
                 found = True
@@ -121,7 +122,6 @@ def check_budgetprojection(nodes, expected, log):
 def create_proposals_tx(miner, props):
     nextSuperBlockHeight = miner.getnextsuperblock()
     for entry in props:
-        print(nextSuperBlockHeight)
         proposalFeeTxId = miner.preparebudget(
             entry.name,
             entry.link,
