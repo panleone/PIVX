@@ -783,11 +783,13 @@ void SendWidget::onCheckBoxChanged()
 
 void SendWidget::onPIVSelected(bool _isTransparent)
 {
-    isTransparent = _isTransparent;
-    resetChangeAddress();
-    resetCoinControl();
-    tryRefreshAmounts();
-    updateStyle(coinIcon);
+    if (isTransparent != _isTransparent) {
+        isTransparent = _isTransparent;
+        resetChangeAddress();
+        resetCoinControl();
+        tryRefreshAmounts();
+        updateStyle(coinIcon);
+    }
 }
 
 void SendWidget::onContactsClicked(SendMultiRow* entry)
