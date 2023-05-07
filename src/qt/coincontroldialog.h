@@ -93,6 +93,8 @@ private:
     void updatePushButtonSelectAll(bool checked);
     void sortView(int, Qt::SortOrder);
     void inform(const QString& text);
+    void toggleItemLock(QTreeWidgetItem* item);
+    void toggleCoinLock();
 
     // Load a row with coin's data
     void loadAvailableCoin(bool treeMode,
