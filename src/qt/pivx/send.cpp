@@ -6,6 +6,8 @@
 #include "addresstablemodel.h"
 #include "clientmodel.h"
 #include "coincontrol.h"
+#include "destination_io.h"
+#include "key_io.h"
 #include "openuridialog.h"
 #include "operationresult.h"
 #include "optionsmodel.h"
@@ -18,6 +20,8 @@
 #include "qt/pivx/sendchangeaddressdialog.h"
 #include "qt/pivx/sendconfirmdialog.h"
 #include "qt/walletmodel.h"
+#include "sapling/address.h"
+#include "sapling/key_io_sapling.h"
 #include "script/standard.h"
 
 #define REQUEST_PREPARE_TX 1
@@ -273,9 +277,11 @@ void SendWidget::resetCoinControl()
 
 void SendWidget::resetChangeAddress()
 {
-    if (coinControlDialog) coinControlDialog->coinControl->destChange = CNoDestination();
+    if (coinControlDialog) {
+        coinControlDialog->coinControl->destShieldChange = boost::none;
+        coinControlDialog->coinControl->destChange = CNoDestination();
+    }
     ui->btnChangeAddress->setActive(false);
-    ui->btnChangeAddress->setVisible(isTransparent);
 }
 
 void SendWidget::clearEntries()
@@ -414,7 +420,7 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
                              const std::function<bool(QList<SendCoinsRecipient>&)>& func)
 {
     // First check SPORK_20 (before unlock)
-    bool isShieldedTx = hasShieldedOutput || !isTransparent;
+    bool isShieldedTx = hasShieldedOutput || !isTransparent || coinControlDialog->coinControl->destShieldChange;
     if (isShieldedTx) {
         if (walletModel->isSaplingInMaintenance()) {
             inform(tr("Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)"));
@@ -468,7 +474,7 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
 
 OperationResult SendWidget::prepareShielded(WalletModelTransaction* currentTransaction, bool fromTransparent)
 {
-    bool hasCoinsOrNotesSelected = coinControlDialog && coinControlDialog->coinControl && coinControlDialog->coinControl->HasSelected();
+    bool hasCoinsOrNotesSelected = coinControlDialog && coinControlDialog->coinControl;
     return walletModel->PrepareShieldedTransaction(currentTransaction,
                                                    fromTransparent,
                                                    hasCoinsOrNotesSelected ? coinControlDialog->coinControl : nullptr);
@@ -605,15 +611,18 @@ void SendWidget::updateEntryLabels(const QList<SendCoinsRecipient>& recipients)
 void SendWidget::onChangeAddressClicked()
 {
     showHideOp(true);
-    SendChangeAddressDialog* dialog = new SendChangeAddressDialog(window, walletModel);
+    SendChangeAddressDialog* dialog = new SendChangeAddressDialog(window, walletModel, isTransparent);
     if (IsValidDestination(coinControlDialog->coinControl->destChange)) {
         dialog->setAddress(QString::fromStdString(EncodeDestination(coinControlDialog->coinControl->destChange)));
+    } else if (coinControlDialog->coinControl->destShieldChange) {
+        dialog->setAddress(QString::fromStdString(KeyIO::EncodePaymentAddress(*(coinControlDialog->coinControl->destShieldChange))));
     }
 
-    CTxDestination destChange = (openDialogWithOpaqueBackgroundY(dialog, window, 3, 5) ?
-                                 dialog->getDestination() : CNoDestination());
+    CWDestination destChange = (openDialogWithOpaqueBackgroundY(dialog, window, 3, 5) ?
+                                    dialog->getDestination() :
+                                    CNoDestination());
 
-    if (!IsValidDestination(destChange)) {
+    if (!Standard::IsValidDestination(destChange)) {
         // no change address set
         ui->btnChangeAddress->setActive(false);
     } else {
@@ -627,7 +636,16 @@ void SendWidget::onChangeAddressClicked()
     }
 
     // save change address in coin control
-    coinControlDialog->coinControl->destChange = destChange;
+    const CTxDestination* transparentDest = Standard::GetTransparentDestination(destChange);
+    if (transparentDest) {
+        coinControlDialog->coinControl->destChange = *transparentDest;
+        coinControlDialog->coinControl->destShieldChange = boost::none;
+    }
+    const libzcash::SaplingPaymentAddress* shieldDest = Standard::GetShieldedDestination(destChange);
+    if (shieldDest) {
+        coinControlDialog->coinControl->destShieldChange = *shieldDest;
+        coinControlDialog->coinControl->destChange = CNoDestination();
+    }
     dialog->deleteLater();
 }
 

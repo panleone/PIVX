@@ -7,8 +7,10 @@
 #ifndef BITCOIN_COINCONTROL_H
 #define BITCOIN_COINCONTROL_H
 
+#include "optional.h"
 #include "policy/feerate.h"
 #include "primitives/transaction.h"
+#include "sapling/address.h"
 #include "script/standard.h"
 #include <unordered_set>
 
@@ -31,6 +33,8 @@ public:
 class CCoinControl
 {
 public:
+    // TODO: upgrade those two fields to a single CWDestination?
+    Optional<libzcash::SaplingPaymentAddress> destShieldChange = boost::none;
     CTxDestination destChange = CNoDestination();
     //! If false, allows unselected inputs, but requires all selected inputs be used
     bool fAllowOtherInputs;
