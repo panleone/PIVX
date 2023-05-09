@@ -770,6 +770,7 @@ public:
     int64_t nOrderPosNext;
 
     std::set<COutPoint> setLockedCoins;
+    std::set<SaplingOutPoint> setLockedNotes;
 
     int64_t nTimeFirstKey;
 
@@ -862,10 +863,19 @@ public:
     bool IsSpent(const uint256& hash, unsigned int n) const;
 
     bool IsLockedCoin(const uint256& hash, unsigned int n) const;
+    bool IsLockedNote(const SaplingOutPoint& op) const;
+
     void LockCoin(const COutPoint& output);
+    void LockNote(const SaplingOutPoint& op);
+
     void UnlockCoin(const COutPoint& output);
+    void UnlockNote(const SaplingOutPoint& op);
+
     void UnlockAllCoins();
+    void UnlockAllNotes();
+
     std::set<COutPoint> ListLockedCoins();
+    std::set<SaplingOutPoint> ListLockedNotes();
 
     /*
      * Rescan abort properties

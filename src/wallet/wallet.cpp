@@ -3890,16 +3890,34 @@ void CWallet::LockCoin(const COutPoint& output)
     setLockedCoins.insert(output);
 }
 
+void CWallet::LockNote(const SaplingOutPoint& op)
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.insert(op);
+}
+
 void CWallet::UnlockCoin(const COutPoint& output)
 {
     AssertLockHeld(cs_wallet); // setLockedCoins
     setLockedCoins.erase(output);
 }
 
+void CWallet::UnlockNote(const SaplingOutPoint& op)
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.erase(op);
+}
+
 void CWallet::UnlockAllCoins()
 {
     AssertLockHeld(cs_wallet); // setLockedCoins
     setLockedCoins.clear();
+}
+
+void CWallet::UnlockAllNotes()
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.clear();
 }
 
 bool CWallet::IsLockedCoin(const uint256& hash, unsigned int n) const
@@ -3910,10 +3928,22 @@ bool CWallet::IsLockedCoin(const uint256& hash, unsigned int n) const
     return (setLockedCoins.count(outpt) > 0);
 }
 
+bool CWallet::IsLockedNote(const SaplingOutPoint& op) const
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    return (setLockedNotes.count(op) > 0);
+}
+
 std::set<COutPoint> CWallet::ListLockedCoins()
 {
-    AssertLockHeld(cs_wallet);
+    AssertLockHeld(cs_wallet); // setLockedCoins
     return setLockedCoins;
+}
+
+std::set<SaplingOutPoint> CWallet::ListLockedNotes()
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    return setLockedNotes;
 }
 
 bool CWallet::SetStakeSplitThreshold(const CAmount sst)
