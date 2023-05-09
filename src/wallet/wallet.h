@@ -848,7 +848,7 @@ public:
      */
     std::map<std::pair<CTxDestination, Optional<CTxDestination>>, std::vector<COutput>> ListCoins() const;
     /**
-     * Return list of available shield notes grouped by sapling address.
+     * Return list of available shield notes and locked shield notes grouped by sapling address.
      */
     std::map<libzcash::SaplingPaymentAddress, std::vector<SaplingNoteEntry>> ListNotes() const;
 
