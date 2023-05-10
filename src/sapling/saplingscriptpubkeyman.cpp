@@ -6,6 +6,7 @@
 #include "sapling/saplingscriptpubkeyman.h"
 
 #include "chain.h" // for CBlockIndex
+#include "primitives/transaction.h"
 #include "validation.h" // for ReadBlockFromDisk()
 
 void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid)
@@ -16,6 +17,17 @@ void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const 
     std::pair<TxNullifiers::iterator, TxNullifiers::iterator> range;
     range = mapTxSaplingNullifiers.equal_range(nullifier);
     wallet->SyncMetaDataN(range);
+}
+
+bool SaplingScriptPubKeyMan::IsSaplingSpent(const SaplingOutPoint& op) const
+{
+    for (auto& i : mapSaplingNullifiersToNotes) {
+        SaplingOutPoint iOp = i.second;
+        if (iOp == op) {
+            return IsSaplingSpent(i.first);
+        }
+    }
+    return false;
 }
 
 bool SaplingScriptPubKeyMan::IsSaplingSpent(const uint256& nullifier) const {

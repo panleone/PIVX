@@ -18,9 +18,10 @@
 #include "messagesigner.h"
 #include "net.h"
 #include "policy/feerate.h"
+#include "primitives/transaction.h"
 #include "rpc/server.h"
-#include "sapling/sapling_operation.h"
 #include "sapling/key_io_sapling.h"
+#include "sapling/sapling_operation.h"
 #include "shutdown.h"
 #include "spork.h"
 #include "timedata.h"
@@ -4007,11 +4008,11 @@ UniValue lockunspent(const JSONRPCRequest& request)
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp))
         return NullUniValue;
 
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+    if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
         throw std::runtime_error(
-            "lockunspent unlock [{\"txid\":\"txid\",\"vout\":n},...]\n"
+            "lockunspent unlock transparent [{\"txid\":\"txid\",\"vout\":n},...]\n"
             "\nUpdates list of temporarily unspendable outputs.\n"
-            "Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs.\n"
+            "Temporarily lock (unlock=false) or unlock (unlock=true) specified transparent (transparent=true) or shielded (transparent=false) transaction outputs.\n"
             "A locked transaction output will not be chosen by automatic coin selection, when spending PIVs.\n"
             "Locks are stored in memory only. Nodes start with zero locked outputs, and the locked output list\n"
             "is always cleared (by virtue of process exit) when a node stops or fails.\n"
@@ -4019,6 +4020,7 @@ UniValue lockunspent(const JSONRPCRequest& request)
 
             "\nArguments:\n"
             "1. unlock            (boolean, required) Whether to unlock (true) or lock (false) the specified transactions\n"
+            "2. transparent       (boolean, required) Whether the given transaction outputs are transparent (true) or shielded (false)\n"
             "2. \"transactions\"  (string, required) A json array of objects. Each object the txid (string) vout (numeric)\n"
             "     [           (json array of json objects)\n"
             "       {\n"
@@ -4035,13 +4037,13 @@ UniValue lockunspent(const JSONRPCRequest& request)
             "\nList the unspent transactions\n" +
             HelpExampleCli("listunspent", "") +
             "\nLock an unspent transaction\n" +
-            HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
+            HelpExampleCli("lockunspent", "false true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
             "\nList the locked transactions\n" +
             HelpExampleCli("listlockunspent", "") +
             "\nUnlock the transaction again\n" +
-            HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
+            HelpExampleCli("lockunspent", "true true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
             "\nAs a json rpc call\n" +
-            HelpExampleRpc("lockunspent", "false, \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\""));
+            HelpExampleRpc("lockunspent", "false false, \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\""));
 
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
@@ -4049,24 +4051,25 @@ UniValue lockunspent(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    if (request.params.size() == 1)
-        RPCTypeCheck(request.params, {UniValue::VBOOL});
+    if (request.params.size() == 2)
+        RPCTypeCheck(request.params, {UniValue::VBOOL, UniValue::VBOOL});
     else
-        RPCTypeCheck(request.params, {UniValue::VBOOL, UniValue::VARR});
+        RPCTypeCheck(request.params, {UniValue::VBOOL, UniValue::VBOOL, UniValue::VARR});
 
     bool fUnlock = request.params[0].get_bool();
+    bool transparent = request.params[1].get_bool();
 
-    if (request.params.size() == 1) {
-        if (fUnlock)
-            pwallet->UnlockAllCoins();
+    if (request.params.size() == 2) {
+        if (fUnlock) transparent ? pwallet->UnlockAllCoins() : pwallet->UnlockAllNotes();
         return true;
     }
 
-    UniValue output_request = request.params[1].get_array();
+    UniValue output_request = request.params[2].get_array();
 
     // Create and validate the COutPoints first.
     std::vector<COutPoint> outputs;
-    outputs.reserve(output_request.size());
+    std::vector<SaplingOutPoint> saplingOutputs;
+    transparent ? outputs.reserve(output_request.size()) : saplingOutputs.reserve(output_request.size());
 
     for (unsigned int idx = 0; idx < output_request.size(); idx++) {
         const UniValue& output = output_request[idx];
@@ -4087,24 +4090,34 @@ UniValue lockunspent(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
         }
 
-        const COutPoint outpt(txid, nOutput);
+        bool is_locked = false;
 
-        const auto it = pwallet->mapWallet.find(outpt.hash);
+        const auto it = pwallet->mapWallet.find(txid);
         if (it == pwallet->mapWallet.end()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, unknown transaction");
         }
 
         const CWalletTx& wtx = it->second;
+        if (transparent) {
+            const COutPoint outpt(txid, nOutput);
+            if (outpt.n >= wtx.tx->vout.size()) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout index out of bounds");
+            }
 
-        if (outpt.n >= wtx.tx->vout.size()) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout index out of bounds");
+            if (pwallet->IsSpent(outpt.hash, outpt.n)) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected unspent output");
+            }
+            is_locked = pwallet->IsLockedCoin(outpt.hash, outpt.n);
+        } else {
+            const SaplingOutPoint op(txid, nOutput);
+            if (op.n >= wtx.tx->sapData->vShieldedOutput.size()) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout index out of bounds");
+            }
+            if (pwallet->IsSaplingSpent(op)) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected unspent output");
+            }
+            is_locked = pwallet->IsLockedNote(op);
         }
-
-        if (pwallet->IsSpent(outpt.hash, outpt.n)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected unspent output");
-        }
-
-        const bool is_locked = pwallet->IsLockedCoin(outpt.hash, outpt.n);
 
         if (fUnlock && !is_locked) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected locked output");
@@ -4114,13 +4127,19 @@ UniValue lockunspent(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, output already locked");
         }
 
-        outputs.push_back(outpt);
+        transparent ? outputs.push_back(COutPoint(txid, nOutput)) : saplingOutputs.push_back(SaplingOutPoint(txid, nOutput));
     }
 
     // Atomically set (un)locked status for the outputs.
     for (const COutPoint& outpt : outputs) {
         if (fUnlock) pwallet->UnlockCoin(outpt);
         else pwallet->LockCoin(outpt);
+    }
+
+    for (const SaplingOutPoint& op : saplingOutputs) {
+        if (fUnlock) pwallet->UnlockNote(op);
+        else
+            pwallet->LockNote(op);
     }
 
     return true;
@@ -4140,39 +4159,61 @@ UniValue listlockunspent(const JSONRPCRequest& request)
             "See the lockunspent call to lock and unlock transactions for spending.\n"
 
             "\nResult:\n"
-            "[\n"
-            "  {\n"
-            "    \"txid\" : \"transactionid\",     (string) The transaction id locked\n"
-            "    \"vout\" : n                      (numeric) The vout value\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
+            "{\n"
+            "  \"transparent\": [                 (array of json objects)\n"
+            "     {\n"
+            "       \"txid\": \"transactionid\"     (string) The transaction id locked\n"
+            "       \"vout\": n                   (numeric) The vout value\n"
+            "     },\n"
+            "     ...\n"
+            "   ],\n"
+            "  \"shielded\": [                    (array of json objects)\n"
+            "     {\n"
+            "       \"txid\": \"transactionid\"     (string) The transaction id locked\n"
+            "       \"vShieldedOutput\": n        (numeric) The vout value\n"
+            "     },\n"
+            "     ...\n"
+            "   ],\n"
+            "}\n"
 
             "\nExamples:\n"
             "\nList the unspent transactions\n" +
             HelpExampleCli("listunspent", "") +
             "\nLock an unspent transaction\n" +
-            HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
+            HelpExampleCli("lockunspent", "false true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
             "\nList the locked transactions\n" +
             HelpExampleCli("listlockunspent", "") +
             "\nUnlock the transaction again\n" +
-            HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
+            HelpExampleCli("lockunspent", "true true \"[{\\\"txid\\\":\\\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\\\",\\\"vout\\\":1}]\"") +
             "\nAs a json rpc call\n" +
             HelpExampleRpc("listlockunspent", ""));
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    std::set<COutPoint> vOutpts = pwallet->ListLockedCoins();
-    UniValue ret(UniValue::VARR);
 
+    UniValue ret(UniValue::VOBJ);
+    UniValue transparent(UniValue::VARR);
+    UniValue shielded(UniValue::VARR);
+
+    std::set<COutPoint> vOutpts = pwallet->ListLockedCoins();
     for (const COutPoint& outpt : vOutpts) {
         UniValue o(UniValue::VOBJ);
 
         o.pushKV("txid", outpt.hash.GetHex());
         o.pushKV("vout", (int)outpt.n);
-        ret.push_back(o);
+        transparent.push_back(o);
     }
 
+    std::set<SaplingOutPoint> sOps = pwallet->ListLockedNotes();
+    for (const SaplingOutPoint& op : sOps) {
+        UniValue o(UniValue::VOBJ);
+
+        o.pushKV("txid", op.hash.GetHex());
+        o.pushKV("vShieldedOutput", (int)op.n);
+        shielded.push_back(o);
+    }
+    ret.pushKV("transparent", transparent);
+    ret.pushKV("shielded", shielded);
     return ret;
 }
 
@@ -4732,7 +4773,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "listtransactions",         &listtransactions,         false, {"dummy","count","from","include_watchonly","include_delegated","include_cold"} },
     { "wallet",             "listunspent",              &listunspent,              false, {"minconf","maxconf","addresses","watchonly_config","query_options","include_unsafe" } },
     { "wallet",             "listwallets",              &listwallets,              true,  {} },
-    { "wallet",             "lockunspent",              &lockunspent,              true,  {"unlock","transactions"} },
+    { "wallet",             "lockunspent",              &lockunspent,              true,  {"unlock", "transparent", "transactions"} },
     { "wallet",             "rawdelegatestake",         &rawdelegatestake,         false, {"staking_addr","amount","owner_addr","ext_owner","include_delegated","from_shield","force"} },
     { "wallet",             "sendmany",                 &sendmany,                 false, {"dummy","amounts","minconf","comment","include_delegated","subtract_fee_from"} },
     { "wallet",             "sendtoaddress",            &sendtoaddress,            false, {"address","amount","comment","comment-to","subtract_fee"} },

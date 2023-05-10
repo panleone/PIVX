@@ -701,6 +701,11 @@ bool CWallet::HasSaplingSPKM() const
     return GetSaplingScriptPubKeyMan()->IsEnabled();
 }
 
+bool CWallet::IsSaplingSpent(const SaplingOutPoint& op) const
+{
+    return m_sspk_man->IsSaplingSpent(op);
+}
+
 /**
  * Outpoint is spent if any non-conflicted transaction
  * spends it:
