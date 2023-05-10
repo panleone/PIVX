@@ -90,7 +90,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.sync_blocks()
         # lock the change output (so it's not used as stake input in generate_pos)
         for x in self.nodes[1].listunspent():
-            assert (self.nodes[1].lockunspent(False, [{"txid": x['txid'], "vout": x['vout']}]))
+            assert (self.nodes[1].lockunspent(False, True, [{"txid": x['txid'], "vout": x['vout']}]))
         # check that it cannot stake
         sleep(1)
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)

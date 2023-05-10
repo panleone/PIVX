@@ -81,11 +81,11 @@ class WalletTest(PivxTestFramework):
         assert unspent_0["spendable"]
         assert unspent_0["safe"]
         unspent_0 = {"txid": unspent_0["txid"], "vout": unspent_0["vout"]}
-        self.nodes[1].lockunspent(False, [unspent_0])
+        self.nodes[1].lockunspent(False, True, [unspent_0])
         assert_raises_rpc_error(-4, "Insufficient funds", self.nodes[1].sendtoaddress, self.nodes[1].getnewaddress(), 20)
-        assert_equal([unspent_0], self.nodes[1].listlockunspent())
-        self.nodes[1].lockunspent(True, [unspent_0])
-        assert_equal(len(self.nodes[1].listlockunspent()), 0)
+        assert_equal([unspent_0], self.nodes[1].listlockunspent()["transparent"])
+        self.nodes[1].lockunspent(True, True, [unspent_0])
+        assert_equal(len(self.nodes[1].listlockunspent()["transparent"]), 0)
 
         # Send 21 PIV from 1 to 0 using sendtoaddress call.
         # Locked memory should use at least 32 bytes to sign the transaction

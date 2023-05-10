@@ -1162,7 +1162,7 @@ class PivxTestFramework():
             file_object.write(confData)
 
         # lock collateral
-        mnOwner.lockunspent(False, [{"txid": collateralTxId, "vout": collateralTxId_n}])
+        mnOwner.lockunspent(False, True, [{"txid": collateralTxId, "vout": collateralTxId_n}])
 
         # return the collateral outpoint
         return COutPoint(collateralTxId, collateralTxId_n)
