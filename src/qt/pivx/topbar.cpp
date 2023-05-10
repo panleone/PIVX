@@ -677,7 +677,7 @@ void TopBar::updateBalances(const interfaces::WalletBalances& newBalance)
     // Locked balance. //TODO move this to the signal properly in the future..
     CAmount nLockedBalance = 0;
     if (walletModel) {
-        nLockedBalance = walletModel->getLockedBalance();
+        nLockedBalance = walletModel->getLockedBalance(true) + walletModel->getLockedBalance(false);
     }
     ui->labelTitle1->setText(nLockedBalance > 0 ? tr("Available (Locked included)") : tr("Available"));
 

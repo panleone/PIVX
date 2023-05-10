@@ -5,6 +5,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "optional.h"
 #if defined(HAVE_CONFIG_H)
 #include "config/pivx-config.h"
 #endif
@@ -2203,6 +2204,28 @@ CAmount CWallet::GetLockedCoins() const
     }
     return ret;
 }
+
+CAmount CWallet::GetLockedShieldCoins() const
+{
+    LOCK(cs_wallet);
+    if (setLockedNotes.empty()) return 0;
+
+    CAmount ret = 0;
+    for (const auto& op : setLockedNotes) {
+        auto it = mapWallet.find(op.hash);
+        if (it != mapWallet.end()) {
+            const CWalletTx& pcoin = it->second;
+            if (pcoin.IsTrusted() && pcoin.GetDepthInMainChain() > 0) {
+                Optional<CAmount> val = pcoin.mapSaplingNoteData.at(op).amount;
+                if (val) {
+                    ret += *val;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 
 CAmount CWallet::GetUnconfirmedBalance(isminetype filter) const
 {

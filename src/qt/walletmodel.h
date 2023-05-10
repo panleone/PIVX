@@ -166,7 +166,7 @@ public:
 
     CAmount getBalance(const CCoinControl* coinControl = nullptr, bool fIncludeDelegated = true, bool fUnlockedOnly = false, bool fIncludeShielded = true) const;
     CAmount getUnlockedBalance(const CCoinControl* coinControl = nullptr, bool fIncludeDelegated = true, bool fIncludeShielded = true) const;
-    CAmount getLockedBalance() const;
+    CAmount getLockedBalance(bool isTransparent) const;
     bool haveWatchOnly() const;
     CAmount getDelegatedBalance() const;
 
@@ -339,10 +339,12 @@ public:
     void listCoins(std::map<ListCoinsKey, std::vector<ListCoinsValue>>& mapCoins) const;
     void listAvailableNotes(std::map<ListCoinsKey, std::vector<ListCoinsValue>>& mapCoins) const;
 
-    bool isLockedCoin(uint256 hash, unsigned int n) const;
-    void lockCoin(COutPoint& output);
-    void unlockCoin(COutPoint& output);
+    bool isLockedCoin(uint256 hash, unsigned int n, bool isTransparent = true) const;
+    void lockCoin(uint256 hash, unsigned int n, bool isTransparent = true);
+    void unlockCoin(uint256 hash, unsigned int n, bool isTransparent = true);
+
     std::set<COutPoint> listLockedCoins();
+    std::set<SaplingOutPoint> listLockedNotes();
 
     void loadReceiveRequests(std::vector<std::string>& vReceiveRequests);
     bool saveReceiveRequest(const std::string& sAddress, const int64_t nId, const std::string& sRequest);
