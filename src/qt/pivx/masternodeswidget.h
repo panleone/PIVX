@@ -5,8 +5,9 @@
 #ifndef MASTERNODESWIDGET_H
 #define MASTERNODESWIDGET_H
 
-#include "qt/pivx/pwidget.h"
+#include "coincontroldialog.h"
 #include "qt/pivx/furabstractlistitemdelegate.h"
+#include "qt/pivx/pwidget.h"
 #include "qt/pivx/tooltipmenu.h"
 
 #include <atomic>
@@ -33,6 +34,7 @@ public:
 
     explicit MasterNodesWidget(PIVXGUI *parent = nullptr);
     ~MasterNodesWidget();
+    void resetCoinControl();
     void setMNModel(MNModel* _mnModel);
 
     void run(int type) override;
@@ -42,6 +44,7 @@ public:
     void hideEvent(QHideEvent *event) override;
 
 private Q_SLOTS:
+    void onCoinControlClicked();
     void onCreateMNClicked();
     void onStartAllClicked(int type);
     void changeTheme(bool isLightTheme, QString &theme) override;
@@ -59,6 +62,7 @@ private:
     TooltipMenu* menu = nullptr;
     QModelIndex index;
     QTimer *timer = nullptr;
+    CoinControlDialog* coinControlDialog = nullptr;
 
     std::atomic<bool> isLoading;
 
