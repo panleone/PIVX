@@ -450,7 +450,6 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
         if (sendFinalStep()) {
             updateEntryLabels(ptrModelTx->getRecipients());
         }
-        setFocusOnLastEntry();
     } else if (!processingResultError->isEmpty()){
         inform(*processingResultError);
     }
