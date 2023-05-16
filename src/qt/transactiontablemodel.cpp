@@ -479,6 +479,8 @@ QString TransactionTableModel::formatTxType(const TransactionRecord* wtx) const
         return tr("Converted z%1 to %1").arg(CURRENCY_UNIT.c_str());
     case TransactionRecord::RecvWithShieldedAddress:
         return tr("Received with shielded");
+    case TransactionRecord::RecvWithShieldedAddressMemo:
+        return tr("Received shielded memo");
     case TransactionRecord::SendToShielded:
         return tr("Shielded send to");
     case TransactionRecord::SendToNobody:
@@ -532,6 +534,7 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord* wtx, b
     case TransactionRecord::RecvFromZerocoinSpend:
         return lookupAddress(wtx->address, tooltip);
     case TransactionRecord::RecvWithShieldedAddress:
+    case TransactionRecord::RecvWithShieldedAddressMemo:
     case TransactionRecord::SendToShielded:
         // todo: add addressbook support for shielded addresses.
         return QString::fromStdString(wtx->address);
@@ -708,6 +711,7 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
                 return COLOR_ORPHAN;
             else
                 return COLOR_STAKE;
+
         }
         // Conflicted tx
         if (rec->status.status == TransactionStatus::Conflicted || rec->status.status == TransactionStatus::NotAccepted) {

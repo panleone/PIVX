@@ -89,6 +89,10 @@ void TxRow::setType(bool isLightTheme, int type, bool isConfirmed)
             path = "://ic-transaction-received";
             css = "text-list-amount-receive";
             break;
+        case TransactionRecord::RecvWithShieldedAddressMemo:
+            path = "://ic-transaction-received-memo";
+            css = "text-list-amount-receive";
+            break;
         case TransactionRecord::SendToAddress:
         case TransactionRecord::SendToOther:
         case TransactionRecord::ZerocoinSpend:
