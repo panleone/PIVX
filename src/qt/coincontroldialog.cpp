@@ -228,42 +228,55 @@ void CoinControlDialog::buttonSelectAllClicked()
     updateLabels();
 }
 
+void CoinControlDialog::toggleItemLock(QTreeWidgetItem* item)
+{
+    COutPoint outpt(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt());
+    if (model->isLockedCoin(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt())) {
+        model->unlockCoin(outpt);
+        item->setDisabled(false);
+        // restore cold-stake snowflake icon for P2CS which were previously locked
+        if (item->data(COLUMN_CHECKBOX, Qt::UserRole) == QString("Delegated"))
+            item->setIcon(COLUMN_CHECKBOX, QIcon("://ic-check-cold-staking-off"));
+        else
+            item->setIcon(COLUMN_CHECKBOX, QIcon());
+    } else {
+        model->lockCoin(outpt);
+        item->setDisabled(true);
+        item->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
+    }
+    updateLabelLocked();
+}
+
+void CoinControlDialog::toggleCoinLock()
+{
+    QTreeWidgetItem* item;
+    bool treemode = ui->treeWidget->rootIsDecorated();
+    for (int i = 0; i < ui->treeWidget->topLevelItemCount(); i++) {
+        item = ui->treeWidget->topLevelItem(i);
+        if (treemode) {
+            auto subItems = item->takeChildren();
+            for (auto j : subItems) {
+                toggleItemLock(j);
+            }
+        } else {
+            toggleItemLock(item);
+        }
+    }
+}
+
 // Toggle lock state
 void CoinControlDialog::buttonToggleLockClicked()
 {
-    if (!fSelectTransparent) return; // todo: implement locked notes
-    QTreeWidgetItem* item;
-    // Works in list-mode only
-    if (ui->radioListMode->isChecked()) {
-        ui->treeWidget->setEnabled(false);
-        for (int i = 0; i < ui->treeWidget->topLevelItemCount(); i++) {
-            item = ui->treeWidget->topLevelItem(i);
-
-            COutPoint outpt(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt());
-            if (model->isLockedCoin(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt())) {
-                model->unlockCoin(outpt);
-                item->setDisabled(false);
-                // restore cold-stake snowflake icon for P2CS which were previously locked
-                if (item->data(COLUMN_CHECKBOX, Qt::UserRole) == QString("Delegated"))
-                    item->setIcon(COLUMN_CHECKBOX, QIcon("://ic-check-cold-staking-off"));
-                else
-                    item->setIcon(COLUMN_CHECKBOX, QIcon());
-            } else {
-                model->lockCoin(outpt);
-                item->setDisabled(true);
-                item->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
-            }
-            updateLabelLocked();
-        }
-        ui->treeWidget->setEnabled(true);
-        updateLabels();
-    } else {
-        QMessageBox msgBox;
-        msgBox.setObjectName("lockMessageBox");
-        msgBox.setStyleSheet(GUIUtil::loadStyleSheet());
-        msgBox.setText(tr("Please switch to \"List mode\" to use this function."));
-        msgBox.exec();
+    if (!fSelectTransparent) { // todo: implement locked notes
+        ui->pushButtonToggleLock->setChecked(false);
+        return;
     }
+
+    // Works in list-mode only
+    ui->treeWidget->setEnabled(false);
+    toggleCoinLock();
+    ui->treeWidget->setEnabled(true);
+    updateView();
 }
 
 // context menu
