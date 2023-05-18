@@ -4,16 +4,17 @@
 
 #include "qt/pivx/mnmodel.h"
 
+#include "coincontrol.h"
 #include "masternode.h"
 #include "masternodeman.h"
-#include "net.h"        // for validateMasternodeIP
-#include "tiertwo/tiertwo_sync_state.h"
-#include "uint256.h"
+#include "net.h" // for validateMasternodeIP
 #include "qt/bitcoinunits.h"
 #include "qt/optionsmodel.h"
 #include "qt/pivx/guitransactionsutils.h"
 #include "qt/walletmodel.h"
 #include "qt/walletmodeltransaction.h"
+#include "tiertwo/tiertwo_sync_state.h"
+#include "uint256.h"
 
 #include <QFile>
 #include <QHostAddress>
@@ -219,9 +220,8 @@ bool MNModel::createMNCollateral(
     WalletModelTransaction currentTransaction(recipients);
     WalletModel::SendCoinsReturn prepareStatus;
 
-    // no coincontrol, no P2CS delegations
-    prepareStatus = walletModel->prepareTransaction(&currentTransaction, nullptr, false);
-
+    // no P2CS delegations
+    prepareStatus = walletModel->prepareTransaction(&currentTransaction, coinControl, false);
     QString returnMsg = tr("Unknown error");
     // process prepareStatus and on error generate message shown to user
     CClientUIInterface::MessageBoxFlags informType;
@@ -503,4 +503,14 @@ bool MNModel::removeLegacyMN(const std::string& alias_to_remove, const std::stri
     // Remove alias
     masternodeConfig.remove(alias_to_remove);
     return true;
+}
+
+void MNModel::setCoinControl(CCoinControl* coinControl)
+{
+    this->coinControl = coinControl;
+}
+
+void MNModel::resetCoinControl()
+{
+    coinControl = nullptr;
 }

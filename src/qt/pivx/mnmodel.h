@@ -77,9 +77,12 @@ public:
                                                         QString& ret_error);
 
     bool removeLegacyMN(const std::string& alias_to_remove, const std::string& tx_id, unsigned int out_index, QString& ret_error);
+    void setCoinControl(CCoinControl* coinControl);
+    void resetCoinControl();
 
 private:
     WalletModel* walletModel;
+    CCoinControl* coinControl;
     // alias mn node ---> pair <ip, master node>
     QMap<QString, std::pair<QString, CMasternode*>> nodes;
     QMap<std::string, bool> collateralTxAccepted;

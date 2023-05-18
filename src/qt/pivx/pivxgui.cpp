@@ -505,6 +505,7 @@ void PIVXGUI::goToAddresses()
 
 void PIVXGUI::goToMasterNodes()
 {
+    masterNodesWidget->resetCoinControl();
     showTop(masterNodesWidget);
 }
 
