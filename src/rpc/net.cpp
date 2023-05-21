@@ -101,6 +101,8 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
             "       n,                        (numeric) The heights of blocks we're currently asking from this peer\n"
             "       ...\n"
             "    ]\n"
+            "    \"addr_processed\": n,       (numeric) The total number of addresses processed, excluding those dropped due to rate limiting\n"
+            "    \"addr_rate_limited\": n,       (numeric) The total number of addresses dropped due to rate limiting\n"
             "    \"bytessent_per_msg\": {\n"
             "       \"addr\": n,             (numeric) The total bytes sent aggregated by message type\n"
             "       ...\n"
@@ -166,6 +168,8 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
                 heights.push_back(height);
             }
             obj.pushKV("inflight", heights);
+            obj.pushKV("addr_processed", statestats.m_addr_processed);
+            obj.pushKV("addr_rate_limited", statestats.m_addr_rate_limited);
         }
         obj.pushKV("whitelisted", stats.fWhitelisted);
 

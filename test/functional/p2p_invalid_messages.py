@@ -174,8 +174,8 @@ class InvalidMessagesTest(PivxTestFramework):
         self.test_addrv2('unrecognized network',
             [
                 'received: addrv2 (25 bytes)',
-                'IP 9.9.9.9 mapped',
-                'Added 1 addresses',
+                'Received addr: 2 addresses (2 processed, 0 rate-limited)',
+                'received: ping (8 bytes)',
             ],
             hex_str_to_bytes(
                 '02' +     # number of entries

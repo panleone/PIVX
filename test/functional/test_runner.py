@@ -62,6 +62,7 @@ BASE_SCRIPTS= [
     'mempool_persist.py',                       # ~ 417 sec
     'p2p_quorum_connect.py',                    # ~ 400 sec
     'wallet_reorgsrestore.py',                  # ~ 391 sec
+    'p2p_addr_relay.py',                        # ~ 380 sec
 
     # vv Tests less than 5m vv
     'wallet_hd.py',                             # ~ 300 sec
@@ -135,7 +136,6 @@ BASE_SCRIPTS= [
     'rpc_decodescript.py',                      # ~ 50 sec
     'rpc_blockchain.py',                        # ~ 50 sec
     'wallet_disable.py',                        # ~ 50 sec
-    'p2p_addr_relay.py',                        # ~ 49 sec
     'p2p_addrv2_relay.py',                      # ~ 49 sec
     'wallet_autocombine.py',                    # ~ 49 sec
     'mining_v5_upgrade.py',                     # ~ 48 sec

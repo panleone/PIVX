@@ -53,6 +53,12 @@ static const unsigned int MAX_INV_SZ = 50000;
 static const unsigned int MAX_LOCATOR_SZ = 101;
 /** The maximum number of addresses from our addrman to return in response to a getaddr message. */
 static constexpr size_t MAX_ADDR_TO_SEND = 1000;
+/** The maximum rate of address records we're willing to process on average. */
+static constexpr double MAX_ADDR_RATE_PER_SECOND{0.1};
+/** The soft limit of the address processing token bucket (the regular MAX_ADDR_RATE_PER_SECOND
+ *  based increments won't go above this, but the MAX_ADDR_TO_SEND increment following GETADDR
+ *  is exempt from this limit. */
+static constexpr size_t MAX_ADDR_PROCESSING_TOKEN_BUCKET{MAX_ADDR_TO_SEND};
 /** Maximum length of incoming protocol messages (no message over 2 MiB is currently acceptable). */
 static const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 2 * 1024 * 1024;
 /** Maximum length of strSubVer in `version` message */
@@ -722,6 +728,11 @@ public:
     std::set<uint256> setKnown;
     std::chrono::microseconds m_next_addr_send GUARDED_BY(cs_sendProcessing){0};
     std::chrono::microseconds m_next_local_addr_send GUARDED_BY(cs_sendProcessing){0};
+    /** Number of addresses that can be processed from this peer. Start at 10 to
+     *  permit self-announcement and starting peer propagation */
+    double m_addr_token_bucket{10.0};
+    /** When m_addr_token_bucket was last updated */
+    std::chrono::microseconds m_addr_token_timestamp{GetTime<std::chrono::microseconds>()};
 
     // inventory based relay
     CRollingBloomFilter filterInventoryKnown;
