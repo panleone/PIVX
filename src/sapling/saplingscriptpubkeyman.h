@@ -151,6 +151,7 @@ public:
      * Keep track of the used nullifier.
      */
     void AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid);
+    bool IsSaplingSpent(const SaplingOutPoint& op) const;
     bool IsSaplingSpent(const uint256& nullifier) const;
 
     /**
@@ -277,12 +278,13 @@ public:
     void GetNotes(const std::vector<SaplingOutPoint>& saplingOutpoints,
                   std::vector<SaplingNoteEntry>& saplingEntriesRet) const;
 
-    /* Find notes filtered by payment address, min depth, ability to spend */
+    /* Find notes filtered by payment address, min depth, ability to spend and if they are locked */
     void GetFilteredNotes(std::vector<SaplingNoteEntry>& saplingEntries,
-                          Optional<libzcash::SaplingPaymentAddress>& address,
-                          int minDepth=1,
-                          bool ignoreSpent=true,
-                          bool requireSpendingKey=true) const;
+        Optional<libzcash::SaplingPaymentAddress>& address,
+        int minDepth = 1,
+        bool ignoreSpent = true,
+        bool requireSpendingKey = true,
+        bool ignoreLocked = true) const;
 
     /* Find notes filtered by payment addresses, min depth, max depth, if they are spent,
        if a spending key is required, and if they are locked */

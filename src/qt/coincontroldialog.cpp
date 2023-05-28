@@ -230,9 +230,10 @@ void CoinControlDialog::buttonSelectAllClicked()
 
 void CoinControlDialog::toggleItemLock(QTreeWidgetItem* item)
 {
-    COutPoint outpt(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt());
-    if (model->isLockedCoin(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt())) {
-        model->unlockCoin(outpt);
+    uint256 hash = uint256S(item->text(COLUMN_TXHASH).toStdString());
+    int n = item->text(COLUMN_VOUT_INDEX).toUInt();
+    if (model->isLockedCoin(hash, n, fSelectTransparent)) {
+        model->unlockCoin(hash, n, fSelectTransparent);
         item->setDisabled(false);
         // restore cold-stake snowflake icon for P2CS which were previously locked
         if (item->data(COLUMN_CHECKBOX, Qt::UserRole) == QString("Delegated"))
@@ -240,7 +241,7 @@ void CoinControlDialog::toggleItemLock(QTreeWidgetItem* item)
         else
             item->setIcon(COLUMN_CHECKBOX, QIcon());
     } else {
-        model->lockCoin(outpt);
+        model->lockCoin(hash, n, fSelectTransparent);
         item->setDisabled(true);
         item->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
     }
@@ -267,12 +268,6 @@ void CoinControlDialog::toggleCoinLock()
 // Toggle lock state
 void CoinControlDialog::buttonToggleLockClicked()
 {
-    if (!fSelectTransparent) { // todo: implement locked notes
-        ui->pushButtonToggleLock->setChecked(false);
-        return;
-    }
-
-    // Works in list-mode only
     ui->treeWidget->setEnabled(false);
     toggleCoinLock();
     ui->treeWidget->setEnabled(true);
@@ -289,7 +284,7 @@ void CoinControlDialog::showMenu(const QPoint& point)
         // disable some items (like Copy Transaction ID, lock, unlock) for tree roots in context menu
         if (item->text(COLUMN_TXHASH).length() == 64) { // transaction hash is 64 characters (this means its a child node, so its not a parent node in tree mode)
             copyTransactionHashAction->setEnabled(true);
-            if (model->isLockedCoin(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt())) {
+            if (model->isLockedCoin(uint256S(item->text(COLUMN_TXHASH).toStdString()), item->text(COLUMN_VOUT_INDEX).toUInt(), fSelectTransparent)) {
                 lockAction->setEnabled(false);
                 unlockAction->setEnabled(true);
             } else {
@@ -340,12 +335,11 @@ void CoinControlDialog::copyTransactionHash()
 // context menu action: lock coin
 void CoinControlDialog::lockCoin()
 {
-    if (!fSelectTransparent) return; // todo: implement locked notes
     if (contextMenuItem->checkState(COLUMN_CHECKBOX) == Qt::Checked)
         contextMenuItem->setCheckState(COLUMN_CHECKBOX, Qt::Unchecked);
-
-    COutPoint outpt(uint256S(contextMenuItem->text(COLUMN_TXHASH).toStdString()), contextMenuItem->text(COLUMN_VOUT_INDEX).toUInt());
-    model->lockCoin(outpt);
+    uint256 txHash = uint256S(contextMenuItem->text(COLUMN_TXHASH).toStdString());
+    int n = contextMenuItem->text(COLUMN_VOUT_INDEX).toUInt();
+    model->lockCoin(txHash, n, fSelectTransparent);
     contextMenuItem->setDisabled(true);
     contextMenuItem->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
     updateLabelLocked();
@@ -354,9 +348,9 @@ void CoinControlDialog::lockCoin()
 // context menu action: unlock coin
 void CoinControlDialog::unlockCoin()
 {
-    if (!fSelectTransparent) return; // todo: implement locked notes
-    COutPoint outpt(uint256S(contextMenuItem->text(COLUMN_TXHASH).toStdString()), contextMenuItem->text(COLUMN_VOUT_INDEX).toUInt());
-    model->unlockCoin(outpt);
+    uint256 txHash = uint256S(contextMenuItem->text(COLUMN_TXHASH).toStdString());
+    int n = contextMenuItem->text(COLUMN_VOUT_INDEX).toUInt();
+    model->unlockCoin(txHash, n, fSelectTransparent);
     contextMenuItem->setDisabled(false);
     // restore cold-stake snowflake icon for P2CS which were previously locked
     if (contextMenuItem->data(COLUMN_CHECKBOX, Qt::UserRole) == QString("Delegated"))
@@ -482,17 +476,12 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
 // shows count of locked unspent outputs
 void CoinControlDialog::updateLabelLocked()
 {
-    if (fSelectTransparent) {
-        std::set<COutPoint> vOutpts = model->listLockedCoins();
-        if (!vOutpts.empty()) {
-            ui->labelLocked->setText(tr("(%1 locked)").arg(vOutpts.size()));
-            ui->labelLocked->setVisible(true);
-        } else
-            ui->labelLocked->setVisible(false);
-    } else {
+    int nLocked = fSelectTransparent ? model->listLockedCoins().size() : model->listLockedNotes().size();
+    if (nLocked > 0) {
+        ui->labelLocked->setText(tr("(%1 locked)").arg(nLocked));
+        ui->labelLocked->setVisible(true);
+    } else
         ui->labelLocked->setVisible(false);
-        // TODO: implement locked notes functionality inside the wallet..
-    }
 }
 
 // serialized int size
@@ -726,16 +715,13 @@ void CoinControlDialog::loadAvailableCoin(bool treeMode,
     // vout index
     itemOutput->setText(COLUMN_VOUT_INDEX, QString::number(outIndex));
 
-    // disable locked coins (!TODO: implement locked notes)
     bool isLockedCoin{false};
-    if (fSelectTransparent) {
-        isLockedCoin = model->isLockedCoin(txhash, outIndex);
-        if (isLockedCoin) {
-            --nSelectableInputs;
-            coinControl->UnSelect({txhash, outIndex}); // just to be sure
-            itemOutput->setDisabled(true);
-            itemOutput->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
-        }
+    isLockedCoin = model->isLockedCoin(txhash, outIndex, fSelectTransparent);
+    if (isLockedCoin) {
+        --nSelectableInputs;
+        coinControl->UnSelect({txhash, outIndex}); // just to be sure
+        itemOutput->setDisabled(true);
+        itemOutput->setIcon(COLUMN_CHECKBOX, QIcon(":/icons/lock_closed"));
     }
 
     // set checkbox
@@ -841,12 +827,6 @@ void CoinControlDialog::updateView()
     // sort view
     sortView(sortColumn, sortOrder);
     ui->treeWidget->setEnabled(true);
-
-    // TODO: Remove this once note locking is functional
-    // Hide or show locking button and context menu items
-    lockAction->setVisible(fSelectTransparent);
-    unlockAction->setVisible(fSelectTransparent);
-    ui->pushButtonToggleLock->setVisible(fSelectTransparent);
 }
 
 void CoinControlDialog::refreshDialog()

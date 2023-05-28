@@ -590,7 +590,7 @@ def get_coinstake_address(node, expected_utxos=None):
 
 # Deterministic masternodes
 def is_coin_locked_by(node, outpoint):
-    return outpoint.to_json() in node.listlockunspent()
+    return outpoint.to_json() in node.listlockunspent()["transparent"]
 
 def get_collateral_vout(json_tx):
     funding_txidn = -1

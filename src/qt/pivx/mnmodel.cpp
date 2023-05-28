@@ -8,6 +8,7 @@
 #include "masternode.h"
 #include "masternodeman.h"
 #include "net.h" // for validateMasternodeIP
+#include "primitives/transaction.h"
 #include "qt/bitcoinunits.h"
 #include "qt/optionsmodel.h"
 #include "qt/pivx/guitransactionsutils.h"
@@ -408,7 +409,7 @@ CMasternodeConfig::CMasternodeEntry* MNModel::createLegacyMN(COutPoint& collater
     auto ret_mn_entry = masternodeConfig.add(alias, serviceAddr+":"+port, mnKeyString, txID, indexOutStr);
 
     // Lock collateral output
-    walletModel->lockCoin(collateralOut);
+    walletModel->lockCoin(collateralOut.hash, collateralOut.n);
     return ret_mn_entry;
 }
 
@@ -498,8 +499,7 @@ bool MNModel::removeLegacyMN(const std::string& alias_to_remove, const std::stri
     rename(pathConfigFile, pathNewConfFile);
 
     // Unlock collateral
-    COutPoint collateralOut(uint256S(tx_id), out_index);
-    walletModel->unlockCoin(collateralOut);
+    walletModel->unlockCoin(uint256S(tx_id), out_index);
     // Remove alias
     masternodeConfig.remove(alias_to_remove);
     return true;

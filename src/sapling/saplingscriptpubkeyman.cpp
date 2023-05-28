@@ -6,6 +6,7 @@
 #include "sapling/saplingscriptpubkeyman.h"
 
 #include "chain.h" // for CBlockIndex
+#include "primitives/transaction.h"
 #include "validation.h" // for ReadBlockFromDisk()
 
 void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid)
@@ -16,6 +17,17 @@ void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const 
     std::pair<TxNullifiers::iterator, TxNullifiers::iterator> range;
     range = mapTxSaplingNullifiers.equal_range(nullifier);
     wallet->SyncMetaDataN(range);
+}
+
+bool SaplingScriptPubKeyMan::IsSaplingSpent(const SaplingOutPoint& op) const
+{
+    for (auto& i : mapSaplingNullifiersToNotes) {
+        SaplingOutPoint iOp = i.second;
+        if (iOp == op) {
+            return IsSaplingSpent(i.first);
+        }
+    }
+    return false;
 }
 
 bool SaplingScriptPubKeyMan::IsSaplingSpent(const uint256& nullifier) const {
@@ -451,15 +463,16 @@ void SaplingScriptPubKeyMan::GetNotes(const std::vector<SaplingOutPoint>& saplin
 }
 
 /**
- * Find notes in the wallet filtered by payment address, min depth and ability to spend.
+ * Find notes in the wallet filtered by payment address, min depth and ability to spend and if the notes are locked.
  * These notes are decrypted and added to the output parameter vector, saplingEntries.
  */
 void SaplingScriptPubKeyMan::GetFilteredNotes(
-        std::vector<SaplingNoteEntry>& saplingEntries,
-        Optional<libzcash::SaplingPaymentAddress>& address,
-        int minDepth,
-        bool ignoreSpent,
-        bool requireSpendingKey) const
+    std::vector<SaplingNoteEntry>& saplingEntries,
+    Optional<libzcash::SaplingPaymentAddress>& address,
+    int minDepth,
+    bool ignoreSpent,
+    bool requireSpendingKey,
+    bool ignoreLocked) const
 {
     std::set<libzcash::PaymentAddress> filterAddresses;
 
@@ -467,7 +480,7 @@ void SaplingScriptPubKeyMan::GetFilteredNotes(
         filterAddresses.insert(*address);
     }
 
-    GetFilteredNotes(saplingEntries, filterAddresses, minDepth, INT_MAX, ignoreSpent, requireSpendingKey);
+    GetFilteredNotes(saplingEntries, filterAddresses, minDepth, INT_MAX, ignoreSpent, requireSpendingKey, ignoreLocked);
 }
 
 /**
@@ -531,22 +544,22 @@ void SaplingScriptPubKeyMan::GetFilteredNotes(
                 continue;
             }
 
-            // skip locked notes. todo: Implement locked notes..
-            //if (ignoreLocked && IsLockedNote(op)) {
-            //    continue;
-            //}
+            // skip locked notes.
+            if (ignoreLocked && wallet->IsLockedNote(op)) {
+                continue;
+            }
 
             saplingEntries.emplace_back(op, pa, note, notePt.memo(), depth);
         }
     }
 }
 
-/* Return list of available notes grouped by sapling address. */
+/* Return list of available notes and locked notes grouped by sapling address. */
 std::map<libzcash::SaplingPaymentAddress, std::vector<SaplingNoteEntry>> SaplingScriptPubKeyMan::ListNotes() const
 {
     std::vector<SaplingNoteEntry> notes;
     Optional<libzcash::SaplingPaymentAddress> dummy = nullopt;
-    GetFilteredNotes(notes, dummy);
+    GetFilteredNotes(notes, dummy, 1, true, true, false);
 
     std::map<libzcash::SaplingPaymentAddress, std::vector<SaplingNoteEntry>> result;
     for (const auto& note : notes) {

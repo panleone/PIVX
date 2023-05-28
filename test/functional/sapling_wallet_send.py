@@ -9,6 +9,7 @@ from decimal import Decimal
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_raises_rpc_error,
 )
 
 
@@ -31,7 +32,7 @@ class SaplingWalletSend(PivxTestFramework):
         saplingAddr1 = self.nodes[1].getnewshieldaddress()
 
         # Verify addresses
-        assert(saplingAddr1 in self.nodes[1].listshieldaddresses())
+        assert (saplingAddr1 in self.nodes[1].listshieldaddresses())
         assert_equal(self.nodes[1].getshieldbalance(saplingAddr1), Decimal('0'))
         assert_equal(self.nodes[1].getreceivedbyaddress(taddr1), Decimal('0'))
 
@@ -82,6 +83,33 @@ class SaplingWalletSend(PivxTestFramework):
         saplingAddr1_bal += Decimal('10') + feeTx / 2
         assert_equal(self.nodes[1].getreceivedbyaddress(taddr1), taddr1_bal)
         assert_equal(self.nodes[1].getshieldbalance(saplingAddr1), saplingAddr1_bal)
+
+        # Test Sapling Lock Notes, at this point node0 has only 1 sapling spendable note
+        self.log.info("Checking lockunspent for sapling notes")
+
+        assert_equal(len(self.nodes[1].listlockunspent()["transparent"]), 0)
+        assert_equal(len(self.nodes[1].listlockunspent()["shielded"]), 0)
+
+        assert_equal(len(self.nodes[0].listshieldunspent()), 1)
+        unspent_1 = self.nodes[0].listshieldunspent()[0]
+        assert unspent_1["spendable"]
+        unspent_1 = {"txid": unspent_1["txid"], "vout": unspent_1["outindex"]}
+
+        # Lock the note and verify that you cannot spend it
+        self.nodes[0].lockunspent(False, False, [unspent_1])
+        recipient2 = [{"address": self.nodes[2].getnewshieldaddress(), "amount": Decimal('1')}]
+        assert_raises_rpc_error(-4, "Insufficient funds, no available notes to spend", self.nodes[0].shieldsendmany, "from_shield", recipient2)
+
+        # Verify that the sapling note is locked
+        output_unspent_1 = {"txid": unspent_1["txid"], "vShieldedOutput": unspent_1["vout"]}
+        assert_equal(len(self.nodes[0].listlockunspent()["transparent"]), 0)
+        assert_equal([output_unspent_1], self.nodes[0].listlockunspent()["shielded"])
+
+        # Unlock the note and send the tx
+        self.nodes[0].lockunspent(True, False, [unspent_1])
+        assert_equal(len(self.nodes[0].listlockunspent()["transparent"]), 0)
+        assert_equal(len(self.nodes[0].listlockunspent()["shielded"]), 0)
+        self.nodes[0].shieldsendmany("from_shield", recipient2)
 
 
 if __name__ == '__main__':

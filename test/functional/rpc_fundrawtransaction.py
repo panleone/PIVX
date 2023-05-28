@@ -89,7 +89,7 @@ class RawTransactionsTest(PivxTestFramework):
 
         # Lock UTXO so nodes[0] doesn't accidentally spend it
         self.watchonly_vout = find_vout_for_address(self.nodes[0], self.watchonly_txid, watchonly_address)
-        self.nodes[0].lockunspent(False, [{"txid": self.watchonly_txid, "vout": self.watchonly_vout}])
+        self.nodes[0].lockunspent(False, True, [{"txid": self.watchonly_txid, "vout": self.watchonly_vout}])
 
         self.nodes[0].sendtoaddress(self.nodes[3].getnewaddress(), float(self.watchonly_amount) / 10)
 

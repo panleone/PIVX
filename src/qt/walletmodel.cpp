@@ -168,9 +168,9 @@ CAmount WalletModel::getMinColdStakingAmount() const
     return MIN_COLDSTAKING_AMOUNT;
 }
 
-CAmount WalletModel::getLockedBalance() const
+CAmount WalletModel::getLockedBalance(bool isTransparent) const
 {
-    return wallet->GetLockedCoins();
+    return isTransparent ? wallet->GetLockedCoins() : wallet->GetLockedShieldCoins();
 }
 
 bool WalletModel::haveWatchOnly() const
@@ -1112,28 +1112,37 @@ void WalletModel::listCoins(std::map<ListCoinsKey, std::vector<ListCoinsValue>>&
     }
 }
 
-bool WalletModel::isLockedCoin(uint256 hash, unsigned int n) const
+bool WalletModel::isLockedCoin(uint256 hash, unsigned int n, bool isTransparent) const
 {
     LOCK(wallet->cs_wallet);
-    return wallet->IsLockedCoin(hash, n);
+    if (isTransparent)
+        return wallet->IsLockedCoin(hash, n);
+    else
+        return wallet->IsLockedNote(SaplingOutPoint(hash, n));
 }
 
-void WalletModel::lockCoin(COutPoint& output)
+void WalletModel::lockCoin(uint256 hash, unsigned int n, bool isTransparent)
 {
     LOCK(wallet->cs_wallet);
-    wallet->LockCoin(output);
+    isTransparent ? wallet->LockCoin(COutPoint(hash, n)) : wallet->LockNote(SaplingOutPoint(hash, n));
 }
 
-void WalletModel::unlockCoin(COutPoint& output)
+void WalletModel::unlockCoin(uint256 hash, unsigned int n, bool isTransparent)
 {
     LOCK(wallet->cs_wallet);
-    wallet->UnlockCoin(output);
+    isTransparent ? wallet->UnlockCoin(COutPoint(hash, n)) : wallet->UnlockNote(SaplingOutPoint(hash, n));
 }
 
 std::set<COutPoint> WalletModel::listLockedCoins()
 {
     LOCK(wallet->cs_wallet);
     return wallet->ListLockedCoins();
+}
+
+std::set<SaplingOutPoint> WalletModel::listLockedNotes()
+{
+    LOCK(wallet->cs_wallet);
+    return wallet->ListLockedNotes();
 }
 
 void WalletModel::loadReceiveRequests(std::vector<std::string>& vReceiveRequests)

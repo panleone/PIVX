@@ -127,7 +127,7 @@ class DIP3Test(PivxTestFramework):
         self.log.info("Done. Now mine blocks till enforcement...")
 
         # Check that no coin has been locked by the controller yet
-        assert_equal(len(controller.listlockunspent()), 0)
+        assert_equal(len(controller.listlockunspent()["transparent"]), 0)
 
         # DIP3 activates at block 130.
         miner.generate(130 - miner.getblockcount())

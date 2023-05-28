@@ -5,6 +5,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "optional.h"
 #if defined(HAVE_CONFIG_H)
 #include "config/pivx-config.h"
 #endif
@@ -699,6 +700,11 @@ ScriptPubKeyMan* CWallet::GetScriptPubKeyMan() const
 bool CWallet::HasSaplingSPKM() const
 {
     return GetSaplingScriptPubKeyMan()->IsEnabled();
+}
+
+bool CWallet::IsSaplingSpent(const SaplingOutPoint& op) const
+{
+    return m_sspk_man->IsSaplingSpent(op);
 }
 
 /**
@@ -2198,6 +2204,28 @@ CAmount CWallet::GetLockedCoins() const
     }
     return ret;
 }
+
+CAmount CWallet::GetLockedShieldCoins() const
+{
+    LOCK(cs_wallet);
+    if (setLockedNotes.empty()) return 0;
+
+    CAmount ret = 0;
+    for (const auto& op : setLockedNotes) {
+        auto it = mapWallet.find(op.hash);
+        if (it != mapWallet.end()) {
+            const CWalletTx& pcoin = it->second;
+            if (pcoin.IsTrusted() && pcoin.GetDepthInMainChain() > 0) {
+                Optional<CAmount> val = pcoin.mapSaplingNoteData.at(op).amount;
+                if (val) {
+                    ret += *val;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 
 CAmount CWallet::GetUnconfirmedBalance(isminetype filter) const
 {
@@ -3890,16 +3918,34 @@ void CWallet::LockCoin(const COutPoint& output)
     setLockedCoins.insert(output);
 }
 
+void CWallet::LockNote(const SaplingOutPoint& op)
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.insert(op);
+}
+
 void CWallet::UnlockCoin(const COutPoint& output)
 {
     AssertLockHeld(cs_wallet); // setLockedCoins
     setLockedCoins.erase(output);
 }
 
+void CWallet::UnlockNote(const SaplingOutPoint& op)
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.erase(op);
+}
+
 void CWallet::UnlockAllCoins()
 {
     AssertLockHeld(cs_wallet); // setLockedCoins
     setLockedCoins.clear();
+}
+
+void CWallet::UnlockAllNotes()
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    setLockedNotes.clear();
 }
 
 bool CWallet::IsLockedCoin(const uint256& hash, unsigned int n) const
@@ -3910,10 +3956,22 @@ bool CWallet::IsLockedCoin(const uint256& hash, unsigned int n) const
     return (setLockedCoins.count(outpt) > 0);
 }
 
+bool CWallet::IsLockedNote(const SaplingOutPoint& op) const
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    return (setLockedNotes.count(op) > 0);
+}
+
 std::set<COutPoint> CWallet::ListLockedCoins()
 {
-    AssertLockHeld(cs_wallet);
+    AssertLockHeld(cs_wallet); // setLockedCoins
     return setLockedCoins;
+}
+
+std::set<SaplingOutPoint> CWallet::ListLockedNotes()
+{
+    AssertLockHeld(cs_wallet); // setLockedNotes
+    return setLockedNotes;
 }
 
 bool CWallet::SetStakeSplitThreshold(const CAmount sst)

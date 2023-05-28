@@ -3,21 +3,22 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "qt/pivx/send.h"
-#include "qt/pivx/forms/ui_send.h"
+#include "addresstablemodel.h"
+#include "clientmodel.h"
+#include "coincontrol.h"
+#include "openuridialog.h"
+#include "operationresult.h"
+#include "optionsmodel.h"
 #include "qt/pivx/addnewcontactdialog.h"
-#include "qt/pivx/qtutils.h"
-#include "qt/pivx/sendchangeaddressdialog.h"
-#include "qt/pivx/optionbutton.h"
-#include "qt/pivx/sendconfirmdialog.h"
+#include "qt/pivx/forms/ui_send.h"
 #include "qt/pivx/guitransactionsutils.h"
 #include "qt/pivx/loadingdialog.h"
-#include "clientmodel.h"
-#include "optionsmodel.h"
-#include "operationresult.h"
-#include "addresstablemodel.h"
-#include "coincontrol.h"
+#include "qt/pivx/optionbutton.h"
+#include "qt/pivx/qtutils.h"
+#include "qt/pivx/sendchangeaddressdialog.h"
+#include "qt/pivx/sendconfirmdialog.h"
+#include "qt/walletmodel.h"
 #include "script/standard.h"
-#include "openuridialog.h"
 
 #define REQUEST_PREPARE_TX 1
 #define REQUEST_REFRESH_BALANCE 2
@@ -160,14 +161,14 @@ void SendWidget::refreshAmounts()
     } else {
         interfaces::WalletBalances balances = walletModel->GetWalletBalances();
         if (isTransparent) {
-            totalAmount = balances.balance - balances.shielded_balance - walletModel->getLockedBalance() - total;
+            totalAmount = balances.balance - balances.shielded_balance - walletModel->getLockedBalance(isTransparent) - total;
             if (!fDelegationsChecked) {
                 totalAmount -= balances.delegate_balance;
             }
             // show delegated balance if exist
             delegatedBalance = balances.delegate_balance;
         } else {
-            totalAmount = balances.shielded_balance - total;
+            totalAmount = balances.shielded_balance - total - walletModel->getLockedBalance(isTransparent);
         }
         titleTotalRemaining = tr("Unlocked remaining");
     }
@@ -702,7 +703,7 @@ void SendWidget::onShieldCoinsClicked()
     }
 
     auto balances = walletModel->GetWalletBalances();
-    CAmount availableBalance = balances.balance - balances.shielded_balance - walletModel->getLockedBalance();
+    CAmount availableBalance = balances.balance - balances.shielded_balance - walletModel->getLockedBalance(true);
     if (availableBalance > 0) {
 
         // Calculate the required fee first. TODO future: Unify this code with the code in coincontroldialog into the model.

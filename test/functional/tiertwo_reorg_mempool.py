@@ -121,7 +121,7 @@ class TiertwoReorgMempoolTest(PivxTestFramework):
 
         # Lock any utxo with less than 106 confs (e.g. change), so we can resurrect everything
         for x in nodeA.listunspent(0, 106):
-            nodeA.lockunspent(False, [{"txid": x["txid"], "vout": x["vout"]}])
+            nodeA.lockunspent(False, True, [{"txid": x["txid"], "vout": x["vout"]}])
 
         # Now send a valid proReg tx to the mempool, without mining it
         mempool_dmn1 = create_new_dmn(free_idx, nodeA, collateral_addr, None)
