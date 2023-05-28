@@ -64,6 +64,7 @@ const char* QSIGSHARESINV = "qsigsinv";
 const char* QGETSIGSHARES = "qgetsigs";
 const char* QBSIGSHARES = "qbsigs";
 const char* QSIGREC = "qsigrec";
+const char* CLSIG = "clsig";
 }; // namespace NetMsgType
 
 
@@ -125,6 +126,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::QGETSIGSHARES,
     NetMsgType::QBSIGSHARES,
     NetMsgType::QSIGREC,
+    NetMsgType::CLSIG,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes + ARRAYLEN(allNetMessageTypes));
 const static std::vector<std::string> tiertwoNetMessageTypesVec(std::find(allNetMessageTypesVec.begin(), allNetMessageTypesVec.end(), NetMsgType::SPORK), allNetMessageTypesVec.end());
@@ -228,8 +230,8 @@ std::string CInv::GetCommand() const
         case MSG_QUORUM_COMPLAINT: return cmd.append(NetMsgType::QCOMPLAINT);
         case MSG_QUORUM_JUSTIFICATION: return cmd.append(NetMsgType::QJUSTIFICATION);
         case MSG_QUORUM_PREMATURE_COMMITMENT: return cmd.append(NetMsgType::QPCOMMITMENT);
-        case MSG_QUORUM_RECOVERED_SIG:
-        return cmd.append(NetMsgType::QSIGREC);
+        case MSG_QUORUM_RECOVERED_SIG: return cmd.append(NetMsgType::QSIGREC);
+        case MSG_CLSIG: return cmd.append(NetMsgType::CLSIG);
         default:
             throw std::out_of_range(strprintf("%s: type=%d unknown type", __func__, type));
     }

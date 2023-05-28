@@ -28,7 +28,7 @@ void ResetTierTwoInterfaces();
 void InitTierTwoPreChainLoad(bool fReindex);
 
 /** Inits the tier two global objects that require access to the coins tip cache */
-void InitTierTwoPostCoinsCacheLoad();
+void InitTierTwoPostCoinsCacheLoad(CScheduler* scheduler);
 
 /** Initialize chain tip */
 void InitTierTwoChainTip();

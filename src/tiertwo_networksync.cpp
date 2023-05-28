@@ -5,6 +5,7 @@
 #include "masternode-sync.h"
 
 #include "llmq/quorums_blockprocessor.h"
+#include "llmq/quorums_chainlocks.h"
 #include "llmq/quorums_dkgsessionmgr.h"
 #include "llmq/quorums_signing.h"
 #include "llmq/quorums_signing_shares.h"
@@ -78,6 +79,10 @@ bool CMasternodeSync::MessageDispatcher(CNode* pfrom, std::string& strCommand, C
     if (strCommand == NetMsgType::QSIGREC) {
         llmq::quorumSigningManager->ProcessMessage(pfrom, strCommand, vRecv, *g_connman);
         return true;
+    }
+
+    if (strCommand == NetMsgType::CLSIG) {
+        llmq::chainLocksHandler->ProcessMessage(pfrom, strCommand, vRecv, *g_connman);
     }
 
     if (strCommand == NetMsgType::GETMNLIST) {

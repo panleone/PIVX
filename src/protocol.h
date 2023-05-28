@@ -297,6 +297,7 @@ extern const char* QSIGSHARESINV;
 extern const char* QGETSIGSHARES;
 extern const char* QBSIGSHARES;
 extern const char* QSIGREC;
+extern const char* CLSIG;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -454,7 +455,8 @@ enum GetDataMsg {
     MSG_QUORUM_JUSTIFICATION,
     MSG_QUORUM_PREMATURE_COMMITMENT,
     MSG_QUORUM_RECOVERED_SIG,
-    MSG_TYPE_MAX = MSG_QUORUM_RECOVERED_SIG,
+    MSG_CLSIG,
+    MSG_TYPE_MAX = MSG_CLSIG,
 };
 
 /** inv message data */

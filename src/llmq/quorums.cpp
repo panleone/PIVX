@@ -286,32 +286,6 @@ std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqTyp
     return result;
 }
 
-CQuorumCPtr CQuorumManager::SelectQuorum(Consensus::LLMQType llmqType, const uint256& selectionHash, size_t poolSize)
-{
-    LOCK(cs_main);
-    return SelectQuorum(llmqType, chainActive.Tip()->GetBlockHash(), selectionHash, poolSize);
-}
-
-CQuorumCPtr CQuorumManager::SelectQuorum(Consensus::LLMQType llmqType, const uint256& startBlock, const uint256& selectionHash, size_t poolSize)
-{
-    auto quorums = ScanQuorums(llmqType, startBlock, poolSize);
-    if (quorums.empty()) {
-        return nullptr;
-    }
-
-    std::vector<std::pair<uint256, size_t> > scores;
-    scores.reserve(quorums.size());
-    for (size_t i = 0; i < quorums.size(); i++) {
-        CHashWriter h(SER_NETWORK, 0);
-        h << (uint8_t)llmqType;
-        h << quorums[i]->pindexQuorum->GetBlockHash();
-        h << selectionHash;
-        scores.emplace_back(h.GetHash(), i);
-    }
-    std::sort(scores.begin(), scores.end());
-    return quorums[scores.front().second];
-}
-
 CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const uint256& quorumHash)
 {
     CBlockIndex* pindexQuorum;

@@ -6,6 +6,8 @@
 #ifndef PIVX_LLMQ_INIT_H
 #define PIVX_LLMQ_INIT_H
 
+#include "scheduler.h"
+
 class CDBWrapper;
 class CEvoDB;
 
@@ -13,7 +15,7 @@ namespace llmq
 {
 
 // Init/destroy LLMQ globals
-void InitLLMQSystem(CEvoDB& evoDb, bool unitTests);
+void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests);
 void DestroyLLMQSystem();
 
 // Manage scheduled tasks, threads, listeners etc.

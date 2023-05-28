@@ -8,10 +8,12 @@
 #include "budget/budgetmanager.h"
 #include "checkpoints.h"
 #include "clientversion.h"
-#include "core_io.h"
 #include "consensus/upgrades.h"
+#include "core_io.h"
+#include "hash.h"
 #include "kernel.h"
 #include "key_io.h"
+#include "llmq/quorums_chainlocks.h"
 #include "masternodeman.h"
 #include "policy/feerate.h"
 #include "policy/policy.h"
@@ -22,7 +24,6 @@
 #include "util/system.h"
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
-#include "hash.h"
 #include "validationinterface.h"
 #include "wallet/wallet.h"
 #include "warnings.h"
@@ -133,6 +134,7 @@ UniValue blockheaderToJSON(const CBlockIndex* tip, const CBlockIndex* blockindex
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
     if (pnext)
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    result.pushKV("chainlock", llmq::chainLocksHandler->HasChainLock(blockindex->nHeight, blockindex->GetBlockHash()));
     return result;
 }
 
@@ -186,6 +188,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* tip, const CBlockIn
         result.pushKV("stakeModifier", stakeModifier);
         result.pushKV("hashProofOfStake", hashProofOfStakeRet.GetHex());
     }
+    result.pushKV("chainlock", llmq::chainLocksHandler->HasChainLock(blockindex->nHeight, blockindex->GetBlockHash()));
 
     return result;
 }

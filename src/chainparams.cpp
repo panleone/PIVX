@@ -356,6 +356,8 @@ public:
 
         nLLMQConnectionRetryTimeout = 60;
 
+        consensus.llmqChainLocks = Consensus::LLMQ_400_60;
+
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour
     }
@@ -499,6 +501,8 @@ public:
 
         nLLMQConnectionRetryTimeout = 60;
 
+        consensus.llmqChainLocks = Consensus::LLMQ_400_60;
+
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour
     }
@@ -638,6 +642,8 @@ public:
         // long living quorum params
         consensus.llmqs[Consensus::LLMQ_TEST] = llmq_test;
         nLLMQConnectionRetryTimeout = 10;
+
+        consensus.llmqChainLocks = Consensus::LLMQ_TEST;
 
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour

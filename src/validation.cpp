@@ -12,7 +12,6 @@
 
 #include "addrman.h"
 #include "blocksignature.h"
-#include "util/blockstatecatcher.h"
 #include "budget/budgetmanager.h"
 #include "chainparams.h"
 #include "checkpoints.h"
@@ -22,13 +21,15 @@
 #include "consensus/tx_verify.h"
 #include "consensus/validation.h"
 #include "consensus/zerocoin_verify.h"
+#include "evo/evodb.h"
 #include "evo/specialtx_validation.h"
 #include "flatfile.h"
 #include "guiinterface.h"
-#include "invalid.h"
 #include "interfaces/handler.h"
-#include "legacy/validation_zerocoin_legacy.h"
+#include "invalid.h"
 #include "kernel.h"
+#include "legacy/validation_zerocoin_legacy.h"
+#include "llmq/quorums_chainlocks.h"
 #include "masternode-payments.h"
 #include "masternodeman.h"
 #include "policy/policy.h"
@@ -38,10 +39,10 @@
 #include "shutdown.h"
 #include "spork.h"
 #include "sporkdb.h"
-#include "evo/evodb.h"
 #include "tiertwo/tiertwo_sync_state.h"
 #include "txdb.h"
 #include "undo.h"
+#include "util/blockstatecatcher.h"
 #include "util/system.h"
 #include "util/validation.h"
 #include "utilmoneystr.h"
@@ -79,6 +80,7 @@
 RecursiveMutex cs_main;
 
 BlockMap mapBlockIndex;
+PrevBlockMap mapPrevBlockIndex;
 CChain chainActive;
 CBlockIndex* pindexBestHeader = nullptr;
 
@@ -1430,6 +1432,9 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         return error("%s: CheckBlock failed for %s: %s", __func__, block.GetHash().ToString(), FormatStateMessage(state));
     }
 
+    if (pindex->pprev && pindex->phashBlock && llmq::chainLocksHandler->HasConflictingChainLock(pindex->nHeight, pindex->GetBlockHash())) {
+        return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
+    }
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == nullptr ? UINT256_ZERO : pindex->pprev->GetBlockHash();
     if (hashPrevBlock != view.GetBestBlock())
@@ -2476,6 +2481,10 @@ static CBlockIndex* AddToBlockIndex(const CBlock& block) EXCLUSIVE_LOCKS_REQUIRE
         pindexBestHeader = pindexNew;
 
     setDirtyBlockIndex.insert(pindexNew);
+    // track prevBlockHash -> pindex (multimap)
+    if (pindexNew->pprev) {
+        mapPrevBlockIndex.emplace(pindexNew->pprev->GetBlockHash(), pindexNew);
+    }
 
     return pindexNew;
 }
@@ -3036,6 +3045,12 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return error("%s: ContextualCheckBlockHeader failed for block %s: %s", __func__, hash.ToString(), FormatStateMessage(state));
 
+    // Check for conflicting chainlocks UNLESS that's the genesis block
+    if (block.GetHash() != Params().GetConsensus().hashGenesisBlock) {
+        if (llmq::chainLocksHandler->HasConflictingChainLock(pindexPrev->nHeight + 1, hash)) {
+            return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
+        }
+    }
     if (pindex == nullptr)
         pindex = AddToBlockIndex(block);
 
@@ -3044,6 +3059,8 @@ bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex
 
     CheckBlockIndex();
 
+    // Notify external listeners about accepted block header
+    GetMainSignals().AcceptedBlockHeader(pindex);
     return true;
 }
 
@@ -3427,6 +3444,9 @@ bool TestBlockValidity(CValidationState& state, const CBlock& block, CBlockIndex
         LogPrintf("%s : No longer working on chain tip\n", __func__);
         return false;
     }
+    if (llmq::chainLocksHandler->HasConflictingChainLock(pindexPrev->nHeight + 1, block.GetHash())) {
+        return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
+    }
 
     CCoinsViewCache viewNew(pcoinsTip.get());
     CBlockIndex indexDummy(block);
@@ -3511,6 +3531,10 @@ bool static LoadBlockIndexDB(std::string& strError) EXCLUSIVE_LOCKS_REQUIRED(cs_
     for (const std::pair<const uint256, CBlockIndex*>& item : mapBlockIndex) {
         CBlockIndex* pindex = item.second;
         vSortedByHeight.emplace_back(pindex->nHeight, pindex);
+        // build mapPrevBlockIndex
+        if (pindex->pprev) {
+            mapPrevBlockIndex.emplace(pindex->pprev->GetBlockHash(), pindex);
+        }
     }
     std::sort(vSortedByHeight.begin(), vSortedByHeight.end());
     for (const std::pair<int, CBlockIndex*>& item : vSortedByHeight) {

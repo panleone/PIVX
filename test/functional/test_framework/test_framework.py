@@ -1419,6 +1419,12 @@ class PivxDMNTestFramework(PivxTestFramework):
         assert_equal([130] * self.num_nodes, [self.get_spork(x, "SPORK_21_LEGACY_MNS_MAX_HEIGHT")
                                               for x in range(self.num_nodes)])
 
+        # Enforce chainlocks activation at block 131
+        assert_equal("success", self.set_spork(self.minerPos, "SPORK_23_CHAINLOCKS_ENFORCEMENT", 130))
+        time.sleep(1)
+        assert_equal([130] * self.num_nodes, [self.get_spork(x, "SPORK_23_CHAINLOCKS_ENFORCEMENT")
+                                              for x in range(self.num_nodes)])
+
         # Mine 130 blocks
         self.log.info("Mining...")
         self.nodes[self.minerPos].generate(10)
