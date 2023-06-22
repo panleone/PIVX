@@ -422,6 +422,7 @@ jobs:
             apt_get: python3 nsis g++-mingw-w64-x86-64 wine-binfmt wine64
             unit_tests: false
             functional_tests: false
+            symbol_check: true
             goal: deploy
             BITCOIN_CONFIG: "--with-gui=auto --enable-reduce-exports --disable-online-rust"
 
@@ -456,6 +457,7 @@ jobs:
             XCODE_BUILD_ID: 11C505
             unit_tests: false
             functional_tests: false
+            symbol_check: true
             goal: deploy
             BITCOIN_CONFIG: "--enable-gui --enable-reduce-exports --enable-werror --disable-online-rust"
 
@@ -570,6 +572,12 @@ jobs:
           if [ "${{ matrix.config.unit_tests }}" = "true" ] || [ "${{ matrix.config.functional_tests }}" = "true" ]; then
             echo ::group::Params
             ./params/install-params.sh $PARAMS_DIR
+            echo ::endgroup::
+          fi
+
+          if [ "${{matrix.config.symbol_check }}" = "true" ]; then
+            echo ::group::Symbol-Check
+            make -j2 -C src check-symbols
             echo ::endgroup::
           fi
 
