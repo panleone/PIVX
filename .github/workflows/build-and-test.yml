@@ -575,6 +575,10 @@ jobs:
             echo ::endgroup::
           fi
 
+          echo ::group::Security-Check
+          make -j2 -C src check-security
+          echo ::endgroup::
+
           if [ "${{matrix.config.symbol_check }}" = "true" ]; then
             echo ::group::Symbol-Check
             make -j2 -C src check-symbols
