@@ -16,30 +16,30 @@ import sys
 import os
 from typing import List, Optional, Tuple
 
-# Debian 8 (Jessie) EOL: 2020. https://wiki.debian.org/DebianReleases#Production_Releases
+# Debian 10 (Buster) EOL: 2024. https://wiki.debian.org/LTS
 #
-# - g++ version 4.9.2 (https://packages.debian.org/search?suite=jessie&arch=any&searchon=names&keywords=g%2B%2B)
-# - libc version 2.19 (https://packages.debian.org/search?suite=jessie&arch=any&searchon=names&keywords=libc6)
+# - libgcc version 8.3.0 (https://packages.debian.org/search?suite=buster&arch=any&searchon=names&keywords=libgcc1)
+# - libc version 2.28 (https://packages.debian.org/search?suite=buster&arch=any&searchon=names&keywords=libc6)
 #
-# Ubuntu 16.04 (Xenial) EOL: 2024. https://wiki.ubuntu.com/Releases
+# Ubuntu 18.04 (Bionic) EOL: 2028. https://wiki.ubuntu.com/ReleaseTeam
 #
-# - g++ version 5.3.1 (https://packages.ubuntu.com/search?keywords=g%2B%2B&searchon=names&suite=xenial&section=all)
-# - libc version 2.23.0 (https://packages.ubuntu.com/search?keywords=libc6&searchon=names&suite=xenial&section=all)
+# - libgcc version 8.4.0 (https://packages.ubuntu.com/bionic/libgcc1)
+# - libc version 2.27 (https://packages.ubuntu.com/bionic/libc6)
 #
-# CentOS 7 EOL: 2024. https://wiki.centos.org/FAQ/General
+# CentOS Stream 8 EOL: 2024. https://wiki.centos.org/About/Product
 #
-# - g++ version 4.8.5 (http://mirror.centos.org/centos/7/os/x86_64/Packages/)
-# - libc version 2.17 (http://mirror.centos.org/centos/7/os/x86_64/Packages/)
+# - libgcc version 8.5.0 (http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/)
+# - libc version 2.28 (http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/)
 #
 # Taking the minimum of these as our target.
 #
 # According to GNU ABI document (https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html) this corresponds to:
-#   GCC 4.8.5: GCC_4.8.0
-#   (glibc)    GLIBC_2_17
+#   GCC 8.3.0: GCC_7.0.0
+#   (glibc)    GLIBC_2_27
 #
 MAX_VERSIONS = {
-'GCC':       (4,8,0),
-'GLIBC':     (2,17),
+'GCC':       (7,0,0),
+'GLIBC':     (2,27),
 'LIBATOMIC': (1,0)
 }
 # See here for a description of _IO_stdin_used:
@@ -77,10 +77,10 @@ ELF_ALLOWED_LIBRARIES = {
 'libdl.so.2' # programming interface to dynamic linker
 }
 ARCH_MIN_GLIBC_VER = {
-'80386':  (2,1),
-'X86-64': (2,2,5),
-'ARM':    (2,4),
-'AArch64':(2,17),
+'80386':  (2,27),
+'X86-64': (2,27),
+'ARM':    (2,27),
+'AArch64':(2,27),
 'RISC-V': (2,27)
 }
 
