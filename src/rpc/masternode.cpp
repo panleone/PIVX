@@ -390,9 +390,11 @@ void RelayMNB(CMasternodeBroadcast& mnb, const bool fSucces)
 
 void SerializeMNB(UniValue& statusObjRet, const CMasternodeBroadcast& mnb, const bool fSuccess, int& successful, int& failed)
 {
+    bool isBIP155 = PROTOCOL_VERSION >= MIN_BIP155_PROTOCOL_VERSION;
+    int version = isBIP155 ? PROTOCOL_VERSION | ADDRV2_FORMAT : PROTOCOL_VERSION;
     if(fSuccess) {
         successful++;
-        CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+        CDataStream ssMnb(SER_NETWORK, version);
         ssMnb << mnb;
         statusObjRet.pushKV("hex", HexStr(ssMnb));
     } else {
@@ -880,8 +882,10 @@ bool DecodeHexMnb(CMasternodeBroadcast& mnb, std::string strHexMnb) {
     if (!IsHex(strHexMnb))
         return false;
 
+    bool isBIP155 = PROTOCOL_VERSION >= MIN_BIP155_PROTOCOL_VERSION;
+    int version = isBIP155 ? PROTOCOL_VERSION | ADDRV2_FORMAT : PROTOCOL_VERSION;
     std::vector<unsigned char> mnbData(ParseHex(strHexMnb));
-    CDataStream ssData(mnbData, SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream ssData(mnbData, SER_NETWORK, version);
     try {
         ssData >> mnb;
     }
