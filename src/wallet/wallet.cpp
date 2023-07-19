@@ -715,6 +715,11 @@ bool CWallet::IsSaplingSpent(const SaplingOutPoint& op) const
     return m_sspk_man->IsSaplingSpent(op);
 }
 
+bool CWallet::IsSaplingSpent(const uint256& nullifier) const
+{
+    return m_sspk_man->IsSaplingSpent(nullifier);
+}
+
 /**
  * Outpoint is spent if any non-conflicted transaction
  * spends it:
@@ -3388,10 +3393,6 @@ bool CWallet::CreateCoinstakeOuts(const CStakeInput& stakeInput, std::vector<CTx
 
 CStakeableInterface* CWallet::CreateCoinStake(const CBlockIndex& indexPrev, unsigned int nBits, CMutableTransaction& txNew, int64_t& nTxNewTime, const std::vector<std::unique_ptr<CStakeableInterface>>& stakeOutputs, bool stopOnNewBlock)
 {
-    // shuffle coins
-    if (Params().IsRegTestNet()) {
-        // TODO:        Shuffle(stakeOutputs.begin(), stakeOutputs.end(), FastRandomContext());
-    }
 
     // Mark coin stake transaction
     txNew.vin.clear();
@@ -3412,8 +3413,16 @@ CStakeableInterface* CWallet::CreateCoinStake(const CBlockIndex& indexPrev, unsi
         // Make sure the wallet is unlocked and shutdown hasn't been requested
         if (IsLocked() || ShutdownRequested()) return nullptr;
 
-        // TODO: Make sure the stake input hasn't been spent since last check
-        // if (magicspent()) erase and continue;
+        // Make sure the stake input hasn't been spent since last check
+        if (stakeInput->IsShieldPIV()) {
+            if (WITH_LOCK(cs_wallet, return IsSaplingSpent(stakeInput->GetSpendInfo().first))) {
+                continue;
+            }
+        } else if (!stakeInput->IsZPIV()) {
+            if (WITH_LOCK(cs_wallet, return IsSpent(COutPoint(stakeInput->GetSpendInfo().first, stakeInput->GetSpendInfo().second)))) {
+                continue;
+            }
+        }
         ++nAttempts;
 
         bool fKernelFound = Stake(&indexPrev, &*stakeInput, nBits, nTxNewTime);

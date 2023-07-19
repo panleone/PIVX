@@ -13,6 +13,7 @@
 #include "uint256.h"
 #include "validation.h"
 #include <stdexcept>
+#include <utility>
 
 class CKeyStore;
 class CWallet;
@@ -33,6 +34,8 @@ public:
     virtual CDataStream GetUniqueness() const = 0;
     virtual bool GetTxOutFrom(CTxOut& out) const = 0;
     virtual CTxIn GetTxIn() const = 0;
+    // Return the basic info to understand if a CStakeInput has been spent or not
+    virtual std::pair<uint256, uint32_t> GetSpendInfo() const = 0;
 };
 
 
@@ -55,7 +58,8 @@ public:
     CTxIn GetTxIn() const override;
     bool IsZPIV() const override { return false; }
     bool IsShieldPIV() const override { return false; };
-    const COutPoint& GetOutpoint() const { return outpointFrom; }
+    // The pair (tx hash, vout index) is enough to understand if the utxo has been spent
+    std::pair<uint256, uint32_t> GetSpendInfo() const override { return {outpointFrom.hash, outpointFrom.n}; };
 };
 
 class CShieldStake : public CStakeInput
@@ -75,7 +79,6 @@ public:
     const CBlockIndex* GetIndexFrom() const override { throw std::runtime_error("Cannot find the BlockIndex for a shield note"); };
     bool IsZPIV() const override { return false; }
     bool IsShieldPIV() const override { return true; };
-    const SaplingOutPoint& GetOutpoint() const;
     bool GetTxOutFrom(CTxOut& out) const override
     {
         return false;
@@ -84,6 +87,8 @@ public:
     {
         throw new std::runtime_error("Cannot find Txin in a shield note");
     }
+    // The nullifier is enough to understand if the note has been spent
+    std::pair<uint256, uint32_t> GetSpendInfo() const override { return {nullifier, 0}; };
 };
 
 #endif //PIVX_STAKEINPUT_H
