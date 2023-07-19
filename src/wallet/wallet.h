@@ -867,6 +867,7 @@ public:
                                  std::string& strError);
 
     bool IsSaplingSpent(const SaplingOutPoint& op) const;
+    bool IsSaplingSpent(const uint256& nullifier) const;
     bool IsSpent(const COutPoint& outpoint) const;
     bool IsSpent(const uint256& hash, unsigned int n) const;
 

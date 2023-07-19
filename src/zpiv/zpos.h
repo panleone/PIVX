@@ -7,6 +7,7 @@
 
 #include "stakeinput.h"
 #include "txdb.h"
+#include <stdexcept>
 
 class CLegacyZPivStake : public CStakeInput
 {
@@ -36,6 +37,7 @@ public:
     {
         throw "can't be bothered";
     }
+    std::pair<uint256, uint32_t> GetSpendInfo() const override { throw new std::runtime_error{"Function non defined for zPiv"}; };
 };
 
 #endif //PIVX_LEGACY_ZPOS_H
