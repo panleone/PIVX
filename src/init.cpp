@@ -741,12 +741,16 @@ static void LoadSaplingParams()
     try {
         initZKSNARKS();
     } catch (std::runtime_error &e) {
-        uiInterface.ThreadSafeMessageBox(strprintf(
-                _("Cannot find the Sapling parameters in the following directory:\n"
-                  "%s\n"
-                  "Please run 'sapling-fetch-params' or './util/fetch-params.sh' and then restart."),
-                ZC_GetParamsDir()),
-                                         "", CClientUIInterface::MSG_ERROR);
+        std::string strError = strprintf(_("Cannot find the Sapling parameters in the following directory:\n%s"), ZC_GetParamsDir());
+        std::string strErrorPosix = strprintf(_("Please run the included %s script and then restart."), "install-params.sh");
+        std::string strErrorWin = strprintf(_("Please copy the included params files to the %s directory."), ZC_GetParamsDir());
+        uiInterface.ThreadSafeMessageBox(strError + "\n"
+#ifndef WIN32
+                      + strErrorPosix,
+#else
+                      + strErrorWin,
+#endif
+                                            "", CClientUIInterface::MSG_ERROR);
         StartShutdown();
         return;
     }
