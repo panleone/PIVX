@@ -98,6 +98,7 @@ public:
         P2CSUnlockStaker, // Staker watching the owner spent the delegated utxo
         SendToShielded, // Shielded send
         RecvWithShieldedAddress, // Shielded receive
+        RecvWithShieldedAddressMemo, // Shielded recieve with memo
         SendToSelfShieldedAddress, // Shielded send to self
         SendToSelfShieldToTransparent, // Unshield coins to self
         SendToSelfShieldToShieldChangeAddress, // Changing coins from one shielded address to another inside the wallet.

@@ -452,7 +452,9 @@ RES_ICONS = \
   qt/pivx/res/img/ic-check-tor.svg \
   qt/pivx/res/img/ic-label.svg \
   qt/pivx/res/img/ic-transaction-received.svg \
+  qt/pivx/res/img/ic-transaction-received-memo.svg \
   qt/pivx/res/img/dark/ic-transaction-received.svg \
+  qt/pivx/res/img/dark/ic-transaction-received-memo.svg \
   qt/pivx/res/img/dark/ic-transaction-warning.svg \
   qt/pivx/res/img/dark/ic-transaction-mint.svg \
   qt/pivx/res/img/dark/ic-transaction-mint-inactive.svg \

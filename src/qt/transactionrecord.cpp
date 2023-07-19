@@ -180,6 +180,9 @@ bool TransactionRecord::decomposeCreditTransaction(const CWallet* wallet, const 
                 sub.type = TransactionRecord::RecvWithShieldedAddress;
                 sub.credit = sspkm->GetOutPointValue(wtx, out);
                 sub.memo = sspkm->GetOutPointMemo(wtx, out);
+                if (!sub.memo->empty()) {
+                    sub.type = TransactionRecord::RecvWithShieldedAddressMemo;
+                }
                 sub.idx = i;
                 parts.append(sub);
             }
