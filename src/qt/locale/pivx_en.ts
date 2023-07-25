@@ -2,29 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en">
 <context>
-    <name>AddNewAddressDialog</name>
-    <message>
-        <location filename="../pivx/forms/addnewaddressdialog.ui" line="+53"/>
-        <source>New Address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+63"/>
-        <source>Address</source>
-        <translation type="unfinished">Address</translation>
-    </message>
-    <message>
-        <location line="+61"/>
-        <source>CANCEL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>SAVE</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>AddNewContactDialog</name>
     <message>
         <location filename="../pivx/forms/addnewcontactdialog.ui" line="+254"/>
@@ -242,7 +219,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/addresseswidget.cpp" line="+89"/>
+        <location filename="../pivx/addresseswidget.cpp" line="+88"/>
         <source>Add new contact</source>
         <translation type="unfinished"></translation>
     </message>
@@ -324,7 +301,7 @@ Are you sure?</source>
         <translation>Passphrase Dialog</translation>
     </message>
     <message>
-        <location filename="../askpassphrasedialog.cpp" line="+90"/>
+        <location filename="../askpassphrasedialog.cpp" line="+88"/>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
         <translation>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</translation>
     </message>
@@ -422,34 +399,34 @@ for staking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>%1 will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your PIVs from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+22"/>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
         <translation>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</translation>
     </message>
     <message>
         <location line="-122"/>
         <location line="+4"/>
-        <location line="+130"/>
+        <location line="+129"/>
         <source>Wallet encryption failed</source>
         <translation>Wallet encryption failed</translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-15"/>
+        <source>Your wallet is now encrypted. Remember that encrypting your wallet cannot fully protect your PIVs from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</source>
         <translation>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-129"/>
         <source>The supplied passphrases do not match.</source>
         <translation>The supplied passphrases do not match.</translation>
     </message>
@@ -535,7 +512,7 @@ for staking</source>
 <context>
     <name>ClientModel</name>
     <message>
-        <location filename="../clientmodel.cpp" line="+82"/>
+        <location filename="../clientmodel.cpp" line="+84"/>
         <source>Total: %1 (IPv4: %2 / IPv6: %3 / Tor: %4 / Unknown: %5)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -606,7 +583,7 @@ for staking</source>
     </message>
     <message>
         <location line="-365"/>
-        <location filename="../coincontroldialog.cpp" line="+143"/>
+        <location filename="../coincontroldialog.cpp" line="+142"/>
         <source>Select all</source>
         <translation type="unfinished"></translation>
     </message>
@@ -682,17 +659,12 @@ for staking</source>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+718"/>
+        <location line="+720"/>
         <source>Unselect all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-594"/>
-        <source>Please switch to &quot;List mode&quot; to use this function.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+96"/>
+        <location line="-493"/>
         <source>Quantity Copied</source>
         <translation type="unfinished"></translation>
     </message>
@@ -727,12 +699,12 @@ for staking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+72"/>
         <source>(%1 locked)</source>
         <translation>(%1 locked)</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+138"/>
         <source>yes</source>
         <translation>yes</translation>
     </message>
@@ -1069,12 +1041,12 @@ address</source>
     <name>CreateProposalDialog</name>
     <message>
         <location filename="../pivx/forms/createproposaldialog.ui" line="+520"/>
-        <location line="+613"/>
+        <location line="+608"/>
         <source>Name</source>
         <translation type="unfinished">Name</translation>
     </message>
     <message>
-        <location line="-569"/>
+        <location line="-564"/>
         <source>Receiver</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1084,7 +1056,7 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+127"/>
         <source>Create New Proposal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1099,8 +1071,8 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
-        <location line="+448"/>
+        <location line="+17"/>
+        <location line="+444"/>
         <source>Proposal URL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1138,7 +1110,7 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+247"/>
         <source>CANCEL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1148,7 +1120,12 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/createproposaldialog.cpp" line="+60"/>
+        <location filename="../pivx/createproposaldialog.cpp" line="+61"/>
+        <source>GENERATE ADDRESS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>NEXT</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1158,17 +1135,17 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+118"/>
+        <location line="+119"/>
         <source>Proposal name cannot be empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+13"/>
         <source>Proposal name cannot contain non UTF-8 characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+14"/>
         <source>Invalid amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1178,12 +1155,12 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+60"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+36"/>
         <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1201,17 +1178,7 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+422"/>
-        <source>Staking Rewards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+143"/>
-        <source>Staking statistics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-558"/>
+        <location line="+7"/>
         <source>View your account&apos;s history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1221,12 +1188,7 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
-        <source>Amount of staking rewards received.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+435"/>
+        <location line="+500"/>
         <source>Sort by</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1251,7 +1213,7 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/dashboardwidget.cpp" line="+115"/>
+        <location filename="../pivx/dashboardwidget.cpp" line="+114"/>
         <source>Please wait until the wallet is fully synced to see your correct balance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1261,7 +1223,27 @@ address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+904"/>
+        <location line="+93"/>
+        <source>Staking/MN Rewards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Amount of PIV stakes and masternodes rewards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+136"/>
+        <source>Rewards statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+81"/>
+        <source>Masternode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+587"/>
         <source>You can verify the staking activity in the status bar at the top right of the wallet.
 It will start automatically as soon as the wallet has enough confirmations on any unspent balances, and the wallet has synced.</source>
         <translation type="unfinished"></translation>
@@ -1290,12 +1272,22 @@ It will start automatically as soon as the wallet has enough confirmations on an
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-195"/>
+        <source>Stakes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+97"/>
         <source>Error loading chart, invalid data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+150"/>
+        <location line="+155"/>
         <source>Error loading chart: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1384,7 +1376,7 @@ It will start automatically as soon as the wallet has enough confirmations on an
 <context>
     <name>FreespaceChecker</name>
     <message>
-        <location filename="../intro.cpp" line="+73"/>
+        <location filename="../intro.cpp" line="+77"/>
         <source>A new data directory will be created.</source>
         <translation>A new data directory will be created.</translation>
     </message>
@@ -1412,7 +1404,7 @@ It will start automatically as soon as the wallet has enough confirmations on an
 <context>
     <name>GovernanceWidget</name>
     <message>
-        <location filename="../pivx/governancewidget.cpp" line="+44"/>
+        <location filename="../pivx/governancewidget.cpp" line="+49"/>
         <source>Governance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1479,11 +1471,12 @@ Be part of the DAO.</source>
     </message>
     <message>
         <location line="+33"/>
+        <location line="+24"/>
         <source>Please wait until the node is fully synced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-19"/>
         <source>Cannot vote for the proposal yet, wait until it&apos;s confirmed by the network</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1493,7 +1486,12 @@ Be part of the DAO.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+21"/>
+        <source>Cannot create proposal, superblock is too close. Need to wait %1 blocks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Cannot create proposal, wallet locked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1570,18 +1568,12 @@ Be part of the DAO.</source>
         <translation>version</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+5"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-8"/>
-        <location line="+2"/>
-        <source>(%1-bit)</source>
-        <translation>(%1-bit)</translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="+20"/>
         <source>Command-line options</source>
         <translation>Command-line options</translation>
     </message>
@@ -1634,7 +1626,7 @@ Be part of the DAO.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../intro.cpp" line="+106"/>
+        <location filename="../intro.cpp" line="+113"/>
         <source>Error: Specified data directory &quot;%1&quot; cannot be created.</source>
         <translation>Error: Specified data directory &quot;%1&quot; cannot be created.</translation>
     </message>
@@ -1677,6 +1669,57 @@ Be part of the DAO.</source>
     <message>
         <location line="+29"/>
         <source>Staking Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MNModel</name>
+    <message>
+        <location filename="../pivx/mnmodel.cpp" line="+226"/>
+        <source>Unknown error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Prepare master node failed.
+
+%1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Cannot send collateral transaction.
+
+%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Invalid collateral output index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+72"/>
+        <location line="+93"/>
+        <source>%1 file doesn&apos;t exists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-85"/>
+        <location line="+93"/>
+        <source>Invalid %1 file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-70"/>
+        <location line="+94"/>
+        <source>Error parsing %1 file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>MN alias %1 not found in %2 file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1771,12 +1814,12 @@ Be part of the DAO.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/masternodewizarddialog.cpp" line="+192"/>
+        <location filename="../pivx/masternodewizarddialog.cpp" line="+183"/>
         <source>address label cannot be empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>IP or port cannot be empty</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1786,37 +1829,7 @@ Be part of the DAO.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
-        <source>Unknown error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Prepare master node failed.
-
-%1
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Invalid collateral output index</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+95"/>
-        <source>Master node created! Wait %1 confirmations before starting it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-111"/>
-        <source>Cannot send collateral transaction.
-
-%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-210"/>
+        <location line="-123"/>
         <source>To create a PIVX Masternode you must dedicate %1 (the unit of PIVX) to the network (however, these coins are still yours and will never leave your possession).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1841,23 +1854,13 @@ Be part of the DAO.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+94"/>
         <source>walletModel not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+140"/>
-        <source>Invalid masternode.conf file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Error parsing masternode.conf file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-31"/>
-        <source>masternode.conf file doesn&apos;t exists</source>
+        <location line="+59"/>
+        <source>Masternode created! Wait %1 confirmations before starting it.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1937,7 +1940,18 @@ Please wait few more minutes (masternode collaterals require %1 confirmations).<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+17"/>
+        <source>failed to start.
+Error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>successfully started</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>Background task is being executed, please wait</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1957,7 +1971,7 @@ Please wait few more minutes (masternode collaterals require %1 confirmations).<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+11"/>
         <source>%1 Masternodes failed to start, %2 started</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1982,7 +1996,7 @@ Please wait few more minutes (masternode collaterals require %1 confirmations).<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-220"/>
         <source>What is a Masternode?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2002,7 +2016,7 @@ Please wait few more minutes (masternode collaterals require %1 confirmations).<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+246"/>
+        <location line="+218"/>
         <source>You are just about to export the required data to run a Masternode
 on a remote server to your clipboard.
 
@@ -2014,7 +2028,12 @@ this controller wallet (select the Masternode in the list and press &quot;start&
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+26"/>
+        <source>Invalid collateral output index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Delete Masternode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2027,22 +2046,7 @@ Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Invalid masternode.conf file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Error parsing masternode.conf file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>masternode.conf file doesn&apos;t exists</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+19"/>
         <source>Cannot create Masternode controller, wallet locked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2052,7 +2056,12 @@ Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+13"/>
+        <source>Not enough coins selected to create a masternode, %1 required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>Error creating masternode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2239,7 +2248,7 @@ STAKING</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/navmenuwidget.cpp" line="+23"/>
+        <location filename="../pivx/navmenuwidget.cpp" line="+22"/>
         <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2270,7 +2279,7 @@ STAKING</source>
 <context>
     <name>PIVXGUI</name>
     <message>
-        <location filename="../pivx/pivxgui.cpp" line="+70"/>
+        <location filename="../pivx/pivxgui.cpp" line="+69"/>
         <source>Wallet</source>
         <translation type="unfinished">Wallet</translation>
     </message>
@@ -2330,7 +2339,7 @@ STAKING</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+282"/>
+        <location line="+284"/>
         <source>Sent transaction</source>
         <translation type="unfinished">Sent transaction</translation>
     </message>
@@ -2453,8 +2462,13 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Not Passing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Over Budget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2481,32 +2495,32 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+98"/>
+        <location line="+116"/>
         <source>Recipient</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+43"/>
         <source>Amount</source>
         <translation type="unfinished">Amount</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+215"/>
         <source>End Block</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="-62"/>
         <source>Status</source>
         <translation type="unfinished">Status</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+16"/>
         <source>Start Block</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+92"/>
         <source>URL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2520,6 +2534,26 @@ Address: %4
         <source>Negative Votes</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../pivx/proposalinfodialog.cpp" line="+30"/>
+        <source>ID copied to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>URL copied to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Proposal name copied to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Recipient copied to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -2529,7 +2563,7 @@ Address: %4
         <translation>Amount</translation>
     </message>
     <message>
-        <location filename="../guiutil.cpp" line="+137"/>
+        <location filename="../guiutil.cpp" line="+136"/>
         <source>Enter PIVX address (e.g. %1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2585,7 +2619,7 @@ Address: %4
         <translation>%1 ms</translation>
     </message>
     <message>
-        <location filename="../pivx.cpp" line="+544"/>
+        <location filename="../pivx.cpp" line="+540"/>
         <source>A fatal error occurred. PIVX can no longer continue safely and will quit.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2605,13 +2639,8 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+81"/>
         <source>%1 didn&apos;t yet exit safely...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-69"/>
-        <source>Error reading masternode configuration file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2720,7 +2749,7 @@ Address: %4
         <translation type="unfinished">Received</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Sent</source>
         <translation type="unfinished">Sent</translation>
     </message>
@@ -2730,7 +2759,7 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Mined</source>
         <translation type="unfinished">Mined</translation>
     </message>
@@ -2770,6 +2799,11 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>DAO payment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+74"/>
         <source>by Label</source>
         <translation type="unfinished"></translation>
@@ -2785,7 +2819,7 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/dashboardwidget.cpp" line="-531"/>
+        <location filename="../pivx/dashboardwidget.cpp" line="-536"/>
         <source>Jan</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2848,6 +2882,56 @@ Address: %4
         <location filename="../pivx/coldstakingwidget.cpp" line="-716"/>
         <source>Address with no label</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../pivx/guitransactionsutils.cpp" line="+22"/>
+        <source>The recipient address is not valid, please recheck.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The amount to pay must be larger than 0.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The amount to pay exceeds the available balance.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The total amount to pay exceeds the available balance when the %1 transaction fee is included.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Duplicate address found, can only send to each address once per send operation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The transaction is not valid!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Error: The wallet was unlocked for staking only. Unlock canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Error: The wallet is unlocked for staking only. Fully unlock the wallet to send the transaction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>A fee %1 times higher than %2 per kB is considered an insanely high fee.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Send Coins</source>
+        <translation type="unfinished">Send Coins</translation>
     </message>
 </context>
 <context>
@@ -2995,7 +3079,7 @@ Address: %4
     <message>
         <location line="+59"/>
         <location filename="../rpcconsole.cpp" line="+109"/>
-        <location line="+717"/>
+        <location line="+749"/>
         <source>Select a peer to view detailed information.</source>
         <translation>Select a peer to view detailed information.</translation>
     </message>
@@ -3180,7 +3264,7 @@ Address: %4
         <translation>Rebuild index</translation>
     </message>
     <message>
-        <location filename="../rpcconsole.cpp" line="-381"/>
+        <location filename="../rpcconsole.cpp" line="-407"/>
         <source>In:</source>
         <translation>In:</translation>
     </message>
@@ -3190,7 +3274,7 @@ Address: %4
         <translation>Out:</translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-42"/>
         <source>Welcome to the PIVX RPC console.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3278,7 +3362,13 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+33"/>
+        <location line="+6"/>
+        <source>Network activity disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+123"/>
         <source>%1 B</source>
         <translation>%1 B</translation>
     </message>
@@ -3488,49 +3578,6 @@ try unlocking the wallet</source>
         <location line="+2"/>
         <source>Address copied to clipboard</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>RecentRequestsTableModel</name>
-    <message>
-        <location filename="../recentrequeststablemodel.cpp" line="+29"/>
-        <source>Date</source>
-        <translation>Date</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Label</source>
-        <translation>Label</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Message</source>
-        <translation>Message</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Address</source>
-        <translation type="unfinished">Address</translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Amount</source>
-        <translation>Amount</translation>
-    </message>
-    <message>
-        <location line="-52"/>
-        <source>(no label)</source>
-        <translation>(no label)</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>(no message)</source>
-        <translation>(no message)</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>(no amount)</source>
-        <translation>(no amount)</translation>
     </message>
 </context>
 <context>
@@ -3802,13 +3849,13 @@ try unlocking the wallet</source>
 <context>
     <name>SendWidget</name>
     <message>
-        <location filename="../pivx/send.cpp" line="+159"/>
+        <location filename="../pivx/send.cpp" line="+160"/>
         <source>Total remaining from the selected UTXO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+228"/>
-        <location line="+234"/>
+        <location line="+233"/>
         <source>Warning!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3820,12 +3867,12 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+375"/>
         <source>Customize Fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-694"/>
+        <location line="-695"/>
         <source>Maximum amount of outputs reached</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3860,7 +3907,7 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+85"/>
         <source>WARNING:
 Transaction spends a cold-stake delegation, voiding it.
 These coins will no longer be cold-staked.</source>
@@ -3887,7 +3934,7 @@ These coins will no longer be cold-staked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+288"/>
+        <location line="+290"/>
         <source>Memo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3897,7 +3944,7 @@ These coins will no longer be cold-staked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-927"/>
+        <location line="-928"/>
         <source>Coin Control</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3923,12 +3970,12 @@ These coins will no longer be cold-staked.</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+656"/>
+        <location line="+655"/>
         <source>Shield Coins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-655"/>
+        <location line="-654"/>
         <source>Convert all transparent coins into shielded coins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3950,12 +3997,12 @@ Do you wish to proceed without memo?
     </message>
     <message>
         <location line="+31"/>
-        <location line="+282"/>
+        <location line="+281"/>
         <source>Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-265"/>
+        <location line="-264"/>
         <source>On going process being executed, please wait until it&apos;s finished to create a new transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3965,7 +4012,7 @@ Do you wish to proceed without memo?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+135"/>
+        <location line="+134"/>
         <source>Processing full, refreshing amounts later</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3998,7 +4045,7 @@ Do you want to continue?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+50"/>
         <source>No contacts available, you can go to the contacts screen and add some there!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4216,7 +4263,7 @@ Using this mechanism you can share your keys without middle-man risk, only need 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/settings/settingsbittoolwidget.cpp" line="+142"/>
+        <location filename="../pivx/settings/settingsbittoolwidget.cpp" line="+141"/>
         <source>The entered passphrase is invalid. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4652,7 +4699,7 @@ There was an error trying to save the address list to %1. Please try again.</sou
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/settings/settingsfaqwidget.cpp" line="+78"/>
+        <location filename="../pivx/settings/settingsfaqwidget.cpp" line="+77"/>
         <source>PIVX is a form of digital online money using blockchain technology that can be easily transferred globally, instantly, and with near zero fees. PIVX incorporates market leading security &amp; privacy and is also the first PoS (Proof of Stake) Cryptocurrency to implement Sapling(SHIELD), a zk-SNARKs based privacy protocol.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4915,7 +4962,13 @@ There was an error trying to save the address list to %1. Please try again.</sou
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+33"/>
+        <location line="+6"/>
+        <source>Network activity disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-3"/>
         <source>In:</source>
         <translation type="unfinished">In:</translation>
     </message>
@@ -4925,7 +4978,7 @@ There was an error trying to save the address list to %1. Please try again.</sou
         <translation type="unfinished">Out:</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+75"/>
         <source>No available data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5034,7 +5087,7 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/settings/settingssignmessagewidgets.cpp" line="+48"/>
+        <location filename="../pivx/settings/settingssignmessagewidgets.cpp" line="+46"/>
         <source>Select mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5154,7 +5207,7 @@ Are you sure?
 <context>
     <name>SettingsWalletOptionsWidget</name>
     <message>
-        <location filename="../pivx/settings/forms/settingswalletoptionswidget.ui" line="+464"/>
+        <location filename="../pivx/settings/forms/settingswalletoptionswidget.ui" line="+612"/>
         <source>Reset to default</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5164,7 +5217,7 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-415"/>
+        <location line="-563"/>
         <source>Wallet</source>
         <translation type="unfinished">Wallet</translation>
     </message>
@@ -5185,7 +5238,7 @@ Are you sure?
     </message>
     <message>
         <location line="+71"/>
-        <location filename="../pivx/settings/settingswalletoptionswidget.cpp" line="+43"/>
+        <location filename="../pivx/settings/settingswalletoptionswidget.cpp" line="+48"/>
         <source>Network</source>
         <translation type="unfinished">Network</translation>
     </message>
@@ -5195,7 +5248,22 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+94"/>
+        <source>Enable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Disable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Enable or disable network activity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
         <source>Automatically open the PIVX client port on the router. This only works when your router supports NAT-PMP and it is enabled. The external port could be random.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5245,13 +5313,23 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/settings/settingswalletoptionswidget.cpp" line="+28"/>
+        <location filename="../pivx/settings/settingswalletoptionswidget.cpp" line="+30"/>
         <source>Options reset succeed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+54"/>
         <source>Stake Split too low, it shall be either &gt;= %1 or equal to 0 (to disable stake splitting)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Network activity enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Network activity disabled</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5583,7 +5661,7 @@ Are you sure?
     </message>
     <message>
         <location line="+213"/>
-        <location filename="../pivx/topbar.cpp" line="+669"/>
+        <location filename="../pivx/topbar.cpp" line="+682"/>
         <source>Available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5598,13 +5676,13 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/topbar.cpp" line="-370"/>
-        <location line="+342"/>
+        <location filename="../pivx/topbar.cpp" line="-384"/>
+        <location line="+356"/>
         <source>Wallet Unlocked for staking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-326"/>
         <source>Error generating address</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5614,7 +5692,7 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
+        <location line="+100"/>
         <source>Staking active</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5632,12 +5710,12 @@ Are you sure?
         </translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+27"/>
         <source>Synchronized - Block: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location line="+36"/>
+        <location line="+37"/>
         <source>%n hour(s)</source>
         <translation type="unfinished">
             <numerusform>%n hour</numerusform>
@@ -5701,13 +5779,13 @@ backup will be created.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-446"/>
-        <location line="+514"/>
+        <location line="-460"/>
+        <location line="+528"/>
         <source>Tor Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-524"/>
+        <location line="-538"/>
         <source>FAQ</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5755,18 +5833,23 @@ backup will be created.
     </message>
     <message>
         <location line="+119"/>
-        <location line="+377"/>
+        <location line="+391"/>
         <source>Wallet Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+369"/>
+        <location line="-375"/>
+        <location line="+383"/>
         <source>Wallet Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-76"/>
+        <location line="-185"/>
+        <source>Network activity disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+109"/>
         <source>Upgrade to Sapling Wallet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5928,7 +6011,7 @@ backup will be created.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Received from</source>
         <translation>Received from</translation>
     </message>
@@ -5963,12 +6046,17 @@ backup will be created.
         <translation>Sent to</translation>
     </message>
     <message>
-        <location line="-42"/>
+        <location line="-44"/>
         <source>Orphan Block - Generated but not accepted. This does not impact your holdings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+39"/>
+        <source>Budget Payment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Payment to yourself</source>
         <translation>Payment to yourself</translation>
     </message>
@@ -6029,6 +6117,11 @@ backup will be created.
     </message>
     <message>
         <location line="+2"/>
+        <source>Received shielded memo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Shielded send to</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6038,12 +6131,12 @@ backup will be created.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+33"/>
         <source>watch-only</source>
         <translation>watch-only</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+28"/>
         <source>Anonymous</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6058,7 +6151,7 @@ backup will be created.
         <translation>(n/a)</translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+206"/>
         <source>Transaction status. Hover over this field to show number of confirmations.</source>
         <translation>Transaction status. Hover over this field to show number of confirmations.</translation>
     </message>
@@ -6302,7 +6395,7 @@ Change votes</source>
 <context>
     <name>WalletModel</name>
     <message>
-        <location filename="../walletmodel.cpp" line="+553"/>
+        <location filename="../walletmodel.cpp" line="+551"/>
         <source>Send Coins</source>
         <translation>Send Coins</translation>
     </message>
@@ -6434,7 +6527,7 @@ Select fewer inputs with coin control.</source>
 <context>
     <name>pivx-core</name>
     <message>
-        <location filename="../pivxstrings.cpp" line="+25"/>
+        <location filename="../pivxstrings.cpp" line="+26"/>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
         <translation type="unfinished">Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</translation>
     </message>
@@ -6489,7 +6582,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Cannot downgrade wallet.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6574,7 +6667,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished">Error reading from database, shutting down.</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Error</source>
         <translation type="unfinished">Error</translation>
     </message>
@@ -6589,7 +6682,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished">Error: Disk space is low!</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Failed to parse host:port string</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6619,24 +6712,17 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-94"/>
+        <location line="-98"/>
         <source>This is a pre-release test build - use at your own risk - do not use for staking or merchant applications!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+79"/>
         <source>Error: A fatal internal error occurred, see debug.log for details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-130"/>
-        <source>Cannot find the Sapling parameters in the following directory:
-%s
-Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos; and then restart.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
+        <location line="-122"/>
         <source>Cannot upgrade to Sapling wallet (already running Sapling support). Version: %d</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6681,7 +6767,12 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+2"/>
+        <source>Cannot be a masternode and only connect to specific nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Error loading %s: Wallet corrupted</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6698,6 +6789,11 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
     </message>
     <message>
         <location line="+3"/>
+        <source>Error reading masternode configuration file: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Error upgrading chainstate database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6732,7 +6828,22 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+2"/>
+        <source>Failed to clear masternode metadata cache at: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Failed to load masternode metadata cache from: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Invalid amount for -%s=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6778,6 +6889,11 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
     </message>
     <message>
         <location line="+1"/>
+        <source>Loading network requests cache...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Loading sporks...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6792,6 +6908,11 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Masternode must be able to handle at least %d connections, set %s=%d</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+5"/>
         <source>Not enough file descriptors available.</source>
         <translation type="unfinished">Not enough file descriptors available.</translation>
@@ -6802,12 +6923,32 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Please copy the included params files to the %s directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please run the included %s script and then restart.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+10"/>
         <source>Specified blocks directory &quot;%s&quot; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+16"/>
+        <source>Transaction has too long of a mempool chain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Unable to create the PID file &apos;%s&apos;: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Unknown network specified in %s: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6827,17 +6968,17 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-42"/>
         <source>Preparing for resync...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-173"/>
+        <location line="-184"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Cannot start deterministic masternode before enforcement. Remove %s to start as legacy masternode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6892,7 +7033,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Cannot resolve -%s address: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6907,23 +7048,18 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+34"/>
         <source>Failed to accept tx in the memory pool (reason: %s)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Failed to delete backup, error: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Failed to listen on any port. Use %s if you want this.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Failed to rescan the wallet during initialization</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6988,12 +7124,12 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Loading/Pruning invalid outputs...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Need to specify a port with %s: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7018,7 +7154,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Reaccepting wallet transactions...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7103,12 +7239,23 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-171"/>
+        <location line="-179"/>
         <source>Invalid -wallet path &apos;%s&apos;. -wallet path should point to a directory where wallet.dat and database/log.?????????? files can be stored, a location where such a directory could be created or (for backwards compatibility) the name of an existing data file in -walletdir (%s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-29"/>
+        <source>Cannot find the Sapling parameters in the following directory:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cannot provide specific connections and have addrman find outgoing connections at the same.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
         <source>Please check that your computer&apos;s date and time are correct! If your clock is wrong %s will not work properly.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7118,7 +7265,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+37"/>
         <source>Copyright (C) 2015-%i The %s Developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7138,7 +7285,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+72"/>
         <source>Specified -walletdir &quot;%s&quot; does not exist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7168,7 +7315,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Transaction must have at least one recipient</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7193,7 +7340,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Unable to generate initial key!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7229,16 +7376,11 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
     </message>
     <message>
         <location line="+1"/>
-        <source>You can not start a masternode in litemode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>You need to rebuild the database using %s to change %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-12"/>
+        <location line="-11"/>
         <source>Unsupported logging category %s=%s.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7263,7 +7405,7 @@ Please run &apos;sapling-fetch-params&apos; or &apos;./util/fetch-params.sh&apos
         <translation type="unfinished">Warning: This version is obsolete, upgrade required!</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Zapping all transactions from wallet...</source>
         <translation type="unfinished">Zapping all transactions from wallet...</translation>
     </message>
