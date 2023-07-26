@@ -11,6 +11,7 @@
 #include "validation.h"
 
 #include "addrman.h"
+#include "amount.h"
 #include "blocksignature.h"
 #include "budget/budgetmanager.h"
 #include "chainparams.h"
@@ -21,6 +22,7 @@
 #include "consensus/tx_verify.h"
 #include "consensus/validation.h"
 #include "consensus/zerocoin_verify.h"
+#include "evo/deterministicmns.h"
 #include "evo/evodb.h"
 #include "evo/specialtx_validation.h"
 #include "flatfile.h"
@@ -1567,6 +1569,28 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         CAmount txValueOut = tx.GetValueOut();
         if (!tx.IsCoinBase()) {
             CAmount txValueIn = view.GetValueIn(tx);
+            // Once v6 is enforced and legacy mns are obsolete check that CoinStake does not overmint
+            if (tx.IsCoinStake() && isV6UpgradeEnforced && deterministicMNManager->LegacyMNObsolete(pindex->nHeight)) {
+                CAmount stakeMint = txValueOut - txValueIn;
+                // This is a possible superblock: coinstake cannot pay more than the blockvalue (TODO: update for single superblock payment)
+                if (pindex->nHeight % consensus.nBudgetCycleBlocks < 100) {
+                    CAmount maxStakeMint = GetBlockValue(pindex->nHeight);
+                    if (stakeMint > maxStakeMint) {
+                        return state.DoS(100, error("%s: coinstake pays too much (actual=%s vs limit=%s)", __func__, FormatMoney(stakeMint), FormatMoney(maxStakeMint)),
+                            REJECT_INVALID, "bad-blk-stake-amount");
+                    }
+                } else {
+                    // Masternode found, subtract its reward from the expected stake reward
+                    CAmount nExpectedStakeMint = GetBlockValue(pindex->nHeight);
+                    if (deterministicMNManager->GetListForBlock(pindex->pprev).GetMNPayee()) {
+                        nExpectedStakeMint -= GetMasternodePayment(pindex->nHeight);
+                    }
+                    if (stakeMint != nExpectedStakeMint) {
+                        return state.DoS(100, error("%s: coinstake pays too much (actual=%s vs limit=%s)", __func__, FormatMoney(stakeMint), FormatMoney(nExpectedStakeMint)),
+                            REJECT_INVALID, "bad-blk-stake-amount");
+                    }
+                }
+            }
             if (!tx.IsCoinStake())
                 nFees += txValueIn - txValueOut;
             nValueIn += txValueIn;
