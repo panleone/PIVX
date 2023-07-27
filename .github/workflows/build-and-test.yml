@@ -26,6 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install codespell==1.13.0
           pip install flake8==3.8.3
+          pip install mypy==0.700
           pip install vulture==0.29
           pip install yq
 
