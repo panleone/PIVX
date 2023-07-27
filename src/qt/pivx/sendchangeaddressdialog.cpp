@@ -6,14 +6,13 @@
 #include "qt/pivx/forms/ui_sendchangeaddressdialog.h"
 #include "qt/pivx/qtutils.h"
 
-SendChangeAddressDialog::SendChangeAddressDialog(QWidget* parent, WalletModel* model) :
-    FocusedDialog(parent),
-    walletModel(model),
-    ui(new Ui::SendChangeAddressDialog)
+SendChangeAddressDialog::SendChangeAddressDialog(QWidget* parent, WalletModel* model, bool isTransparent) : FocusedDialog(parent),
+                                                                                                            walletModel(model),
+                                                                                                            ui(new Ui::SendChangeAddressDialog)
 {
     // Change address
     dest = CNoDestination();
-
+    this->isTransparent = isTransparent;
     if (!walletModel) {
         throw std::runtime_error(strprintf("%s: No wallet model set", __func__));
     }
@@ -47,7 +46,7 @@ void SendChangeAddressDialog::setAddress(QString address)
     ui->btnCancel->setText(tr("RESET"));
 }
 
-CTxDestination SendChangeAddressDialog::getDestination() const
+CWDestination SendChangeAddressDialog::getDestination() const
 {
     return dest;
 }
@@ -74,12 +73,16 @@ void SendChangeAddressDialog::accept()
         QDialog::accept();
     } else {
         // validate address
-        bool isStakingAddr;
-        dest = DecodeDestination(ui->lineEditAddress->text().toStdString(), isStakingAddr);
-        if (!IsValidDestination(dest)) {
+        bool isStakingAddr = false;
+        bool isShield = false;
+        dest = Standard::DecodeDestination(ui->lineEditAddress->text().toStdString(), isStakingAddr, isShield);
+
+        if (!Standard::IsValidDestination(dest)) {
             inform(tr("Invalid address"));
         } else if (isStakingAddr) {
             inform(tr("Cannot use cold staking addresses for change"));
+        } else if (!isShield && !isTransparent) {
+            inform(tr("Cannot use a transparent change for a shield transaction"));
         } else {
             QDialog::accept();
         }
