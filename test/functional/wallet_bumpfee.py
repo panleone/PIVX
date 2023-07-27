@@ -12,7 +12,7 @@ top-level functions named as test_<test_case_description>. The test functions
 can be disabled or reordered if needed for debugging. If new test cases are
 added in the future, they should try to follow the same convention and not
 make assumptions about execution order.
-"""
+
 
 from decimal import Decimal
 import io
@@ -304,3 +304,4 @@ def submit_block_with_tx(node, tx):
 
 if __name__ == "__main__":
     BumpFeeTest().main()
+"""
