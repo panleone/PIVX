@@ -8,21 +8,12 @@ This file is modified from python-bitcoinlib.
 """
 
 import struct
-import sys
 
 from .bignum import bn2vch
 from .messages import CTransaction, CTxOut, sha256, hash256
 from .ripemd160 import ripemd160
 from binascii import hexlify
 from typing import List, Dict
-
-
-bchr = chr
-bord = ord
-if sys.version > '3':
-    long = int
-    bchr = lambda x: bytes([x])
-    bord = lambda x: x
 
 
 MAX_SCRIPT_ELEMENT_SIZE = 520
