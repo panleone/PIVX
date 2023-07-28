@@ -1661,12 +1661,9 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     }
 
     // Masternode/Budget payments
-    // !TODO: after transition to DMN is complete, check this also during IBD
-    if (!fInitialBlockDownload) {
-        if (!IsBlockPayeeValid(block, pindex->pprev)) {
-            mapRejectedBlocks.emplace(block.GetHash(), GetTime());
-            return state.DoS(0, false, REJECT_INVALID, "bad-cb-payee", false, "Couldn't find masternode/budget payment");
-        }
+    if (!IsBlockPayeeValid(block, pindex->pprev)) {
+        mapRejectedBlocks.emplace(block.GetHash(), GetTime());
+        return state.DoS(0, false, REJECT_INVALID, "bad-cb-payee", false, "Couldn't find masternode/budget payment");
     }
 
     // After v6 enforcement: Check that the coinbase pays the exact amount
