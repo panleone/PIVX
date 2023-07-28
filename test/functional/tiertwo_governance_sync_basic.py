@@ -64,7 +64,9 @@ class MasternodeGovernanceBasicTest(PivxTier2TestFramework):
             assert_equal(budget["VoteCount"], votesCount)
             assert_equal(budget["Status"], status)
 
-    def broadcastbudgetfinalization(self, node, with_ping_mns=[]):
+    def broadcastbudgetfinalization(self, node, with_ping_mns=None):
+        if with_ping_mns is None:
+            with_ping_mns = []
         self.log.info("suggesting the budget finalization..")
         assert (node.mnfinalbudgetsuggest() is not None)
 

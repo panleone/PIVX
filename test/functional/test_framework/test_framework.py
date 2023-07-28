@@ -780,9 +780,11 @@ class PivxTestFramework():
             stakeableUtxos,
             btime=None,
             privKeyWIF=None,
-            vtx=[],
+            vtx=None,
             fDoubleSpend=False):
         """ Calls stake_block appending to the current tip"""
+        if vtx is None:
+            vtx = []
         assert_greater_than(len(self.nodes), node_id)
         saplingActive = self.nodes[node_id].getblockchaininfo()['upgrades']['v5 shield']['status'] == 'active'
         blockVersion = 8 if saplingActive else 7
@@ -990,7 +992,9 @@ class PivxTestFramework():
             raise AssertionError("Unable to complete mnsync: %s" % str(synced))
 
 
-    def wait_until_mn_status(self, status, mnTxHash, _timeout, orEmpty=False, with_ping_mns=[]):
+    def wait_until_mn_status(self, status, mnTxHash, _timeout, orEmpty=False, with_ping_mns=None):
+        if with_ping_mns is None:
+            with_ping_mns = []
         nodes_status = [None] * self.num_nodes
 
         def node_synced(i):
@@ -1017,15 +1021,21 @@ class PivxTestFramework():
             raise AssertionError(strErr)
 
 
-    def wait_until_mn_enabled(self, mnTxHash, _timeout, _with_ping_mns=[]):
+    def wait_until_mn_enabled(self, mnTxHash, _timeout, _with_ping_mns=None):
+        if _with_ping_mns is None:
+            _with_ping_mns = []
         self.wait_until_mn_status("ENABLED", mnTxHash, _timeout, with_ping_mns=_with_ping_mns)
 
 
-    def wait_until_mn_preenabled(self, mnTxHash, _timeout, _with_ping_mns=[]):
+    def wait_until_mn_preenabled(self, mnTxHash, _timeout, _with_ping_mns=None):
+        if _with_ping_mns is None:
+            _with_ping_mns = []
         self.wait_until_mn_status("PRE_ENABLED", mnTxHash, _timeout, with_ping_mns=_with_ping_mns)
 
 
-    def wait_until_mn_vinspent(self, mnTxHash, _timeout, _with_ping_mns=[]):
+    def wait_until_mn_vinspent(self, mnTxHash, _timeout, _with_ping_mns=None):
+        if _with_ping_mns is None:
+            _with_ping_mns = []
         self.wait_until_mn_status("VIN_SPENT", mnTxHash, _timeout, orEmpty=True, with_ping_mns=_with_ping_mns)
 
 
@@ -1035,7 +1045,9 @@ class PivxTestFramework():
         time.sleep(1)
 
 
-    def controller_start_masternodes(self, mnOwner, aliases=[]):
+    def controller_start_masternodes(self, mnOwner, aliases=None):
+        if aliases is None:
+            aliases = []
         ret = mnOwner.startmasternode(set="all", lock_wallet=False, reload_conf=True)
         for i in range(len(aliases)):
             assert_equal(ret["detail"][i]["alias"], aliases[i])
@@ -1059,8 +1071,10 @@ class PivxTestFramework():
         time.sleep(1)
 
 
-    def stake_and_ping(self, node_id, num_blocks, with_ping_mns=[]):
+    def stake_and_ping(self, node_id, num_blocks, with_ping_mns=None):
         # stake blocks and send mn pings in between
+        if with_ping_mns is None:
+            with_ping_mns = []
         for i in range(num_blocks):
             self.stake_and_sync(node_id, 1)
             if len(with_ping_mns) > 0:
@@ -1565,7 +1579,9 @@ class PivxDMNTestFramework(PivxTestFramework):
                  (or None if all members participated)
     """
     def mine_quorum(self, invalidate_func=None, invalidated_idx=None, skip_bad_member_sync=False,
-                    expected_messages=[ExpectedDKGMessages() for _ in range(3)]):
+                    expected_messages=None):
+        if expected_messages is None:
+            expected_messages = [ExpectedDKGMessages() for _ in range(3)]
         nodes_to_sync = self.nodes.copy()
         if invalidated_idx is not None:
             assert invalidate_func is None
@@ -1673,7 +1689,9 @@ class PivxTier2TestFramework(PivxTestFramework):
         self.send_pings(mns)
         time.sleep(2)
 
-    def stake(self, num_blocks, with_ping_mns=[]):
+    def stake(self, num_blocks, with_ping_mns=None):
+        if with_ping_mns is None:
+            with_ping_mns = []
         self.stake_and_ping(self.minerPos, num_blocks, with_ping_mns)
 
     def controller_start_all_masternodes(self):
