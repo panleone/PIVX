@@ -18,7 +18,7 @@ class SaplingSupplyTest(PivxTestFramework):
         self.extra_args = [['-nuparams=v5_shield:1']]
 
     def generate_and_sync(self, count):
-        assert(count > 0)
+        assert count > 0
         height = self.nodes[0].getblockcount()
         self.nodes[0].generate(count)
         assert_equal(height + count, self.nodes[0].getblockcount())

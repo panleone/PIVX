@@ -66,7 +66,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         # First put cold-staking in maintenance mode
         self.setColdStakingEnforcement(False)
         # double check
-        assert (not self.isColdStakingEnforced())
+        assert not self.isColdStakingEnforced()
 
         # 1) nodes[0] and nodes[2] mine 25 blocks each
         # --------------------------------------------
@@ -84,13 +84,13 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.log.info("Emptying node1 balance")
         assert_equal(self.nodes[1].getbalance(), 50 * 250)
         txid = self.nodes[1].sendtoaddress(self.nodes[2].getnewaddress(), (50 * 250 - 0.01))
-        assert (txid is not None)
+        assert txid is not None
         self.sync_mempools()
         self.mocktime = self.generate_pos(2, self.mocktime)
         self.sync_blocks()
         # lock the change output (so it's not used as stake input in generate_pos)
         for x in self.nodes[1].listunspent():
-            assert (self.nodes[1].lockunspent(False, True, [{"txid": x['txid'], "vout": x['vout']}]))
+            assert self.nodes[1].lockunspent(False, True, [{"txid": x['txid'], "vout": x['vout']}])
         # check that it cannot stake
         sleep(1)
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)
@@ -119,7 +119,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         # ---------------------
         print("*** 4 ***")
         # Check that SPORK 17 is disabled
-        assert (not self.isColdStakingEnforced())
+        assert not self.isColdStakingEnforced()
         self.log.info("Creating a stake-delegation tx before cold staking enforcement...")
         assert_raises_rpc_error(-4, "Failed to accept tx in the memory pool (reason: cold-stake-inactive)\nTransaction canceled.",
                                 self.nodes[0].delegatestake, staker_address, INPUT_VALUE, owner_address,
@@ -129,7 +129,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         # Enable via SPORK
         self.setColdStakingEnforcement()
         # double check
-        assert (self.isColdStakingEnforced())
+        assert self.isColdStakingEnforced()
 
         # 5) nodes[0] delegates a number of inputs for nodes[1] to stake em.
         # ------------------------------------------------------------------
@@ -141,7 +141,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
 
         self.log.info("Now force the use of external address creating (but not sending) the delegation...")
         res = self.nodes[0].rawdelegatestake(staker_address, INPUT_VALUE, "yCgCXC8N5VThhfiaVuKaNLkNnrWduzVnoT", True)
-        assert(res is not None and res != "")
+        assert res is not None and res != ""
         self.log.info("Good. Warning NOT triggered.")
 
         self.log.info("Now delegate with internal owner address..")
@@ -151,18 +151,18 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.log.info("Nice. it was not possible.")
         self.log.info("Then try (creating but not sending) with the threshold value (1.00)")
         res = self.nodes[0].rawdelegatestake(staker_address, 1.00, owner_address)
-        assert(res is not None and res != "")
+        assert res is not None and res != ""
         self.log.info("Good. Warning NOT triggered.")
 
         self.log.info("Now creating %d real stake-delegation txes..." % NUM_OF_INPUTS)
         for i in range(NUM_OF_INPUTS-1):
             res = self.nodes[0].delegatestake(staker_address, INPUT_VALUE, owner_address)
-            assert(res is not None and res["txid"] is not None and res["txid"] != "")
+            assert res is not None and res["txid"] is not None and res["txid"] != ""
             assert_equal(res["owner_address"], owner_address)
             assert_equal(res["staker_address"], staker_address)
         # delegate  the shielded balance
         res = self.nodes[0].delegatestake(staker_address, INPUT_VALUE, owner_address, False, False, True)
-        assert (res is not None and res["txid"] is not None and res["txid"] != "")
+        assert res is not None and res["txid"] is not None and res["txid"] != ""
         assert_equal(res["owner_address"], owner_address)
         assert_equal(res["staker_address"], staker_address)
         fee = self.nodes[0].viewshieldtransaction(res["txid"])['fee']
@@ -187,7 +187,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         assert_equal(len(delegated_utxos), len(self.nodes[0].listcoldutxos()))
         u = delegated_utxos[0]
         txhash = self.spendUTXOwithNode(u, 0)
-        assert(txhash is not None)
+        assert txhash is not None
         self.log.info("Good. Owner was able to spend - tx: %s" % str(txhash))
         self.sync_mempools()
         self.mocktime = self.generate_pos(2, self.mocktime)
@@ -212,7 +212,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
 
         self.log.info("Whitelisting the owner...")
         ret = self.nodes[1].delegatoradd(owner_address)
-        assert(ret)
+        assert ret
         assert_equal(self.nodes[1].listdelegators()[0]["address"], owner_address)
         self.log.info("Delegator address %s whitelisted" % owner_address)
 
@@ -264,7 +264,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.log.info("New block created (rawtx) by cold-staking. Trying to submit...")
         # Try to submit the block
         ret = self.nodes[1].submitblock(bytes_to_hex_str(new_block.serialize()))
-        assert (ret is None)
+        assert ret is None
         self.log.info("Block %s submitted." % new_block.hash)
         assert_equal(new_block.hash, self.nodes[1].getbestblockhash())
 
@@ -295,7 +295,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         # Try to submit the block
         ret = self.nodes[1].submitblock(bytes_to_hex_str(new_block.serialize()))
         self.log.info("Block %s submitted." % new_block.hash)
-        assert("rejected" in ret)
+        assert "rejected" in ret
 
         # Verify that nodes[0] rejects it
         self.sync_blocks()
@@ -336,13 +336,13 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         print("*** 13 ***")
         self.log.info("Invalidate delegation")
         ret = self.nodes[1].delegatorremove(owner_address)
-        assert(ret)
+        assert ret
         assert_equal(self.nodes[1].listdelegators(), [])
         assert_equal(self.nodes[1].listdelegators(True)[0]["address"], owner_address)
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], 0)
         self.log.info("Re-enable delegation")
         ret = self.nodes[1].delegatoradd(owner_address)
-        assert(ret)
+        assert ret
         assert_equal(self.nodes[1].listdelegators()[0]["address"], owner_address)
         assert_equal(self.nodes[1].getstakingstatus()["stakeablecoins"], len(stakeable_coins))
         self.log.info("Cancel the stake delegation spending the delegated utxos...")
@@ -350,7 +350,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         # remove one utxo to spend later
         final_spend = delegated_utxos.pop()
         txhash = self.spendUTXOsWithNode(delegated_utxos, 0)
-        assert(txhash is not None)
+        assert txhash is not None
         self.log.info("Good. Owner was able to void the stake delegations - tx: %s" % str(txhash))
         self.sync_blocks()
         self.mocktime = self.generate_pos(2, self.mocktime)
@@ -358,9 +358,9 @@ class PIVX_ColdStakingTest(PivxTestFramework):
 
         # deactivate SPORK 17 and check that the owner can still spend the last utxo
         self.setColdStakingEnforcement(False)
-        assert (not self.isColdStakingEnforced())
+        assert not self.isColdStakingEnforced()
         txhash = self.spendUTXOsWithNode([final_spend], 0)
-        assert(txhash is not None)
+        assert txhash is not None
         self.log.info("Good. Owner was able to void a stake delegation (with SPORK 17 disabled) - tx: %s" % str(txhash))
         self.sync_mempools()
         self.mocktime = self.generate_pos(2, self.mocktime)
@@ -374,7 +374,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.log.info("Balances check out after the delegations have been voided.")
         # re-activate SPORK17
         self.setColdStakingEnforcement()
-        assert (self.isColdStakingEnforced())
+        assert self.isColdStakingEnforced()
 
         # 14) check that coinstaker is empty and can no longer stake.
         # -----------------------------------------------------------
@@ -397,7 +397,7 @@ class PIVX_ColdStakingTest(PivxTestFramework):
         self.checkBalances()
         delegated_utxos = getDelegatedUtxos(self.nodes[0].listunspent())
         txhash = self.spendUTXOsWithNode(delegated_utxos, 0)
-        assert (txhash is not None)
+        assert txhash is not None
         self.log.info("Good. Owner was able to spend the cold staked coins - tx: %s" % str(txhash))
         self.sync_mempools()
         self.mocktime = self.generate_pos(2, self.mocktime)

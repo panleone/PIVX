@@ -47,7 +47,7 @@ class WalletSaplingTest(PivxTestFramework):
         # now unlock the wallet and try to generate the key again
         node.walletpassphrase(password, 12000)
         new_addr = node.getnewshieldaddress()
-        assert(new_addr is not None)
+        assert new_addr is not None
 
         # and verify that the key has been added
         found = False

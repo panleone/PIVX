@@ -714,7 +714,7 @@ class FullBlockTest(PivxTestFramework):
         self.move_tip(57)
         b58 = self.next_block(58, spend=out[17])
         tx = CTransaction()
-        assert(len(out[17].tx.vout) < 42)
+        assert len(out[17].tx.vout) < 42
         tx.vin.append(CTxIn(COutPoint(out[17].tx.sha256, 42), CScript([OP_TRUE]), 0xffffffff))
         tx.vout.append(CTxOut(0, CScript([OP_TRUE])))
         tx.calc_sha256()
@@ -763,10 +763,10 @@ class FullBlockTest(PivxTestFramework):
         b62 = self.next_block(62)
         tx = CTransaction()
         tx.nLockTime = 0xffffffff  # this locktime is non-final
-        assert(out[18].n < len(out[18].tx.vout))
+        assert out[18].n < len(out[18].tx.vout)
         tx.vin.append(CTxIn(COutPoint(out[18].tx.sha256, out[18].n)))  # don't set nSequence
         tx.vout.append(CTxOut(0, CScript([OP_TRUE])))
-        assert(tx.vin[0].nSequence < 0xffffffff)
+        assert tx.vin[0].nSequence < 0xffffffff
         tx.calc_sha256()
         b62 = self.update_block(62, [tx])
         self.send_blocks([b62], False, "bad-txns-nonfinal")
@@ -1043,8 +1043,8 @@ class FullBlockTest(PivxTestFramework):
         # now check that tx78 and tx79 have been put back into the peer's mempool
         mempool = self.nodes[0].getrawmempool()
         assert_equal(len(mempool), 2)
-        assert(tx78.hash in mempool)
-        assert(tx79.hash in mempool)
+        assert tx78.hash in mempool
+        assert tx79.hash in mempool
 
         # Test invalid opcodes in dead execution paths.
         #

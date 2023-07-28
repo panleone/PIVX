@@ -35,7 +35,7 @@ class ListReceivedTest (PivxTestFramework):
 
     def generate_and_sync(self, new_height):
         current_height = self.nodes[0].getblockcount()
-        assert(new_height > current_height)
+        assert new_height > current_height
         self.nodes[0].generate(new_height - current_height)
         self.sync_all()
         assert_equal(new_height, self.nodes[0].getblockcount())
