@@ -9,7 +9,6 @@
 - submitblock
 """
 
-from binascii import b2a_hex
 import copy
 from decimal import Decimal
 
@@ -18,9 +17,6 @@ from test_framework.messages import CBlock
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
 
-
-def b.hex():
-    return b2a_hex(b).decode('ascii')
 
 def assert_template(node, block, expect, rehash=True):
     if rehash:

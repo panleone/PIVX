@@ -12,7 +12,6 @@ from test_framework.util import (
     assert_false,
     assert_raises_rpc_error,
     assert_true,
-    bytes_to_hex_str
 )
 
 my_memo_str = "What, so everyone’s supposed to sleep every single night now?\n"\
