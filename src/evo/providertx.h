@@ -199,5 +199,9 @@ public:
 
 // If tx is a ProRegTx, return the collateral outpoint in outRet.
 bool GetProRegCollateral(const CTransactionRef& tx, COutPoint& outRet);
+// return true is the tx is a ProReg and corresponds to a shield masternode
+bool IsShieldProReg(const CTransactionRef& tx);
+// If tx is a ProRegTx, return the corresponding shield nullifier.
+bool GetProRegNullifier(const CTransactionRef& tx, uint256& outNullifier);
 
 #endif  //PIVX_PROVIDERTX_H
