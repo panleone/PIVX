@@ -7,6 +7,7 @@
 
 #include "bls/key_io.h"
 #include "key_io.h"
+#include "primitives/transaction.h"
 #include "uint256.h"
 
 std::string ProRegPL::MakeSignString() const
@@ -40,6 +41,7 @@ void ProRegPL::ToJson(UniValue& obj) const
     obj.pushKV("version", nVersion);
     obj.pushKV("collateralHash", collateralOutpoint.hash.ToString());
     obj.pushKV("collateralIndex", (int)collateralOutpoint.n);
+    obj.pushKV("nullifier", shieldCollateral.input.nullifier.ToString());
     obj.pushKV("service", addr.ToString());
     obj.pushKV("ownerAddress", EncodeDestination(keyIDOwner));
     obj.pushKV("operatorPubKey", bls::EncodePublic(Params(), pubKeyOperator));
