@@ -7,6 +7,7 @@
 
 #include "bls/key_io.h"
 #include "key_io.h"
+#include "uint256.h"
 
 std::string ProRegPL::MakeSignString() const
 {
@@ -117,6 +118,37 @@ void ProUpRevPL::ToJson(UniValue& obj) const
     obj.pushKV("proTxHash", proTxHash.ToString());
     obj.pushKV("reason", (int)nReason);
     obj.pushKV("inputsHash", inputsHash.ToString());
+}
+
+bool IsShieldProReg(const CTransactionRef& tx)
+{
+    if (tx == nullptr) {
+        return false;
+    }
+    if (!tx->IsSpecialTx() || tx->nType != CTransaction::TxType::PROREG) {
+        return false;
+    }
+    ProRegPL pl;
+    if (!GetTxPayload(*tx, pl)) {
+        return false;
+    }
+    return !pl.shieldCollateral.IsNull();
+}
+
+bool GetProRegNullifier(const CTransactionRef& tx, uint256& outNullifier)
+{
+    if (tx == nullptr) {
+        return false;
+    }
+    if (!tx->IsSpecialTx() || tx->nType != CTransaction::TxType::PROREG) {
+        return false;
+    }
+    ProRegPL pl;
+    if (!GetTxPayload(*tx, pl)) {
+        return false;
+    }
+    outNullifier = pl.shieldCollateral.input.nullifier;
+    return true;
 }
 
 bool GetProRegCollateral(const CTransactionRef& tx, COutPoint& outRet)
