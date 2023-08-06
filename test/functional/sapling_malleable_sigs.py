@@ -12,7 +12,6 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    bytes_to_hex_str,
     hex_str_to_bytes,
 )
 
@@ -42,7 +41,7 @@ class MalleableSigsTest(PivxTestFramework):
         new_tx = CTransaction()
         new_tx.deserialize(BytesIO(hex_str_to_bytes(rawtx_hex)))
         new_tx.sapData = b""
-        new_rawtx = bytes_to_hex_str(new_tx.serialize())
+        new_rawtx = new_tx.serialize().hex()
         self.log.info("Sending malleated tx...")
         assert_raises_rpc_error(-26, "mandatory-script-verify-flag-failed",
                                 node.sendrawtransaction, new_rawtx, True)

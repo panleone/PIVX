@@ -25,7 +25,6 @@ from test_framework.util import (
     assert_equal,
     assert_greater_than,
     assert_raises_rpc_error,
-    bytes_to_hex_str,
     hex_str_to_bytes
 )
 
@@ -298,7 +297,7 @@ def submit_block_with_tx(node, tx):
     block.hashMerkleRoot = block.calc_merkle_root()
     blocktools.add_witness_commitment(block)
     block.solve()
-    node.submitblock(bytes_to_hex_str(block.serialize(True)))
+    node.submitblock(block.serialize(True).hex())
     return block
 
 

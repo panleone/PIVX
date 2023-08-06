@@ -51,7 +51,6 @@ from .util import (
     DEFAULT_FEE,
     get_datadir_path,
     hex_str_to_bytes,
-    bytes_to_hex_str,
     initialize_datadir,
     is_coin_locked_by,
     create_new_dmn,
@@ -670,7 +669,7 @@ class PivxTestFramework():
             prevout.deserialize_uniqueness(BytesIO(uniqueness))
             tx = create_transaction_from_outpoint(prevout, b"", value_out, scriptPubKey)
             # sign tx
-            raw_spend = rpc_conn.signrawtransaction(bytes_to_hex_str(tx.serialize()))['hex']
+            raw_spend = rpc_conn.signrawtransaction(tx.serialize().hex())['hex']
             # add signed tx to the list
             signed_tx = CTransaction()
             signed_tx.from_hex(raw_spend)
@@ -753,7 +752,7 @@ class PivxTestFramework():
 
         # Sign coinstake TX and add it to the block
         stake_tx_signed_raw_hex = rpc_conn.signrawtransaction(
-            bytes_to_hex_str(coinstakeTx_unsigned.serialize()))['hex']
+            coinstakeTx_unsigned.serialize().hex())['hex']
 
         # Add coinstake to the block
         coinstakeTx = CTransaction()

@@ -17,10 +17,10 @@ from test_framework.util import (
 
 my_memo_str = "What, so everyone’s supposed to sleep every single night now?\n"\
               "You realize that nighttime makes up half of all time?"
-my_memo_hex = bytes_to_hex_str(my_memo_str.encode('utf-8'))
+my_memo_hex = my_memo_str.encode('utf-8').hex()
 
 non_ascii_memo_str = "零知识证明"
-non_ascii_memo_hex = bytes_to_hex_str(non_ascii_memo_str.encode('utf-8'))
+non_ascii_memo_hex = non_ascii_memo_str.encode('utf-8').hex()
 
 too_big_memo_str = "This is not an email......." * 19
 no_memo = "f6"

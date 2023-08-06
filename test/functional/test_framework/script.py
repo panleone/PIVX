@@ -12,7 +12,6 @@ import struct
 from .bignum import bn2vch
 from .messages import CTransaction, CTxOut, sha256, hash256
 from .ripemd160 import ripemd160
-from binascii import hexlify
 from typing import List, Dict
 
 
@@ -527,7 +526,7 @@ class CScript(bytes):
     def __repr__(self):
         def _repr(o):
             if isinstance(o, bytes):
-                return "x('%s')" % hexlify(o).decode('ascii')
+                return "x('%s')" % o.hex()
             else:
                 return repr(o)
 
