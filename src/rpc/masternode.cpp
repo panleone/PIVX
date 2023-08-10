@@ -10,6 +10,7 @@
 #include "masternode-payments.h"
 #include "masternodeconfig.h"
 #include "masternodeman.h"
+#include "netaddress.h"
 #include "netbase.h"
 #include "tiertwo/tiertwo_sync_state.h"
 #include "rpc/server.h"
@@ -390,9 +391,11 @@ void RelayMNB(CMasternodeBroadcast& mnb, const bool fSucces)
 
 void SerializeMNB(UniValue& statusObjRet, const CMasternodeBroadcast& mnb, const bool fSuccess, int& successful, int& failed)
 {
+    bool isBIP155 = mnb.addr.IsAddrV1Compatible();
+    int version = isBIP155 ? PROTOCOL_VERSION | ADDRV2_FORMAT : PROTOCOL_VERSION;
     if(fSuccess) {
         successful++;
-        CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+        CDataStream ssMnb(SER_NETWORK, version);
         ssMnb << mnb;
         statusObjRet.pushKV("hex", HexStr(ssMnb));
     } else {
@@ -875,11 +878,7 @@ UniValue getmasternodescores(const JSONRPCRequest& request)
     return obj;
 }
 
-bool DecodeHexMnb(CMasternodeBroadcast& mnb, std::string strHexMnb) {
-
-    if (!IsHex(strHexMnb))
-        return false;
-
+bool DecodeAddrV1(CMasternodeBroadcast& mnb, std::string strHexMnb) {
     std::vector<unsigned char> mnbData(ParseHex(strHexMnb));
     CDataStream ssData(mnbData, SER_NETWORK, PROTOCOL_VERSION);
     try {
@@ -891,6 +890,27 @@ bool DecodeHexMnb(CMasternodeBroadcast& mnb, std::string strHexMnb) {
 
     return true;
 }
+
+bool DecodeHexMnb(CMasternodeBroadcast& mnb, std::string strHexMnb) {
+
+    if (!IsHex(strHexMnb))
+        return false;
+
+    bool MNAddrV1 = DecodeAddrV1(mnb, strHexMnb);
+    if (!MNAddrV1) {
+        std::vector<unsigned char> mnbData(ParseHex(strHexMnb));
+        CDataStream ssData(mnbData, SER_NETWORK, PROTOCOL_VERSION | ADDRV2_FORMAT);
+        try {
+            ssData >> mnb;
+        }
+        catch (const std::exception&) {
+            return false;
+        }
+        return true;
+    }
+    return true;
+}
+
 UniValue createmasternodebroadcast(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
