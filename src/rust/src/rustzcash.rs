@@ -9,9 +9,9 @@ use blake2s_simd::Params as Blake2sParams;
 use bls12_381::{Bls12, Scalar};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ff::{Field, PrimeField};
+use group::GroupEncoding;
 use jubjub::Fr;
 use libc::{c_char, c_uchar, size_t};
-use pairing::group::GroupEncoding;
 use rand_core::OsRng;
 use std::{
     ffi::CStr,
@@ -337,11 +337,8 @@ fn test_gen_r() {
     assert_ne!(r1, r2);
 
     // Verify r values are valid in the field
-    let mut repr = FrRepr::default();
-    repr.read_le(&r1[..]).expect("length is not 32 bytes");
-    let _ = Fr::from_repr(repr).unwrap();
-    repr.read_le(&r2[..]).expect("length is not 32 bytes");
-    let _ = Fr::from_repr(repr).unwrap();
+    let _ = jubjub::Scalar::from_bytes(&r1).unwrap();
+    let _ = jubjub::Scalar::from_bytes(&r2).unwrap();
 }
 
 /// Return 32 byte random scalar, uniformly.
