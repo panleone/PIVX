@@ -37,7 +37,7 @@ class CTxMemPool;
 
 /** \class CTxMemPoolEntry
  *
- * CTxMemPoolEntry stores data about the correponding transaction, as well
+ * CTxMemPoolEntry stores data about the corresponding transaction, as well
  * as data about all in-mempool transactions that depend on the transaction
  * ("descendant" transactions).
  *
@@ -721,7 +721,7 @@ private:
 
 };
 
-/** 
+/**
  * CCoinsView that brings transactions from a memorypool into view.
  * It does not check for spendings by memory pool transactions.
  */

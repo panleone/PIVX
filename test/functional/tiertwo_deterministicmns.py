@@ -362,7 +362,7 @@ class DIP3Test(PivxTestFramework):
         miner.protx_update_registrar(mns[0].proTx, mns[0].operator_pk, "", "", ownerKey)
         miner.generate(1)
         self.sync_blocks()
-        self.check_mn_enabled_count(5, 6) # stil not valid until new operator sends proUpServ
+        self.check_mn_enabled_count(5, 6) # still not valid until new operator sends proUpServ
         self.check_mn_list(mns)
         self.log.info("Update voting address...")
         mns[1].voting = controller.getnewaddress()

@@ -1257,7 +1257,7 @@ BOOST_FIXTURE_TEST_CASE(dkg_pose_and_qfc_invalid_paths, TestChain400Setup)
     ProcessQuorum(llmq::quorumBlockProcessor.get(), qfc, &dummyNode);
     BOOST_CHECK(qfc.CountSigners() > qfc2.CountSigners());
 
-    // final commitment received, accepted, and replaced the previous one (with less memebers)
+    // final commitment received, accepted, and replaced the previous one (with less members)
     BOOST_CHECK(llmq::quorumBlockProcessor->HasMinableCommitment(::SerializeHash(qfc)));
 
     // activate spork 22 and try to mine a non-null commitment

@@ -44,14 +44,14 @@ class SigningSessionTest(PivxDMNTestFramework):
         msgHash = "0000000000000000000000000000000000000000000000000000000000000002"
         msgHashConflict = "0000000000000000000000000000000000000000000000000000000000000003"
         self.log.info("starting signing")
-        # Only valid quorum memebrs can sign the message
+        # Only valid quorum members can sign the message
         for i in range(len(self.nodes)):
             if (i in [m.idx for m in members]):
                 assert_equal(True, self.nodes[i].signsession(100, id, msgHash))
             else:
                 assert_equal(False, self.nodes[i].signsession(100, id, msgHash))
         self.log.info("finished signing")
-        # At this point a recovery trheshold signaure should have been generated and propagated to the whole network
+        # At this point a recovery threshold signature should have been generated and propagated to the whole network
         # Let's generate some blocks to ensure that nodes are synced
         time.sleep(5)
         for i in range(len(self.nodes)):
@@ -61,7 +61,7 @@ class SigningSessionTest(PivxDMNTestFramework):
         for i in range(len(self.nodes)):
             assert_equal(False, self.nodes[i].hasrecoverysignature(100, id, msgHashConflict))
 
-        self.log.info("Threshold signature succesfully generated and propagated!")
+        self.log.info("Threshold signature successfully generated and propagated!")
 
         # Second scenario, let's select a new signing session (i.e. a new id) and this time nodes will not agree on the msgHash
         self.log.info("----------------------------------")
@@ -84,12 +84,12 @@ class SigningSessionTest(PivxDMNTestFramework):
             else:
                 assert_equal(False, self.nodes[i].signsession(100, id, msgHash))
 
-        # Since with this quorum type 2 nodes are enough to generate the treshold signature at the end every node MUST agree on (id, msgHash)
+        # Since with this quorum type 2 nodes are enough to generate the threshold signature at the end every node MUST agree on (id, msgHash)
         # Let's wait a bit to sync all messages
         time.sleep(5)
         for i in range(len(self.nodes)):
             assert_equal(True, self.nodes[i].hasrecoverysignature(100, id, msgHash))
-        self.log.info("Threshold signature succesfully generated and propagated!")
+        self.log.info("Threshold signature successfully generated and propagated!")
 
         # Finally let's test that those signatures are valid in the future:
         # it must be valid if we generate enough quorums to push the first one out of the active set

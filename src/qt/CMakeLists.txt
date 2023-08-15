@@ -21,7 +21,7 @@ foreach(comp Widgets Core Gui Network LinguistTools DBus Svg Charts)
         add_definitions(${Qt5${comp}_DEFINITIONS})
         list(APPEND Qt5_LIBRARIES ${Qt5${comp}_LIBRARIES})
     else()
-        MESSAGE(WARNING "Cant find Qt5${comp}")
+        MESSAGE(WARNING "Can't find Qt5${comp}")
     endif()
 endforeach(comp)
 

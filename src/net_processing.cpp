@@ -1116,7 +1116,7 @@ void static ProcessGetBlockData(CNode* pfrom, const CInv& inv, CConnman* connman
                 connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MERKLEBLOCK, merkleBlock));
                 // CMerkleBlock just contains hashes, so also push any transactions in the block the client did not see
                 // This avoids hurting performance by pointlessly requiring a round-trip
-                // Note that there is currently no way for a node to request any single transactions we didnt send here -
+                // Note that there is currently no way for a node to request any single transactions we didn't send here -
                 // they must either disconnect and retry or request the full block.
                 // Thus, the protocol spec specified allows for us to provide duplicate txn here,
                 // however we MUST always provide at least what the remote peer needs

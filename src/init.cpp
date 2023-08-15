@@ -1255,7 +1255,7 @@ bool AppInitMain()
 
     if (gArgs.GetBoolArg("-resync", false)) {
         uiInterface.InitMessage(_("Preparing for resync..."));
-        // Delete the local blockchain folders to force a resync from scratch to get a consitent blockchain-state
+        // Delete the local blockchain folders to force a resync from scratch to get a consistent blockchain-state
         fs::path blocksDir = GetBlocksDir();
         fs::path chainstateDir = GetDataDir() / "chainstate";
         fs::path sporksDir = GetDataDir() / "sporks";

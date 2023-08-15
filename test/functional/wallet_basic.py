@@ -246,7 +246,7 @@ class WalletTest(PivxTestFramework):
         assert_equal(self.nodes[0].getmempoolinfo()['size'], chainlimit*2)
         assert_equal(len(txid_list), chainlimit*2)
 
-        # Excercise query_options parameter in listunspent
+        # Exercise query_options parameter in listunspent
         # Node 1 has:
         # - 1 coin of 1.00 PIV
         # - 7 coins of 250.00 PIV

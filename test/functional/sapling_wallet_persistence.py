@@ -16,7 +16,7 @@ class SaplingWalletPersistenceTest(PivxTestFramework):
     def run_test(self):
         sapling_addr = self.nodes[0].getnewshieldaddress()
         addresses = self.nodes[0].listshieldaddresses()
-        # make sure the node has the addresss
+        # make sure the node has the addresses
         assert_true(sapling_addr in addresses, "Should contain address before restart")
         # restart the nodes
         self.stop_node(0)

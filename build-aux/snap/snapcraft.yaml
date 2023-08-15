@@ -284,7 +284,7 @@ parts:
       fi
       echo "-----------------------------------------------"
       echo "+++++++++++++++++++++++++++++++++++++++++++++++"
-      echo "INSTALATION OF ${BINPREF}-${SNAPCRAFT_PROJECT_VERSION}-snap has finished" # List installed files and vars when installation is finished
+      echo "INSTALLATION OF ${BINPREF}-${SNAPCRAFT_PROJECT_VERSION}-snap has finished" # List installed files and vars when installation is finished
       echo "+++++++++++++++++++++++++++++++++++++++++++++++"
       if [ $EXTRALOG = 1 ]; then
         find ${SNAPCRAFT_PART_INSTALL} -type f

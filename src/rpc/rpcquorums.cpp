@@ -30,7 +30,7 @@ UniValue signsession(const JSONRPCRequest& request)
             "3. \"msgHash\"             (string, required) Message hash.\n"
 
             "\nResult:\n"
-            "n      (bool) True if the sign was succesfull false otherwise\n"
+            "n      (bool) True if the sign was successful, false otherwise\n"
 
             "\nExample:\n" +
             HelpExampleRpc("signsession", "100 \"xxx\", \"xxx\"") + HelpExampleCli("signsession", "100 \"xxx\", \"xxx\""));
@@ -168,12 +168,12 @@ UniValue getquoruminfo(const JSONRPCRequest& request)
             "     {\n"
             "       \"proTxHash\": \"proTxHash\"    (string) ProTxHash of the quorum member\n"
             "       \"valid\": true/false         (boolean) True/false if the member is valid/invalid\n"
-            "       \"pubKeyShare\": pubKeyShare  (string) Quorum public key share of the member, will be outputed only if the command is performed by another quorum member or watcher\n"
+            "       \"pubKeyShare\": pubKeyShare  (string) Quorum public key share of the member, will be outputted only if the command is performed by another quorum member or watcher\n"
             "     },\n"
             "     ...\n"
             "   ],\n"
             "   \"quorumPublicKey\": quorumPublicKey,   (string) Public key of the quorum\n"
-            "   \"secretKeyShare\": secretKeyShare      (string) This is outputed only if includeSkShare=true and the command is performed by a valid member of the quorum. It corresponds to the secret key share of that member\n"
+            "   \"secretKeyShare\": secretKeyShare      (string) This is outputted only if includeSkShare=true and the command is performed by a valid member of the quorum. It corresponds to the secret key share of that member\n"
             "}\n"
 
             "\nExample:\n" +

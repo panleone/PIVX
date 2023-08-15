@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(malleated_tx)
             }
         }
 
-        // add a random trasparent output
+        // add a random transparent output
         {
             mtx = _tx;
             CTxOut out;

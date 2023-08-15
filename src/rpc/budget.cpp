@@ -537,7 +537,7 @@ UniValue mnfinalbudgetsuggest(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "mnfinalbudgetsuggest\n"
                 "\nTry to submit a budget finalization\n"
-                "returns the budget hash if it was broadcasted sucessfully");
+                "returns the budget hash if it was broadcasted successfully");
 
     if (!Params().IsRegTestNet()) {
         throw JSONRPCError(RPC_MISC_ERROR, "command available only for RegTest network");
@@ -553,7 +553,7 @@ UniValue createrawmnfinalbudget(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "createrawmnfinalbudget\n"
                 "\nTry to submit the raw budget finalization\n"
-                "returns the budget hash if it was broadcasted sucessfully"
+                "returns the budget hash if it was broadcasted successfully"
                 "\nArguments:\n"
                 "1. \"budgetname\"    (string, required) finalization name\n"
                 "2. \"blockstart\"    (numeric, required) superblock height\n"

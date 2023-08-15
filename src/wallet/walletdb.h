@@ -209,7 +209,7 @@ public:
     static bool Recover(const fs::path& wallet_path, std::string& out_backup_filename);
     /* Recover filter (used as callback), will only let keys (cryptographical keys) as KV/key-type pass through */
     static bool RecoverKeysOnlyFilter(void *callbackData, CDataStream ssKey, CDataStream ssValue);
-    /* Function to determin if a certain KV/key-type is a key (cryptographical key) type */
+    /* Function to determine if a certain KV/key-type is a key (cryptographical key) type */
     static bool IsKeyType(const std::string& strType);
     /* verifies the database environment */
     static bool VerifyEnvironment(const fs::path& wallet_path, std::string& errorStr);

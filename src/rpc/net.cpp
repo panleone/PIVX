@@ -152,7 +152,7 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
             obj.pushKV("pingwait", stats.dPingWait);
         obj.pushKV("version", stats.nVersion);
         // Use the sanitized form of subver here, to avoid tricksy remote peers from
-        // corrupting or modifiying the JSON output by putting special characters in
+        // corrupting or modifying the JSON output by putting special characters in
         // their ver message.
         obj.pushKV("subver", stats.cleanSubVer);
         obj.pushKV("inbound", stats.fInbound);

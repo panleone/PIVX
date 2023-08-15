@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(CachedWitnessesEmptyChain)
 
     BOOST_CHECK((bool) saplingWitnesses[0]);
 
-    // Until zcash#1302 is implemented, this should triggger an assertion
+    // Until zcash#1302 is implemented, this should trigger an assertion
     BOOST_CHECK_THROW(wallet.DecrementNoteWitnesses(&index), std::runtime_error);
 }
 
