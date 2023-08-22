@@ -398,8 +398,10 @@ def main():
 # - "rewrite" : (default) Delete cache directory and recreate it.
 # - "keep"    : Check if the cache in the directory is valid. Recreate only if invalid.
 # - "skip"    : Don' check the contents of the cache and don't create a new one
-def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, jobs=1, enable_coverage=False, args=[], combined_logs_len=0, keep_cache="rewrite"):
+def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, jobs=1, enable_coverage=False, args=None, combined_logs_len=0, keep_cache="rewrite"):
     # Warn if pivxd is already running (unix only)
+    if args is None:
+        args = []
     try:
         if subprocess.check_output(["pidof", "pivxd"]) is not None:
             print("%sWARNING!%s There is already a pivxd process running on this system. Tests may fail unexpectedly due to resource contention!" % (BOLD[1], BOLD[0]))
@@ -525,7 +527,7 @@ class TestHandler:
     """
 
     def __init__(self, num_tests_parallel, tests_dir, tmpdir, test_list=None, flags=None):
-        assert(num_tests_parallel >= 1)
+        assert num_tests_parallel >= 1
         self.num_jobs = num_tests_parallel
         self.tests_dir = tests_dir
         self.tmpdir = tmpdir

@@ -19,14 +19,15 @@ jobs:
       - name: Initialize Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.8
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install codespell==1.13.0
-          pip install flake8==3.8.3
-          pip install vulture==0.29
+          pip install codespell==2.2.5
+          pip install flake8==5.0.4
+          pip install mypy==1.4.1
+          pip install vulture==2.6
           pip install yq
 
           curl -sL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar --xz -xf - --directory /tmp/

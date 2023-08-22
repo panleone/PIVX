@@ -15,7 +15,6 @@ from test_framework.util import (
     assert_greater_than,
     assert_equal,
     assert_raises_rpc_error,
-    bytes_to_hex_str,
     create_new_dmn,
     connect_nodes,
     hex_str_to_bytes,
@@ -288,7 +287,7 @@ class DIP3Test(PivxTestFramework):
         mn_payee_script = miner.validateaddress(miner.getnewaddress())['scriptPubKey']
         block = self.create_block(mn_payee_script, miner.getblock(miner.getbestblockhash(), True))
         block.solve()
-        assert_equal(miner.submitblock(bytes_to_hex_str(block.serialize())), "bad-cb-payee")
+        assert_equal(miner.submitblock(block.serialize().hex()), "bad-cb-payee")
 
         # Test ProUpServ txes
         self.log.info("Trying to update a non-existent masternode...")

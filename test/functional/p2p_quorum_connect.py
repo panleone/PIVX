@@ -13,7 +13,6 @@ from test_framework.mininode import P2PInterface
 from test_framework.messages import msg_version
 from test_framework.util import (
     assert_equal,
-    bytes_to_hex_str,
     connect_nodes,
     hash256,
     wait_until,
@@ -43,7 +42,7 @@ class DMNConnectionTest(PivxDMNTestFramework):
     def check_peer_info(self, peer_info, mn, is_iqr_conn, inbound=False):
         assert_equal(peer_info["masternode"], True)
         assert_equal(peer_info["verif_mn_proreg_tx_hash"], mn.proTx)
-        assert_equal(peer_info["verif_mn_operator_pubkey_hash"], bytes_to_hex_str(hash256(bech32_str_to_bytes(mn.operator_pk))))
+        assert_equal(peer_info["verif_mn_operator_pubkey_hash"], hash256(bech32_str_to_bytes(mn.operator_pk)).hex())
         assert_equal(peer_info["masternode_iqr_conn"], is_iqr_conn)
         # An inbound connection has obviously a different internal port.
         if not inbound:

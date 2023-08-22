@@ -32,7 +32,7 @@ class SaplingWalletSend(PivxTestFramework):
         saplingAddr1 = self.nodes[1].getnewshieldaddress()
 
         # Verify addresses
-        assert (saplingAddr1 in self.nodes[1].listshieldaddresses())
+        assert saplingAddr1 in self.nodes[1].listshieldaddresses()
         assert_equal(self.nodes[1].getshieldbalance(saplingAddr1), Decimal('0'))
         assert_equal(self.nodes[1].getreceivedbyaddress(taddr1), Decimal('0'))
 

@@ -12,15 +12,14 @@ from test_framework.util import (
     assert_false,
     assert_raises_rpc_error,
     assert_true,
-    bytes_to_hex_str
 )
 
 my_memo_str = "What, so everyone’s supposed to sleep every single night now?\n"\
               "You realize that nighttime makes up half of all time?"
-my_memo_hex = bytes_to_hex_str(my_memo_str.encode('utf-8'))
+my_memo_hex = my_memo_str.encode('utf-8').hex()
 
 non_ascii_memo_str = "零知识证明"
-non_ascii_memo_hex = bytes_to_hex_str(non_ascii_memo_str.encode('utf-8'))
+non_ascii_memo_hex = non_ascii_memo_str.encode('utf-8').hex()
 
 too_big_memo_str = "This is not an email......." * 19
 no_memo = "f6"
@@ -35,7 +34,7 @@ class ListReceivedTest (PivxTestFramework):
 
     def generate_and_sync(self, new_height):
         current_height = self.nodes[0].getblockcount()
-        assert(new_height > current_height)
+        assert new_height > current_height
         self.nodes[0].generate(new_height - current_height)
         self.sync_all()
         assert_equal(new_height, self.nodes[0].getblockcount())
