@@ -559,7 +559,7 @@ void TransactionRecord::loadHotOrColdStakeOrContract(
             // Wallet delegating balance
             record.type = TransactionRecord::P2CSDelegationSentOwner;
         } else if (isFromMe){
-            // Wallet delegating balance and transfering ownership
+            // Wallet delegating balance and transferring ownership
             record.type = TransactionRecord::P2CSDelegationSent;
         } else {
             // Wallet receiving a delegation

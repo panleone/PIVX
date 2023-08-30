@@ -40,7 +40,7 @@ public:
     enum EditStatus {
         OK,                    /**< Everything ok */
         NO_CHANGES,            /**< No changes were made during edit operation */
-        INVALID_ADDRESS,       /**< Unparseable address */
+        INVALID_ADDRESS,       /**< Unparsable address */
         DUPLICATE_ADDRESS,     /**< Address already in address book */
         WALLET_UNLOCK_FAILURE, /**< Wallet could not be unlocked to create new receiving address */
         KEY_GENERATION_FAILURE /**< Generating a new public key for a receiving address failed */

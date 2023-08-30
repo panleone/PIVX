@@ -704,7 +704,7 @@ class PivxTestFramework():
                                     If empty string, it will be used the pk from the stake input
                                     (dumping the sk from rpc_conn). If None, then the DUMMY_KEY will be used.
                  vtx:               ([CTransaction] list) transactions to add to block.vtx
-                 fDoubleSpend:      (bool) wether any tx in vtx is allowed to spend the coinstake input
+                 fDoubleSpend:      (bool) whether any tx in vtx is allowed to spend the coinstake input
         :return: block:             (CBlock) block produced, must be manually relayed
         """
         assert_greater_than(len(self.nodes), node_id)

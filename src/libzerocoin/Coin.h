@@ -57,7 +57,7 @@ public:
 
     /**Generates a public coin
      *
-     * @param p cryptographic paramters
+     * @param p cryptographic parameters
      * @param coin the value of the commitment.
      * @param denomination The denomination of the coin.
      */

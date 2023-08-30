@@ -43,7 +43,7 @@ isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest);
 isminetype IsMine(const CKeyStore& keystore, const libzcash::SaplingPaymentAddress& pa);
 isminetype IsMine(const CKeyStore& keystore, const CWDestination& dest);
 /**
- * Cachable amount subdivided into watchonly and spendable parts.
+ * Cacheable amount subdivided into watchonly and spendable parts.
  */
 struct CachableAmount
 {

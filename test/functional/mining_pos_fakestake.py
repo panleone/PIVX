@@ -7,7 +7,7 @@ Covers various scenarios of PoS blocks where the coinstake input is already spen
 (either in a previous block, in a "future" block, or in the same block being staked).
 Two nodes: nodes[0] moves the chain and checks the spam blocks, nodes[1] sends them.
 Spend txes sent from nodes[1] are received by nodes[0]
-Start with the PoW chache: 200 blocks.
+Start with the PoW cache: 200 blocks.
 For each test, nodes[1] sends 3 blocks.
 
 At the beginning nodes[0] mines 50 blocks (201-250) to reach PoS activation.

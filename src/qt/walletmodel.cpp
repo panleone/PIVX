@@ -368,7 +368,7 @@ CAmount WalletModel::getWalletStakeSplitThreshold() const
     return wallet->GetStakeSplitThreshold();
 }
 
-/* returns default minimum value for stake split threshold as doulbe */
+/* returns default minimum value for stake split threshold as double */
 double WalletModel::getSSTMinimum() const
 {
     return static_cast<double>(CWallet::minStakeSplitThreshold) / COIN;

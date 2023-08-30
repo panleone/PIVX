@@ -172,7 +172,7 @@ bool CDKGSessionHandler::InitNewQuorum(const CBlockIndex* pindexQuorum)
     auto mns = deterministicMNManager->GetAllQuorumMembers(params.type, pindexQuorum);
 
     if (!curSession->Init(pindexQuorum, mns, activeMasternodeManager->GetProTx())) {
-        LogPrintf("CDKGSessionHandler::%s -- quorum initialiation failed for %s\n", __func__, curSession->params.name);
+        LogPrintf("CDKGSessionHandler::%s -- quorum initialization failed for %s\n", __func__, curSession->params.name);
         return false;
     }
 

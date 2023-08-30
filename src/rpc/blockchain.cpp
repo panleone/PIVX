@@ -1399,7 +1399,7 @@ UniValue getblockindexstats(const JSONRPCRequest& request) {
             // Shield inputs
             nValueIn += tx.GetShieldedValueIn();
 
-            // Tranparent/Shield outputs
+            // Transparent/Shield outputs
             nValueOut += tx.GetValueOut();
 
             // update fee

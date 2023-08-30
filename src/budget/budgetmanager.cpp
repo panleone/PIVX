@@ -427,7 +427,7 @@ void CBudgetManager::RemoveByFeeTxId(const uint256& feeTxId)
             if (p) {
                 LogPrintf("%s: Removing proposal %s (collateral disconnected, id=%s)\n", __func__, p->GetName(), feeTxId.ToString());
                 {
-                    // Erase seen/orhpan votes
+                    // Erase seen/orphan votes
                     LOCK(cs_votes);
                     for (const auto& vote: p->GetVotes()) {
                         const uint256& hash{vote.second.GetHash()};
@@ -453,7 +453,7 @@ void CBudgetManager::RemoveByFeeTxId(const uint256& feeTxId)
             if (b) {
                 LogPrintf("%s: Removing finalized budget %s (collateral disconnected, id=%s)\n", __func__, b->GetName(), feeTxId.ToString());
                 {
-                    // Erase seen/orhpan votes
+                    // Erase seen/orphan votes
                     LOCK(cs_finalizedvotes);
                     for (const uint256& hash: b->GetVotesHashes()) {
                         mapSeenFinalizedBudgetVotes.erase(hash);

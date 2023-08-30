@@ -225,9 +225,9 @@ QString BitcoinUnits::floorWithUnit(int unit, const CAmount& amount, bool plussi
         if (!cleanRemainderZeros) {
             result.chop(decimals(unit) - digits);
         } else {
-            int lenght = result.mid(result.indexOf("."), result.length() - 1).length() - 1;
-            if (lenght > digits) {
-                result.chop(lenght - digits);
+            int length = result.mid(result.indexOf("."), result.length() - 1).length() - 1;
+            if (length > digits) {
+                result.chop(length - digits);
             }
         }
     }

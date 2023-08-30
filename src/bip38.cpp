@@ -23,7 +23,7 @@ static bool Base58ToHex(const std::string& base58_str, std::string& hex_str)
     if (!DecodeBase58(base58_str.c_str(), vchKey, key_size) || vchKey.size() != key_size) {
         return false;
     }
-    // Hex enconding
+    // Hex encoding
     std::stringstream ss;
     ss << std::hex;
     for (unsigned int i = 0; i < vchKey.size(); i++) {

@@ -17,7 +17,7 @@ std::string ProRegPL::MakeSignString() const
     ss << EncodeDestination(keyIDOwner) << "|";
     ss << EncodeDestination(keyIDVoting) << "|";
 
-    // ... and also the full hash of the payload as a protection agains malleability and replays
+    // ... and also the full hash of the payload as a protection against malleability and replays
     ss << ::SerializeHash(*this).ToString();
 
     return ss.str();

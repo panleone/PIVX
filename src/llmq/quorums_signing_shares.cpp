@@ -752,7 +752,7 @@ void CSigSharesManager::CollectSigSharesToRequest(std::map<NodeId, std::map<uint
                 }
                 inv.inv[k.second] = true;
 
-                // dont't request it again from this node
+                // don't request it again from this node
                 session.announced.inv[i] = false;
             }
         }
@@ -974,7 +974,7 @@ void CSigSharesManager::Cleanup()
             RemoveSigSharesForSession(signHash);
         }
 
-        // Remove sessions which were succesfully recovered
+        // Remove sessions which were successfully recovered
         std::set<uint256> doneSessions;
         for (auto& p : sigShares) {
             if (doneSessions.count(p.second.GetSignHash())) {

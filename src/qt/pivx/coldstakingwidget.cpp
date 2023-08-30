@@ -483,7 +483,7 @@ void ColdStakingWidget::onSendClicked()
     QList<SendCoinsRecipient> recipients;
     recipients.append(dest);
 
-    // Prepare transaction for getting txFee earlier (exlude delegated coins)
+    // Prepare transaction for getting txFee earlier (exclude delegated coins)
     WalletModelTransaction currentTransaction(recipients);
     WalletModel::SendCoinsReturn prepareStatus = walletModel->prepareTransaction(&currentTransaction, coinControlDialog->coinControl, false);
 

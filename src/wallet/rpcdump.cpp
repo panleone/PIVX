@@ -1156,7 +1156,7 @@ UniValue bip38encrypt(const JSONRPCRequest& request)
     std::string encryptedOut = BIP38_Encrypt(strAddress, strPassphrase, privKey, vchSecret.IsCompressed());
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("Addess", strAddress);
+    result.pushKV("Address", strAddress);
     result.pushKV("Encrypted Key", encryptedOut);
 
     return result;

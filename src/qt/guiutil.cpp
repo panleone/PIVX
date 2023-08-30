@@ -626,7 +626,7 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     parent->move(pos);
 }
 
-// Check whether a theme is not build-in
+// Check whether a theme is not built-in
 bool isExternal(QString theme)
 {
     if (theme.isEmpty())
@@ -649,7 +649,7 @@ QString loadStyleSheet()
         fs::path pathAddr = GetDataDir() / "themes/";
         cssName = pathAddr.string().c_str() + theme + "/css/theme.css";
     } else {
-        // Build-in CSS
+        // Built-in CSS
         settings.setValue("fCSSexternal", false);
         if (!theme.isEmpty()) {
             cssName = QString(":/css/") + theme;

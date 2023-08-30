@@ -322,7 +322,7 @@ class TiertwoReorgMempoolTest(PivxTestFramework):
         assert proupreg1_txid not in mempoolA
         assert proupreg2_txid not in mempoolA
         assert proupreg3_txid in mempoolA
-        # The frist mempool proUpRev tx has been removed as it was meant to revoke
+        # The first mempool proUpRev tx has been removed as it was meant to revoke
         # a masternode that is not in the deterministic list anymore.
         assert prouprev1_txid not in mempoolA
         assert prouprev2_txid in mempoolA

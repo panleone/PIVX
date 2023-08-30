@@ -419,7 +419,7 @@ void RPCConsole::clear()
 
 void RPCConsole::reject()
 {
-    // Ignore escape keypress if this is not a seperate window
+    // Ignore escape keypress if this is not a separate window
     if (windowType() != Qt::Widget)
         QDialog::reject();
 }
@@ -671,7 +671,7 @@ void RPCConsole::peerLayoutChanged()
     int detailNodeRow = clientModel->getPeerTableModel()->getRowByNodeId(cachedNodeid);
 
     if (detailNodeRow < 0) {
-        // detail node dissapeared from table (node disconnected)
+        // detail node disappeared from table (node disconnected)
         fUnselect = true;
     } else {
         if (detailNodeRow != selectedRow) {

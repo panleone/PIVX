@@ -91,7 +91,7 @@ public:
 
 	/**
 	 * The initial value for the accumulator
-	 * A random Quadratic residue mod n thats not 1
+         * A random Quadratic residue mod n that's not 1
 	 */
 	CBigNum accumulatorBase;
 
@@ -102,7 +102,7 @@ public:
 	CBigNum minCoinValue;
 
 	/**
-	 * Upper bound on the value for a comitted coin.
+         * Upper bound on the value for a committed coin.
 	 * Required by the accumulator proof.
 	 */
 	CBigNum maxCoinValue;

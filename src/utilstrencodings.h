@@ -141,7 +141,7 @@ T FindFirstNonZero(T itbegin, T itend)
 std::string HexStr(const Span<const uint8_t> s);
 inline std::string HexStr(const Span<const char> s) { return HexStr(MakeUCharSpan(s)); }
 
-/** Reverse the endianess of a string */
+/** Reverse the endianness of a string */
 inline std::string ReverseEndianString(std::string in)
 {
     std::string out = "";
