@@ -75,7 +75,9 @@ static UniValue voteProposal(const uint256& propHash, const CBudgetVote::VoteDir
 {
     int success = 0;
     for (const auto& k : mnKeys) {
+        std::cout << "Fetched from key: " << (*k.collateralOut).hash.ToString() << std::endl;
         CBudgetVote vote(CTxIn(*k.collateralOut), propHash, nVote);
+        std::cout << "Stored in vote: " << vote.GetVin().prevout.hash.ToString() << std::endl;
         if (!k.Sign(&vote)) {
             resultsObj.push_back(packErrorRetStatus(k.mnAlias, "Failure to sign."));
             failed++;
@@ -198,7 +200,9 @@ static mnKeyList getDMNVotingKeys(CWallet* const pwallet, const Optional<std::st
             LOCK(pwallet->cs_wallet);
             CKey mnKey;
             if (pwallet->GetKey(dmn->pdmnState->keyIDVoting, mnKey)) {
+                std::cout << "Fetched for voting: " << dmn->proTxHash.ToString() << std::endl;
                 COutPoint opt = COutPoint(dmn->proTxHash, 0);
+                std::cout << "Generated for voting: " << opt.hash.ToString() << std::endl;
                 mnKeys.emplace_back(dmn->proTxHash.ToString(), &opt, mnKey);
             } else if (filtered) {
                 resultsObj.push_back(packErrorRetStatus(*mnAliasFilter, strprintf(
