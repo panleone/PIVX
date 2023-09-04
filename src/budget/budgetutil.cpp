@@ -7,6 +7,7 @@
 #include "budget/budgetmanager.h"
 #include "masternodeconfig.h"
 #include "masternodeman.h"
+#include "primitives/transaction.h"
 #include "util/validation.h"
 
 #ifdef ENABLE_WALLET
@@ -40,20 +41,18 @@ static UniValue packVoteReturnValue(const UniValue& details, int success, int fa
 struct MnKeyData
 {
     std::string mnAlias;
-    const COutPoint* collateralOut;
+    const COutPoint collateralOut;
 
     MnKeyData() = delete;
-    MnKeyData(const std::string& _mnAlias, const COutPoint* _collateralOut, const CKey& _key):
-        mnAlias(_mnAlias),
-        collateralOut(_collateralOut),
-        key(_key),
-        use_bls(false)
+    MnKeyData(const std::string& _mnAlias, const COutPoint _collateralOut, const CKey& _key) : mnAlias(_mnAlias),
+                                                                                               collateralOut(_collateralOut),
+                                                                                               key(_key),
+                                                                                               use_bls(false)
     {}
-    MnKeyData(const std::string& _mnAlias, const COutPoint* _collateralOut, const CBLSSecretKey& _key):
-        mnAlias(_mnAlias),
-        collateralOut(_collateralOut),
-        blsKey(_key),
-        use_bls(true)
+    MnKeyData(const std::string& _mnAlias, const COutPoint _collateralOut, const CBLSSecretKey& _key) : mnAlias(_mnAlias),
+                                                                                                        collateralOut(_collateralOut),
+                                                                                                        blsKey(_key),
+                                                                                                        use_bls(true)
     {}
 
     bool Sign(CSignedMessage* msg) const
@@ -75,8 +74,10 @@ static UniValue voteProposal(const uint256& propHash, const CBudgetVote::VoteDir
 {
     int success = 0;
     for (const auto& k : mnKeys) {
-        std::cout << "Fetched from key: " << (*k.collateralOut).hash.ToString() << std::endl;
-        CBudgetVote vote(CTxIn(*k.collateralOut), propHash, nVote);
+        std::cout << "Fetched from key: " << (k.collateralOut).hash.ToString() << std::endl;
+        CTxIn testVin = CTxIn(k.collateralOut);
+        std::cout << "Stored in Vin: " << testVin.prevout.hash.ToString() << std::endl;
+        CBudgetVote vote(testVin, propHash, nVote);
         std::cout << "Stored in vote: " << vote.GetVin().prevout.hash.ToString() << std::endl;
         if (!k.Sign(&vote)) {
             resultsObj.push_back(packErrorRetStatus(k.mnAlias, "Failure to sign."));
@@ -101,7 +102,7 @@ static UniValue voteFinalBudget(const uint256& budgetHash,
 {
     int success = 0;
     for (const auto& k : mnKeys) {
-        CFinalizedBudgetVote vote(CTxIn(*k.collateralOut), budgetHash);
+        CFinalizedBudgetVote vote(CTxIn(k.collateralOut), budgetHash);
         if (!k.Sign(&vote)) {
             resultsObj.push_back(packErrorRetStatus(k.mnAlias, "Failure to sign."));
             failed++;
@@ -140,7 +141,7 @@ static mnKeyList getMNKeys(const Optional<std::string>& mnAliasFilter,
             failed++;
             continue;
         }
-        mnKeys.emplace_back(mnAlias, &pmn->vin.prevout, mnKey);
+        mnKeys.emplace_back(mnAlias, pmn->vin.prevout, mnKey);
     }
     return mnKeys;
 }
@@ -164,7 +165,7 @@ static mnKeyList getMNKeysForActiveMasternode(UniValue& resultsObj)
         return mnKeyList();
     }
 
-    return {MnKeyData("local", &pmn->vin.prevout, mnKey)};
+    return {MnKeyData("local", pmn->vin.prevout, mnKey)};
 }
 
 // Deterministic masternodes
@@ -203,7 +204,7 @@ static mnKeyList getDMNVotingKeys(CWallet* const pwallet, const Optional<std::st
                 std::cout << "Fetched for voting: " << dmn->proTxHash.ToString() << std::endl;
                 COutPoint opt = COutPoint(dmn->proTxHash, 0);
                 std::cout << "Generated for voting: " << opt.hash.ToString() << std::endl;
-                mnKeys.emplace_back(dmn->proTxHash.ToString(), &opt, mnKey);
+                mnKeys.emplace_back(dmn->proTxHash.ToString(), COutPoint(dmn->proTxHash, 0), mnKey);
             } else if (filtered) {
                 resultsObj.push_back(packErrorRetStatus(*mnAliasFilter, strprintf(
                                         "Private key for voting address %s not known by this wallet",
@@ -231,7 +232,7 @@ static mnKeyList getDMNKeysForActiveMasternode(UniValue& resultsObj)
         return {};
     }
     COutPoint opt = COutPoint(dmn->proTxHash, 0);
-    return {MnKeyData("local", &opt, sk)};
+    return {MnKeyData("local", opt, sk)};
 }
 
 // vote on proposal (finalized budget, if fFinal=true) with all possible keys or a single mn (mnAliasFilter)
