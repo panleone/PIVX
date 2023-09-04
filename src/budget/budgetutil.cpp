@@ -5,8 +5,8 @@
 #include "budget/budgetutil.h"
 
 #include "budget/budgetmanager.h"
-#include "masternodeman.h"
 #include "masternodeconfig.h"
+#include "masternodeman.h"
 #include "util/validation.h"
 
 #ifdef ENABLE_WALLET
@@ -198,7 +198,8 @@ static mnKeyList getDMNVotingKeys(CWallet* const pwallet, const Optional<std::st
             LOCK(pwallet->cs_wallet);
             CKey mnKey;
             if (pwallet->GetKey(dmn->pdmnState->keyIDVoting, mnKey)) {
-                mnKeys.emplace_back(dmn->proTxHash.ToString(), &dmn->collateralOutpoint, mnKey);
+                COutPoint opt = COutPoint(dmn->proTxHash, 0);
+                mnKeys.emplace_back(dmn->proTxHash.ToString(), &opt, mnKey);
             } else if (filtered) {
                 resultsObj.push_back(packErrorRetStatus(*mnAliasFilter, strprintf(
                                         "Private key for voting address %s not known by this wallet",
@@ -225,8 +226,8 @@ static mnKeyList getDMNKeysForActiveMasternode(UniValue& resultsObj)
         resultsObj.push_back(packErrorRetStatus("local", res.getError()));
         return {};
     }
-
-    return {MnKeyData("local", &dmn->collateralOutpoint, sk)};
+    COutPoint opt = COutPoint(dmn->proTxHash, 0);
+    return {MnKeyData("local", &opt, sk)};
 }
 
 // vote on proposal (finalized budget, if fFinal=true) with all possible keys or a single mn (mnAliasFilter)

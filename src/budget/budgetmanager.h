@@ -29,12 +29,17 @@ protected:
     std::map<uint256, uint256> mapFeeTxToProposal;                          // guarded by cs_proposals
     std::map<uint256, uint256> mapFeeTxToBudget;                            // guarded by cs_budgets
 
+    // map proposal hash --> proposal
     std::map<uint256, CBudgetProposal> mapProposals;                        // guarded by cs_proposals
+    // map finalized budget hash --> finalized budget
     std::map<uint256, CFinalizedBudget> mapFinalizedBudgets;                // guarded by cs_budgets
 
+    // map vote hash --> vote
     std::map<uint256, CBudgetVote> mapSeenProposalVotes;                    // guarded by cs_votes
     typedef std::pair<std::vector<CBudgetVote>, int64_t> PropVotesAndLastVoteReceivedTime;
+    // map vote hash --> orphan vote
     std::map<uint256, PropVotesAndLastVoteReceivedTime> mapOrphanProposalVotes;        // guarded by cs_votes
+    // map finalized vote hash --> finalized vote
     std::map<uint256, CFinalizedBudgetVote> mapSeenFinalizedBudgetVotes;    // guarded by cs_finalizedvotes
     typedef std::pair<std::vector<CFinalizedBudgetVote>, int64_t> BudVotesAndLastVoteReceivedTime;
     std::map<uint256, BudVotesAndLastVoteReceivedTime> mapOrphanFinalizedBudgetVotes;  // guarded by cs_finalizedvotes

@@ -885,7 +885,7 @@ void CBudgetManager::RemoveStaleVotesOnProposal(CBudgetProposal* prop)
     auto it = prop->mapVotes.begin();
     while (it != prop->mapVotes.end()) {
         auto mnList = deterministicMNManager->GetListAtChainTip();
-        auto dmn = mnList.GetMNByCollateral(it->first);
+        auto dmn = mnList.GetMN(it->first.hash);
         if (dmn) {
             (*it).second.SetValid(!dmn->IsPoSeBanned());
         } else {
@@ -909,7 +909,7 @@ void CBudgetManager::RemoveStaleVotesOnFinalBudget(CFinalizedBudget* fbud)
     auto it = fbud->mapVotes.begin();
     while (it != fbud->mapVotes.end()) {
         auto mnList = deterministicMNManager->GetListAtChainTip();
-        auto dmn = mnList.GetMNByCollateral(it->first);
+        auto dmn = mnList.GetMN(it->first.hash);
         if (dmn) {
             (*it).second.SetValid(!dmn->IsPoSeBanned());
         } else {
@@ -1101,7 +1101,7 @@ bool CBudgetManager::ProcessProposalVote(CBudgetVote& vote, CNode* pfrom, CValid
 
     // See if this vote was signed with a deterministic masternode
     auto mnList = deterministicMNManager->GetListAtChainTip();
-    auto dmn = mnList.GetMNByCollateral(voteVin.prevout);
+    auto dmn = mnList.GetMN(voteVin.prevout.hash);
     if (dmn) {
         const std::string& mn_protx_id = dmn->proTxHash.ToString();
 
@@ -1210,7 +1210,7 @@ bool CBudgetManager::ProcessFinalizedBudgetVote(CFinalizedBudgetVote& vote, CNod
 
     // See if this vote was signed with a deterministic masternode
     auto mnList = deterministicMNManager->GetListAtChainTip();
-    auto dmn = mnList.GetMNByCollateral(voteVin.prevout);
+    auto dmn = mnList.GetMN(voteVin.prevout.hash);
     if (dmn) {
         const std::string& mn_protx_id = dmn->proTxHash.ToString();
 
