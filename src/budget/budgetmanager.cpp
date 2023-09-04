@@ -1101,6 +1101,11 @@ bool CBudgetManager::ProcessProposalVote(CBudgetVote& vote, CNode* pfrom, CValid
 
     // See if this vote was signed with a deterministic masternode
     auto mnList = deterministicMNManager->GetListAtChainTip();
+    std::cout << "Size: " << mnList.GetAllMNsCount() << std::endl;
+    std::cout << "ProReg: " << voteVin.prevout.hash.ToString() << std::endl;
+    if(mnList.GetAllMNsCount() > 0){
+        std::cout << mnList.GetMNByInternalId(0)->proTxHash.ToString() << std::endl;
+    }
     auto dmn = mnList.GetMN(voteVin.prevout.hash);
     if (dmn) {
         const std::string& mn_protx_id = dmn->proTxHash.ToString();
