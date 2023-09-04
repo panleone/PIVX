@@ -159,6 +159,7 @@ class MasternodeGovernanceBasicTest(PivxTier2TestFramework):
         # now let's vote for the proposal with the first DMN
         self.log.info("Voting with DMN1...")
         voteResult = self.ownerOne.mnbudgetvote("alias", firstProposal.proposalHash, "yes", self.proRegTx1)
+        print(voteResult)
         assert_equal(voteResult["detail"][0]["result"], "success")
 
         # check that the vote was accepted everywhere
