@@ -82,6 +82,7 @@ void CBudgetManager::CheckOrphanVotes()
                 // Try to add orphan votes
                 for (const CFinalizedBudgetVote& vote : itOrphanVotes->second.first) {
                     std::string strError;
+                    std::cout << "AddOrUpdate orphancall" << std::endl;
                     if (!fb->AddOrUpdateVote(vote, strError)) {
                         LogPrint(BCLog::MNBUDGET, "Unable to add orphan vote for final budget: %s\n", strError);
                     }
@@ -572,7 +573,7 @@ void CBudgetManager::VoteOnFinalizedBudgets()
     CTxIn mnVin;
     Optional<CKey> mnKey{nullopt};
     CBLSSecretKey blsKey;
-    if (!GetActiveMasternodeKeys(mnVin, mnKey, blsKey)) {
+    if (!GetActiveMasternodeVotingKeys(mnVin, mnKey, blsKey)) {
         return;
     }
 
@@ -886,7 +887,7 @@ void CBudgetManager::RemoveStaleVotesOnProposal(CBudgetProposal* prop)
     while (it != prop->mapVotes.end()) {
         auto mnList = deterministicMNManager->GetListAtChainTip();
         auto dmn = mnList.GetMN(it->first.hash);
-        if (dmn) {
+        if (dmn && it->first.n == 0) {
             (*it).second.SetValid(!dmn->IsPoSeBanned());
         } else {
             // -- Legacy System (!TODO: remove after enforcement) --
@@ -910,7 +911,7 @@ void CBudgetManager::RemoveStaleVotesOnFinalBudget(CFinalizedBudget* fbud)
     while (it != fbud->mapVotes.end()) {
         auto mnList = deterministicMNManager->GetListAtChainTip();
         auto dmn = mnList.GetMN(it->first.hash);
-        if (dmn) {
+        if (dmn && it->first.n == 0) {
             (*it).second.SetValid(!dmn->IsPoSeBanned());
         } else {
             // -- Legacy System (!TODO: remove after enforcement) --
@@ -1101,14 +1102,17 @@ bool CBudgetManager::ProcessProposalVote(CBudgetVote& vote, CNode* pfrom, CValid
 
     // See if this vote was signed with a deterministic masternode
     auto mnList = deterministicMNManager->GetListAtChainTip();
-    std::cout << "Size: " << mnList.GetAllMNsCount() << std::endl;
-    std::cout << "ProReg: " << voteVin.prevout.hash.ToString() << std::endl;
     if(mnList.GetAllMNsCount() > 0){
         std::cout << mnList.GetMNByInternalId(0)->proTxHash.ToString() << std::endl;
     }
     auto dmn = mnList.GetMN(voteVin.prevout.hash);
     if (dmn) {
         const std::string& mn_protx_id = dmn->proTxHash.ToString();
+        if (voteVin.prevout.n != 0) {
+            std::cout << "Was this relayed (normal vote)? " << (pfrom == nullptr) << std::endl;
+            err = strprintf("prevout.n (0 != %d) not valid", voteVin.prevout.n);
+            return state.DoS(0, false, REJECT_INVALID, "bad-prevout", false, err);
+        }
 
         if (dmn->IsPoSeBanned()) {
             err = strprintf("masternode (%s) not valid or PoSe banned", mn_protx_id);
@@ -1217,6 +1221,11 @@ bool CBudgetManager::ProcessFinalizedBudgetVote(CFinalizedBudgetVote& vote, CNod
     auto mnList = deterministicMNManager->GetListAtChainTip();
     auto dmn = mnList.GetMN(voteVin.prevout.hash);
     if (dmn) {
+        if (voteVin.prevout.n != 0) {
+            std::cout << "Was this relayed (final vote)? " << (pfrom == nullptr) << std::endl;
+            err = strprintf("prevout.n (0 != %d) not valid", voteVin.prevout.n);
+            return state.DoS(0, false, REJECT_INVALID, "bad-prevout", false, err);
+        }
         const std::string& mn_protx_id = dmn->proTxHash.ToString();
 
         if (dmn->IsPoSeBanned()) {
@@ -1547,6 +1556,7 @@ bool CBudgetManager::UpdateFinalizedBudget(const CFinalizedBudgetVote& vote, CNo
         return false;
     }
     LogPrint(BCLog::MNBUDGET,"%s: Finalized Proposal %s added\n", __func__, nBudgetHash.ToString());
+    std::cout << "AddOrUpdateVote UpdateFinalizedBudget call" << std::endl;
     return mapFinalizedBudgets[nBudgetHash].AddOrUpdateVote(vote, strError);
 }
 

@@ -53,24 +53,26 @@ bool CFinalizedBudget::ParseBroadcast(CDataStream& broadcast)
 
 bool CFinalizedBudget::AddOrUpdateVote(const CFinalizedBudgetVote& vote, std::string& strError)
 {
+    std::cout << "Adding final vote: " << std::endl;
+    std::cout << "Hash/TxId: (" << vote.GetVin().prevout.hash.ToString() << " , " << vote.GetVin().prevout.n << ")" << std::endl;
     const COutPoint& mnId = vote.GetVin().prevout;
     const int64_t voteTime = vote.GetTime();
-    std::string strAction = "New vote inserted:";
+    std::string strAction = "New final vote inserted:";
 
     if (mapVotes.count(mnId)) {
         const int64_t oldTime = mapVotes[mnId].GetTime();
         if (oldTime > voteTime) {
-            strError = strprintf("new vote older than existing vote - %s\n", vote.GetHash().ToString());
+            strError = strprintf("new final vote older than existing vote - %s\n", vote.GetHash().ToString());
             LogPrint(BCLog::MNBUDGET, "%s: %s\n", __func__, strError);
             return false;
         }
         if (voteTime - oldTime < BUDGET_VOTE_UPDATE_MIN) {
-            strError = strprintf("time between votes is too soon - %s - %lli sec < %lli sec\n",
-                    vote.GetHash().ToString(), voteTime - oldTime, BUDGET_VOTE_UPDATE_MIN);
+            strError = strprintf("time between final votes is too soon - %s - %lli sec < %lli sec\n",
+                vote.GetHash().ToString(), voteTime - oldTime, BUDGET_VOTE_UPDATE_MIN);
             LogPrint(BCLog::MNBUDGET, "%s: %s\n", __func__, strError);
             return false;
         }
-        strAction = "Existing vote updated:";
+        strAction = "Existing final vote updated:";
     }
 
     mapVotes[mnId] = vote;
@@ -262,6 +264,15 @@ int CFinalizedBudget::GetVoteCount() const
     for (const auto& it : mapVotes) {
         if (it.second.IsValid()) {
             ret++;
+        }
+    }
+    if (ret == 4) {
+        std::cout << "Found invalid resource:" << std::endl;
+        for (const auto& it : mapVotes) {
+            if (it.second.IsValid()) {
+                std::cout << "Collateral/ProReg: "
+                          << "( " << it.first.hash.ToString() << " , " << it.first.n << ") and vote: ( " << it.second.GetVin().prevout.hash.ToString() << " , " << it.second.GetVin().prevout.n << ")" << std::endl;
+            }
         }
     }
     return ret;
