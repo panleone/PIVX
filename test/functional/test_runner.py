@@ -173,6 +173,7 @@ TIERTWO_SCRIPTS = [
     'tiertwo_governance_invalid_budget.py',     # ~ 266 sec
     'tiertwo_shield_deterministicmns.py',        # ~ 160 sec
     'tiertwo_reorg_mempool.py',                 # ~ 97 sec
+    'tiertwo_shield_governance.py'              # ~ 80 sec
 ]
 
 SAPLING_SCRIPTS = [
@@ -249,6 +250,7 @@ LEGACY_SKIP_TESTS = [
     'wallet_multiwallet.py',
     'sapling_wallet_encryption.py',
     'tiertwo_shield_deterministicmns.py',
+    'tiertwo_shield_governance.py',
     'tiertwo_dkg_errors.py',
     'tiertwo_chainlocks.py',
     'tiertwo_dkg_errors.py',
