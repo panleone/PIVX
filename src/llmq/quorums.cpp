@@ -158,7 +158,7 @@ CQuorumManager::CQuorumManager(CEvoDB& _evoDb, CBLSWorker& _blsWorker, CDKGSessi
 {
 }
 
-void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload)
+void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitialDownload)
 {
     if (fInitialDownload || !activeMasternodeManager || !deterministicMNManager->IsDIP3Enforced(pindexNew->nHeight)) {
         return;
@@ -181,7 +181,7 @@ bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const
     AssertLockHeld(cs_main);
 
     if (!mapBlockIndex.count(qc.quorumHash)) {
-        LogPrintf("CQuorumManager::%s -- block %s not found", __func__, qc.quorumHash.ToString());
+        LogPrintf("CQuorumManager::%s -- block %s not found\n", __func__, qc.quorumHash.ToString());
         return false;
     }
     auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)qc.llmqType);
@@ -197,7 +197,7 @@ bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const
             quorum->WriteContributions(evoDb);
             hasValidVvec = true;
         } else {
-            LogPrintf("CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed", __func__, qc.quorumHash.ToString());
+            LogPrintf("CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed\n", __func__, qc.quorumHash.ToString());
         }
     }
 
@@ -291,13 +291,12 @@ CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const uint25
     CBlockIndex* pindexQuorum;
     {
         LOCK(cs_main);
-        auto quorumIt = mapBlockIndex.find(quorumHash);
+        pindexQuorum = LookupBlockIndex(quorumHash);
 
-        if (quorumIt == mapBlockIndex.end()) {
+        if (!pindexQuorum) {
             LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- block %s not found", __func__, quorumHash.ToString());
             return nullptr;
         }
-        pindexQuorum = quorumIt->second;
     }
     return GetQuorum(llmqType, pindexQuorum);
 }
@@ -336,15 +335,6 @@ CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const CBlock
     quorumsCache.emplace(std::make_pair(llmqType, quorumHash), quorum);
 
     return quorum;
-}
-
-CQuorumCPtr CQuorumManager::GetNewestQuorum(Consensus::LLMQType llmqType)
-{
-    auto quorums = ScanQuorums(llmqType, 1);
-    if (quorums.empty()) {
-        return nullptr;
-    }
-    return quorums.front();
 }
 
 } // namespace llmq

@@ -27,7 +27,7 @@ void EvoNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
     // background thread updates
     llmq::chainLocksHandler->UpdatedBlockTip(pindexNew, pindexFork);
     llmq::quorumDKGSessionManager->UpdatedBlockTip(pindexNew, fInitialDownload);
-    llmq::quorumManager->UpdatedBlockTip(pindexNew, pindexFork, fInitialDownload);
+    llmq::quorumManager->UpdatedBlockTip(pindexNew, fInitialDownload);
 }
 
 void EvoNotificationInterface::NotifyMasternodeListChanged(bool undo, const CDeterministicMNList& oldMNList, const CDeterministicMNListDiff& diff)
