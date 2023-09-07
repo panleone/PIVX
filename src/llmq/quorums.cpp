@@ -255,21 +255,16 @@ std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqTyp
 
 std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, const CBlockIndex* pindexStart, size_t maxCount)
 {
-    std::vector<CQuorumCPtr> result;
-    result.reserve(maxCount);
+    // TODO: speed up even more by using a cache
     auto& params = Params().GetConsensus().llmqs.at(llmqType);
-    auto pindex = pindexStart->GetAncestor(pindexStart->nHeight - (pindexStart->nHeight % params.dkgInterval));
-
-    while (pindex != NULL && result.size() < maxCount && deterministicMNManager->IsDIP3Enforced(pindex->nHeight)) {
-        if (HasQuorum(llmqType, pindex->GetBlockHash())) {
-            auto quorum = GetQuorum(llmqType, pindex);
-            if (quorum) {
-                result.emplace_back(quorum);
-            }
-        }
-
-        // TODO speedup (skip blocks where no quorums could have been mined)
-        pindex = pindex->pprev;
+    auto quorumIndexes = quorumBlockProcessor->GetMinedCommitmentsUntilBlock(params.type, pindexStart, maxCount);
+    std::vector<CQuorumCPtr> result;
+    result.reserve(quorumIndexes.size());
+    for (auto& quorumIndex : quorumIndexes) {
+        assert(quorumIndex);
+        auto quorum = GetQuorum(params.type, quorumIndex);
+        assert(quorum != nullptr);
+        result.emplace_back(quorum);
     }
 
     return result;

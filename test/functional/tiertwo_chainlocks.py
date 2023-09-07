@@ -35,6 +35,11 @@ class ChainLocksTest(PivxDMNTestFramework):
         (qfc, badmembers) = self.mine_quorum()
         assert_equal(171, miner.getblockcount())
 
+        # in order to avoid sync issues signing sessions quorum selection looks for quorums mined at most at chaintip - 8 blocks.
+        # let's round it and mine 10 blocks
+        miner.generate(10)
+        self.sync_all()
+
         # mine single block, wait for chainlock
         self.nodes[0].generate(1)
         self.wait_for_chainlock_tip_all_nodes()
