@@ -109,8 +109,6 @@ std::set<size_t> CalcDeterministicWatchConnections(Consensus::LLMQType llmqType,
 // ensure connection to a given list of quorums
 void EnsureLatestQuorumConnections(Consensus::LLMQType llmqType, const CBlockIndex* pindexNew, const uint256& myProTxHash, std::vector<CQuorumCPtr>& lastQuorums)
 {
-    AssertLockHeld(cs_main);
-
     const auto& params = Params().GetConsensus().llmqs.at(llmqType);
     auto connman = g_connman->GetTierTwoConnMan();
 
@@ -118,7 +116,7 @@ void EnsureLatestQuorumConnections(Consensus::LLMQType llmqType, const CBlockInd
 
     // don't remove connections for the currently in-progress DKG round
     int curDkgHeight = pindexNew->nHeight - (pindexNew->nHeight % params.dkgInterval);
-    auto curDkgBlock = chainActive[curDkgHeight]->GetBlockHash();
+    auto curDkgBlock = pindexNew->GetAncestor(curDkgHeight)->GetBlockHash();
     connmanQuorumsToDelete.erase(curDkgBlock);
 
     for (auto& quorum : lastQuorums) {

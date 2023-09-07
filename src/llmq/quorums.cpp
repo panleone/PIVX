@@ -164,12 +164,10 @@ void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitial
         return;
     }
 
-    LOCK(cs_main);
-
     for (auto& p : Params().GetConsensus().llmqs) {
         const auto& params = Params().GetConsensus().llmqs.at(p.first);
 
-        auto lastQuorums = ScanQuorums(p.first, (size_t)params.keepOldConnections);
+        auto lastQuorums = ScanQuorums(p.first, pindexNew, (size_t)params.keepOldConnections);
 
         llmq::EnsureLatestQuorumConnections(p.first, pindexNew, activeMasternodeManager->GetProTx(), lastQuorums);
     }
@@ -178,14 +176,9 @@ void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitial
 
 bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const CBlockIndex* pindexQuorum, const uint256& minedBlockHash, std::shared_ptr<CQuorum>& quorum) const
 {
-    AssertLockHeld(cs_main);
+    assert(pindexQuorum);
+    assert(qc.quorumHash == pindexQuorum->GetBlockHash());
 
-    if (!mapBlockIndex.count(qc.quorumHash)) {
-        LogPrintf("CQuorumManager::%s -- block %s not found\n", __func__, qc.quorumHash.ToString());
-        return false;
-    }
-    auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)qc.llmqType);
-    auto quorumIndex = mapBlockIndex[qc.quorumHash];
     auto members = deterministicMNManager->GetAllQuorumMembers((Consensus::LLMQType)qc.llmqType, pindexQuorum);
     quorum->Init(minedBlockHash, pindexQuorum, members, qc.validMembers, qc.quorumPublicKey);
 
@@ -254,26 +247,20 @@ bool CQuorumManager::HasQuorum(Consensus::LLMQType llmqType, const uint256& quor
 
 std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, size_t maxCount)
 {
-    LOCK(cs_main);
-    return ScanQuorums(llmqType, chainActive.Tip()->GetBlockHash(), maxCount);
+    const CBlockIndex* pindex = WITH_LOCK(cs_main, return chainActive.Tip());
+    return ScanQuorums(llmqType, pindex, maxCount);
 }
 
-std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, const uint256& startBlock, size_t maxCount)
+std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, const CBlockIndex* pindexStart, size_t maxCount)
 {
     std::vector<CQuorumCPtr> result;
-
-    LOCK(cs_main);
-    if (!mapBlockIndex.count(startBlock)) {
-        return result;
-    }
-
     result.reserve(maxCount);
-
-    CBlockIndex* pindex = mapBlockIndex[startBlock];
+    auto& params = Params().GetConsensus().llmqs.at(llmqType);
+    auto pindex = pindexStart->GetAncestor(pindexStart->nHeight - (pindexStart->nHeight % params.dkgInterval));
 
     while (pindex != NULL && result.size() < maxCount && deterministicMNManager->IsDIP3Enforced(pindex->nHeight)) {
         if (HasQuorum(llmqType, pindex->GetBlockHash())) {
-            auto quorum = GetQuorum(llmqType, pindex->GetBlockHash());
+            auto quorum = GetQuorum(llmqType, pindex);
             if (quorum) {
                 result.emplace_back(quorum);
             }

@@ -96,16 +96,20 @@ public:
 
     // all these methods will lock cs_main
     CQuorumCPtr GetQuorum(Consensus::LLMQType llmqType, const uint256& quorumHash);
-    CQuorumCPtr GetQuorum(Consensus::LLMQType llmqType, const CBlockIndex* pindexQuorum);
 
     std::vector<CQuorumCPtr> ScanQuorums(Consensus::LLMQType llmqType, size_t maxCount);
-    std::vector<CQuorumCPtr> ScanQuorums(Consensus::LLMQType llmqType, const uint256& startBlock, size_t maxCount);
+
+    // this method will not lock cs_main
+    std::vector<CQuorumCPtr> ScanQuorums(Consensus::LLMQType llmqType, const CBlockIndex* pindexStart, size_t maxCount);
 
 private:
+    // all these methods will not lock cs_main
     void EnsureQuorumConnections(Consensus::LLMQType llmqType, const CBlockIndex* pindexNew);
 
     bool BuildQuorumFromCommitment(const CFinalCommitment& qc, const CBlockIndex* pindexQuorum, const uint256& minedBlockHash, std::shared_ptr<CQuorum>& quorum) const;
     bool BuildQuorumContributions(const CFinalCommitment& fqc, std::shared_ptr<CQuorum>& quorum) const;
+
+    CQuorumCPtr GetQuorum(Consensus::LLMQType llmqType, const CBlockIndex* pindexQuorum);
 };
 
 extern std::unique_ptr<CQuorumManager> quorumManager;
