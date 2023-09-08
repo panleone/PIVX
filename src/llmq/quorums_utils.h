@@ -6,6 +6,7 @@
 #define PIVX_QUORUMS_UTILS_H
 
 #include "consensus/params.h"
+#include "unordered_lru_cache.h"
 
 #include <vector>
 
@@ -59,6 +60,9 @@ static void IterateNodesRandom(NodesContainer& nodeStates, Continue&& cont, Call
        }
    }
 }
+
+template <typename CacheType>
+void InitQuorumsCache(CacheType& cache);
 
 } // namespace llmq::utils
 

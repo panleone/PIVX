@@ -9,8 +9,10 @@
 #include "consensus/params.h"
 #include "llmq/quorums_commitment.h"
 #include "primitives/transaction.h"
+#include "saltedhasher.h"
 #include "sync.h"
 #include "uint256.h"
+#include "unordered_lru_cache.h"
 
 #include <map>
 
@@ -36,6 +38,8 @@ private:
     std::map<std::pair<uint8_t, uint256>, uint256> minableCommitmentsByQuorum;
     // commitment hash --> final commitment
     std::map<uint256, CFinalCommitment> minableCommitments;
+    // for each llmqtype map quorum_hash --> (bool final_commitment_mined)
+    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, bool, StaticSaltedHasher>> mapHasMinedCommitmentCache GUARDED_BY(minableCommitmentsCs);
 
 public:
     explicit CQuorumBlockProcessor(CEvoDB& _evoDb);
