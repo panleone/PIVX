@@ -104,8 +104,7 @@ void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLock
     }
 
     uint256 requestId = ::SerializeHash(std::make_pair(CLSIG_REQUESTID_PREFIX, clsig.nHeight));
-    uint256 msgHash = clsig.blockHash;
-    if (!quorumSigningManager->VerifyRecoveredSig(Params().GetConsensus().llmqChainLocks, clsig.nHeight, requestId, msgHash, clsig.sig)) {
+    if (!quorumSigningManager->VerifyRecoveredSig(Params().GetConsensus().llmqChainLocks, clsig.nHeight, requestId, clsig.blockHash, clsig.sig)) {
         LogPrintf("CChainLocksHandler::%s -- invalid CLSIG (%s), peer=%d\n", __func__, clsig.ToString(), from);
         if (from != -1) {
             LOCK(cs_main);
@@ -114,39 +113,39 @@ void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLock
         return;
     }
 
+    CBlockIndex* pindex;
     {
-        LOCK2(cs_main, cs);
+        LOCK(cs_main);
+        pindex = LookupBlockIndex(clsig.blockHash);
+    }
 
-        if (InternalHasConflictingChainLock(clsig.nHeight, clsig.blockHash)) {
-            // This should not happen. If it happens, it means that a malicious entity controls a large part of the MN
-            // network. In this case, we don't allow him to reorg older chainlocks.
-            LogPrintf("CChainLocksHandler::%s -- new CLSIG (%s) tries to reorg previous CLSIG (%s), peer=%d\n",
-                      __func__, clsig.ToString(), bestChainLock.ToString(), from);
-            return;
-        }
-
+    {
+        LOCK(cs);
         bestChainLockHash = hash;
         bestChainLock = clsig;
 
-        CInv inv(MSG_CLSIG, hash);
-        g_connman->RelayInv(inv);
-
-        const CBlockIndex* pindex = LookupBlockIndex(clsig.blockHash);
-        if (!pindex) {
-            // we don't know the block/header for this CLSIG yet, so bail out for now
-            // when the block or the header later comes in, we will enforce the correct chain
-            return;
+        if (pindex != nullptr) {
+            if (pindex->nHeight != clsig.nHeight) {
+                // Should not happen, same as the conflict check from above.
+                LogPrintf("CChainLocksHandler::%s -- height of CLSIG (%s) does not match the specified block's height (%d)\n",
+                    __func__, clsig.ToString(), pindex->nHeight);
+                // Note: not relaying clsig here
+                return;
+            }
+            bestChainLockWithKnownBlock = bestChainLock;
+            bestChainLockBlockIndex = pindex;
         }
+    }
 
-        if (pindex->nHeight != clsig.nHeight) {
-            // Should not happen, same as the conflict check from above.
-            LogPrintf("CChainLocksHandler::%s -- height of CLSIG (%s) does not match the specified block's height (%d)\n",
-                __func__, clsig.ToString(), pindex->nHeight);
-            return;
-        }
+    // Do not hold cs while calling RelayInv
+    AssertLockNotHeld(cs);
+    CInv clsigInv(MSG_CLSIG, hash);
+    g_connman->RelayInv(clsigInv);
 
-        bestChainLockWithKnownBlock = bestChainLock;
-        bestChainLockBlockIndex = pindex;
+    if (pindex == nullptr) {
+        // we don't know the block/header for this CLSIG yet, so bail out for now
+        // when the block or the header later comes in, we will enforce the correct chain
+        return;
     }
 
     scheduler->scheduleFromNow([&]() {
@@ -160,7 +159,7 @@ void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLock
 
 void CChainLocksHandler::AcceptedBlockHeader(const CBlockIndex* pindexNew)
 {
-    LOCK2(cs_main, cs);
+    LOCK(cs);
 
     if (pindexNew->GetBlockHash() == bestChainLock.blockHash) {
         LogPrintf("CChainLocksHandler::%s -- block header %s came in late, updating and enforcing\n", __func__, pindexNew->GetBlockHash().ToString());
@@ -264,6 +263,9 @@ void CChainLocksHandler::TrySignChainTip()
 // This should also not be called from validation signals, as this might result in recursive calls
 void CChainLocksHandler::EnforceBestChainLock()
 {
+    AssertLockNotHeld(cs);
+    AssertLockNotHeld(cs_main);
+
     CChainLockSig clsig;
     const CBlockIndex* pindex;
     const CBlockIndex* currentBestChainLockBlockIndex;
