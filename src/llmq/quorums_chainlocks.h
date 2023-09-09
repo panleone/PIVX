@@ -11,6 +11,7 @@
 
 #include "net.h"
 #include "chainparams.h"
+#include "threadsafety.h"
 
 #include <atomic>
 
@@ -45,6 +46,7 @@ class CChainLocksHandler : public CRecoveredSigsListener
 private:
     CScheduler* scheduler;
     RecursiveMutex cs;
+    bool tryLockChainTipScheduled GUARDED_BY(cs) {false};
     std::atomic<bool> inEnforceBestChainLock{false};
 
     uint256 bestChainLockHash;
@@ -75,6 +77,7 @@ public:
     void ProcessNewChainLock(NodeId from, const CChainLockSig& clsig, const uint256& hash);
     void AcceptedBlockHeader(const CBlockIndex* pindexNew);
     void UpdatedBlockTip(const CBlockIndex* pindexNew);
+    void TrySignChainTip();
     void EnforceBestChainLock();
     virtual void HandleNewRecoveredSig(const CRecoveredSig& recoveredSig);
 
