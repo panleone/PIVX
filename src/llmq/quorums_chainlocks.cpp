@@ -57,7 +57,7 @@ bool CChainLocksHandler::GetChainLockByHash(const uint256& hash, llmq::CChainLoc
     return true;
 }
 
-void CChainLocksHandler::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
+void CChainLocksHandler::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv)
 {
     if (!sporkManager.IsSporkActive(SPORK_23_CHAINLOCKS_ENFORCEMENT)) {
         return;
@@ -69,17 +69,16 @@ void CChainLocksHandler::ProcessMessage(CNode* pfrom, const std::string& strComm
 
         auto hash = ::SerializeHash(clsig);
 
-        {
-            LOCK(cs_main);
-            connman.RemoveAskFor(hash, MSG_CLSIG);
-        }
-
         ProcessNewChainLock(pfrom->GetId(), clsig, hash);
     }
 }
 
 void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLockSig& clsig, const uint256& hash)
 {
+    {
+        LOCK(cs_main);
+        g_connman->RemoveAskFor(hash, MSG_CLSIG);
+    }
     {
         LOCK(cs);
         if (!seenChainLocks.emplace(hash, GetTimeMillis()).second) {
@@ -98,7 +97,7 @@ void CChainLocksHandler::ProcessNewChainLock(NodeId from, const llmq::CChainLock
         LogPrintf("CChainLocksHandler::%s -- invalid CLSIG (%s), peer=%d\n", __func__, clsig.ToString(), from);
         if (from != -1) {
             LOCK(cs_main);
-            Misbehaving(from, 100);
+            Misbehaving(from, 10);
         }
         return;
     }
@@ -170,7 +169,7 @@ void CChainLocksHandler::AcceptedBlockHeader(const CBlockIndex* pindexNew)
     }
 }
 
-void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork)
+void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew)
 {
     if (!fMasterNode) {
         return;
@@ -182,6 +181,8 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
         return;
     }
 
+    Cleanup();
+
     // DIP8 defines a process called "Signing attempts" which should run before the CLSIG is finalized
     // To simplify the initial implementation, we skip this process and directly try to create a CLSIG
     // This will fail when multiple blocks compete, but we accept this for the initial implementation.
@@ -192,6 +193,12 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
 
     {
         LOCK(cs);
+
+        if (bestChainLockBlockIndex == pindexNew) {
+            // we first got the CLSIG, then the header, and then the block was connected.
+            // In this case there is no need to continue here.
+            return;
+        }
 
         if (InternalHasConflictingChainLock(pindexNew->nHeight, pindexNew->GetBlockHash())) {
             if (!inEnforceBestChainLock) {
@@ -218,8 +225,6 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBl
     }
 
     quorumSigningManager->AsyncSignIfMember(Params().GetConsensus().llmqChainLocks, requestId, msgHash);
-
-    Cleanup();
 }
 
 // WARNING: cs_main and cs should not be held!
@@ -248,7 +253,7 @@ void CChainLocksHandler::EnforceBestChainLock()
                     continue;
                 }
                 LogPrintf("CChainLocksHandler::%s -- CLSIG (%s) invalidates block %s\n",
-                          __func__, bestChainLockWithKnownBlock.ToString(), jt->second->GetBlockHash().ToString());
+                    __func__, clsig.ToString(), jt->second->GetBlockHash().ToString());
                 DoInvalidateBlock(jt->second, false);
             }
 
@@ -259,7 +264,7 @@ void CChainLocksHandler::EnforceBestChainLock()
 
     CValidationState state;
     if (!ActivateBestChain(state)) {
-        LogPrintf("CChainLocksHandler::UpdatedBlockTip -- ActivateBestChain failed: %s\n", state.GetRejectReason());
+        LogPrintf("CChainLocksHandler::%s -- ActivateBestChain failed: %s\n", __func__, state.GetRejectReason());
         // This should not have happened and we are in a state were it's not safe to continue anymore
         assert(false);
     }

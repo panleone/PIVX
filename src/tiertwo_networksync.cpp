@@ -82,7 +82,7 @@ bool CMasternodeSync::MessageDispatcher(CNode* pfrom, std::string& strCommand, C
     }
 
     if (strCommand == NetMsgType::CLSIG) {
-        llmq::chainLocksHandler->ProcessMessage(pfrom, strCommand, vRecv, *g_connman);
+        llmq::chainLocksHandler->ProcessMessage(pfrom, strCommand, vRecv);
     }
 
     if (strCommand == NetMsgType::GETMNLIST) {
