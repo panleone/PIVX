@@ -354,7 +354,9 @@ void CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
         return;
     }
 
-    CBLSInsecureBatchVerifier<NodeId, uint256> batchVerifier;
+    // It's ok to perform insecure batched verification here as we verify against the quorum public keys, which are not
+    // craftable by individual entities, making the rogue public key attack impossible
+    CBLSBatchVerifier<NodeId, uint256> batchVerifier(false, false);
 
     size_t verifyCount = 0;
     for (auto& p : recSigsByNode) {
@@ -369,7 +371,7 @@ void CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
     }
 
     cxxtimer::Timer verifyTimer;
-    batchVerifier.Verify(false);
+    batchVerifier.Verify();
     verifyTimer.stop();
 
     LogPrintf("llmq", "CSigningManager::%s -- verified recovered sig(s). count=%d, vt=%d, nodes=%d\n", __func__, verifyCount, verifyTimer.count(), recSigsByNode.size());
