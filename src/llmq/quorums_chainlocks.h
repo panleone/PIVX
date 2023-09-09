@@ -65,7 +65,9 @@ public:
     CChainLocksHandler(CScheduler* _scheduler);
     ~CChainLocksHandler();
 
-public:
+    void Start();
+    void Stop();
+
     bool AlreadyHave(const CInv& inv);
     bool GetChainLockByHash(const uint256& hash, CChainLockSig& ret);
 

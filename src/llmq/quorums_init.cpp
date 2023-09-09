@@ -59,10 +59,16 @@ void StartLLMQSystem()
     if (quorumSigSharesManager) {
         quorumSigSharesManager->StartWorkerThread();
     }
+    if (chainLocksHandler) {
+        chainLocksHandler->Start();
+    }
 }
 
 void StopLLMQSystem()
 {
+    if (chainLocksHandler) {
+        chainLocksHandler->Stop();
+    }
     if (quorumDKGSessionManager) {
         quorumDKGSessionManager->StopThreads();
     }
