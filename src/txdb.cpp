@@ -6,8 +6,9 @@
 
 #include "txdb.h"
 
-#include "random.h"
+#include "clientversion.h"
 #include "pow.h"
+#include "random.h"
 #include "uint256.h"
 #include "util/system.h"
 #include "util/vector.h"
@@ -79,7 +80,7 @@ bool CCoinsViewDB::BatchWrite(CCoinsMap& mapCoins,
                               CAnchorsSaplingMap& mapSaplingAnchors,
                               CNullifiersMap& mapSaplingNullifiers)
 {
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION);
     size_t count = 0;
     size_t changed = 0;
     size_t batch_size = (size_t) gArgs.GetArg("-dbbatchsize", nDefaultDbBatchSize);
@@ -236,7 +237,7 @@ void CCoinsViewDBCursor::Next()
 }
 
 bool CBlockTreeDB::WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*> >& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo) {
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION);
     for (std::vector<std::pair<int, const CBlockFileInfo*> >::const_iterator it=fileInfo.begin(); it != fileInfo.end(); it++) {
         batch.Write(std::make_pair(DB_BLOCK_FILES, it->first), *it->second);
     }
@@ -254,7 +255,7 @@ bool CBlockTreeDB::ReadTxIndex(const uint256& txid, CDiskTxPos& pos)
 
 bool CBlockTreeDB::WriteTxIndex(const std::vector<std::pair<uint256, CDiskTxPos> >& vect)
 {
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION);
     for (std::vector<std::pair<uint256, CDiskTxPos> >::const_iterator it = vect.begin(); it != vect.end(); it++)
         batch.Write(std::make_pair(DB_TXINDEX, it->first), it->second);
     return WriteBatch(batch);
@@ -346,7 +347,7 @@ CZerocoinDB::CZerocoinDB(size_t nCacheSize, bool fMemory, bool fWipe) : CDBWrapp
 
 bool CZerocoinDB::WriteCoinSpendBatch(const std::vector<std::pair<CBigNum, uint256> >& spendInfo)
 {
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION);
     size_t count = 0;
     for (std::vector<std::pair<CBigNum, uint256> >::const_iterator it=spendInfo.begin(); it != spendInfo.end(); it++) {
         CBigNum bnSerial = it->first;
@@ -519,7 +520,7 @@ bool CCoinsViewDB::Upgrade() {
 
     LogPrintf("Upgrading database...\n");
     size_t batch_size = 1 << 24;
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION);
     while (pcursor->Valid()) {
         boost::this_thread::interruption_point();
         std::pair<unsigned char, uint256> key;
