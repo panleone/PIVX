@@ -15,7 +15,7 @@ namespace llmq
 {
 
 // Init/destroy LLMQ globals
-void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests);
+void InitLLMQSystem(CEvoDB& evoDb, bool unitTests);
 void DestroyLLMQSystem();
 
 // Manage scheduled tasks, threads, listeners etc.

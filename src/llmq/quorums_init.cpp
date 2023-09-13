@@ -19,7 +19,7 @@ namespace llmq
 
 CBLSWorker* blsWorker;
 
-void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
+void InitLLMQSystem(CEvoDB& evoDb, bool unitTests)
 {
     blsWorker = new CBLSWorker();
 
@@ -29,7 +29,7 @@ void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
     quorumManager.reset(new CQuorumManager(evoDb, *blsWorker, *quorumDKGSessionManager));
     quorumSigSharesManager = new CSigSharesManager();
     quorumSigningManager = new CSigningManager(unitTests);
-    chainLocksHandler = new CChainLocksHandler(scheduler);
+    chainLocksHandler = new CChainLocksHandler();
 }
 
 void DestroyLLMQSystem()

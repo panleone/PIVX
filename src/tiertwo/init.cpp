@@ -71,10 +71,10 @@ void InitTierTwoPreChainLoad(bool fReindex)
     deterministicMNManager.reset(new CDeterministicMNManager(*evoDb));
 }
 
-void InitTierTwoPostCoinsCacheLoad(CScheduler* scheduler)
+void InitTierTwoPostCoinsCacheLoad()
 {
     // Initialize LLMQ system
-    llmq::InitLLMQSystem(*evoDb, scheduler, false);
+    llmq::InitLLMQSystem(*evoDb, false);
 }
 
 void InitTierTwoChainTip()

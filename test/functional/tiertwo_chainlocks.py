@@ -75,17 +75,17 @@ class ChainLocksTest(PivxDMNTestFramework):
 
         # Keep node connected and let it try to reorg the chain
         good_tip = self.nodes[0].getbestblockhash()
-        self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         # Restart it so that it forgets all the chainlocks from the past
         self.stop_node(0)
         self.start_node(0, extra_args=self.extra_args[0])
         connect_nodes(self.nodes[0], 1)
+        self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         # Now try to reorg the chain
         self.nodes[0].generate(2)
-        time.sleep(2)
+        time.sleep(6)
         assert self.nodes[1].getbestblockhash() == good_tip
         self.nodes[0].generate(2)
-        time.sleep(2)
+        time.sleep(6)
         assert self.nodes[1].getbestblockhash() == good_tip
 
         # Now let the node which is on the wrong chain reorg back to the locked chain
@@ -93,6 +93,7 @@ class ChainLocksTest(PivxDMNTestFramework):
         assert self.nodes[0].getbestblockhash() != good_tip
         self.nodes[1].generate(1)
         self.wait_for_chainlock(self.nodes[0], self.nodes[1].getbestblockhash())
+        time.sleep(6)
         assert self.nodes[0].getbestblockhash() == self.nodes[1].getbestblockhash()
 
     def wait_for_chainlock_tip_all_nodes(self):
@@ -109,7 +110,7 @@ class ChainLocksTest(PivxDMNTestFramework):
         while time.time() - t < 15:
             try:
                 block = node.getblock(block_hash)
-                if block["chainlock"]:
+                if block["confirmations"] > 0 and block["chainlock"]:
                     return
             except:
                 # block might not be on the node yet

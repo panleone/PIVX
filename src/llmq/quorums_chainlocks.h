@@ -11,9 +11,9 @@
 
 #include "net.h"
 #include "chainparams.h"
-#include "threadsafety.h"
 
 #include <atomic>
+#include <boost/thread.hpp>
 
 class CBlockIndex;
 class CScheduler;
@@ -45,6 +45,7 @@ class CChainLocksHandler : public CRecoveredSigsListener
 
 private:
     CScheduler* scheduler;
+    boost::thread* scheduler_thread;
     RecursiveMutex cs;
     bool tryLockChainTipScheduled GUARDED_BY(cs) {false};
 
@@ -63,7 +64,7 @@ private:
     int64_t lastCleanupTime{0};
 
 public:
-    CChainLocksHandler(CScheduler* _scheduler);
+    CChainLocksHandler();
     ~CChainLocksHandler();
 
     void Start();
