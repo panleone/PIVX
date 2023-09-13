@@ -66,7 +66,7 @@ bool CheckTransactionWithoutProofVerification(const CTransaction& tx, CValidatio
         // NB: negative valueBalance "takes" money from the transparent value pool just as outputs do
         nValueOut += -tx.sapData->valueBalance;
 
-        if (!consensus.MoneyRange(nValueOut)) {
+        if (!tx.IsCoinShieldStake() && !consensus.MoneyRange(nValueOut)) {
             return state.DoS(100, error("%s: txout total out of range", __func__ ),
                              REJECT_INVALID, "bad-txns-txouttotal-toolarge");
         }
