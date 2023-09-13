@@ -4412,7 +4412,7 @@ UniValue getstakingstatus(const JSONRPCRequest& request)
         obj.pushKV("mnsync", !masternodeSync.NotCompleted());
         obj.pushKV("walletunlocked", !pwallet->IsLocked());
         std::vector<CStakeableOutput> vCoins;
-        pwallet->StakeableCoins(&vCoins);
+        pwallet->StakeableUTXOs(&vCoins);
         obj.pushKV("stakeablecoins", (int)vCoins.size());
         obj.pushKV("stakingbalance", ValueFromAmount(pwallet->GetStakingBalance(fColdStaking)));
         obj.pushKV("stakesplitthreshold", ValueFromAmount(pwallet->nStakeSplitThreshold));

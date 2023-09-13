@@ -7,7 +7,9 @@
 
 #include "chain.h" // for CBlockIndex
 #include "primitives/transaction.h"
+#include "sapling/sapling_transaction.h"
 #include "validation.h" // for ReadBlockFromDisk()
+#include "wallet/wallet.h"
 
 void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid)
 {
@@ -552,6 +554,57 @@ void SaplingScriptPubKeyMan::GetFilteredNotes(
             saplingEntries.emplace_back(op, pa, note, notePt.memo(), depth);
         }
     }
+}
+bool SaplingScriptPubKeyMan::GetStakeableNotes(std::vector<CStakeableShieldNote>* notes, int minDepth)
+{
+    bool foundNote = false;
+    LOCK(wallet->cs_wallet);
+    for (auto& p : wallet->mapWallet) {
+        const CWalletTx& wtx = p.second;
+        // Filter coinbase/coinstakes transactions that don't have Sapling outputs
+        if ((wtx.IsCoinBase() || wtx.IsCoinStake()) && wtx.mapSaplingNoteData.empty()) {
+            continue;
+        }
+        // Filter the transactions before checking for notes
+        const int depth = wtx.GetDepthInMainChain();
+        if (!IsFinalTx(wtx.tx, wallet->GetLastBlockHeight() + 1, GetAdjustedTime()) ||
+            depth < minDepth) {
+            continue;
+        }
+        for (const auto& it : wtx.mapSaplingNoteData) {
+            const SaplingOutPoint& op = it.first;
+            const SaplingNoteData& nd = it.second;
+
+            // skip sent notes
+            if (!nd.IsMyNote()) continue;
+
+            // recover plaintext and address
+            auto optNotePtAndAddress = wtx.DecryptSaplingNote(op);
+            assert(static_cast<bool>(optNotePtAndAddress));
+
+            const libzcash::SaplingIncomingViewingKey& ivk = *(nd.ivk);
+            const libzcash::SaplingNotePlaintext& notePt = optNotePtAndAddress->first;
+            const libzcash::SaplingPaymentAddress& pa = optNotePtAndAddress->second;
+            auto& note = notePt.note(ivk).get();
+
+            // skip notes which cannot be spent
+            if (!HaveSpendingKeyForPaymentAddress(pa)) {
+                continue;
+            }
+
+            if (nd.nullifier && IsSaplingSpent(*nd.nullifier)) {
+                continue;
+            }
+            SaplingNoteEntry noteEntry = SaplingNoteEntry(op, pa, note, notePt.memo(), depth);
+            if (notes) {
+                notes->emplace_back(CStakeableShieldNote(noteEntry, *nd.nullifier));
+            } else {
+                return true;
+            }
+            foundNote = true;
+        }
+    }
+    return foundNote;
 }
 
 /* Return list of available notes and locked notes grouped by sapling address. */
@@ -1281,4 +1334,12 @@ uint256 SaplingScriptPubKeyMan::getCommonOVKFromSeed() const
     }
     HDSeed seed{key.GetPrivKey()};
     return ovkForShieldingFromTaddr(seed);
+}
+
+bool SaplingScriptPubKeyMan::ComputeShieldStakeProof(CBlock& block, CStakeableShieldNote& note, CAmount suggestedValue)
+{
+    assert(block.IsProofOfShieldStake());
+    assert(note.note.value() >= suggestedValue);
+    block.shieldStakeProof.amount = suggestedValue;
+    return true;
 }
