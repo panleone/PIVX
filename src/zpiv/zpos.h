@@ -26,11 +26,16 @@ public:
     static CLegacyZPivStake* NewZPivStake(const CTxIn& txin, int nHeight);
 
     bool IsZPIV() const override { return true; }
+    bool IsShieldPIV() const override { return false; };
     uint32_t GetChecksum() const { return nChecksum; }
     const CBlockIndex* GetIndexFrom() const override;
     CAmount GetValue() const override;
     CDataStream GetUniqueness() const override;
     bool GetTxOutFrom(CTxOut& out) const override { return false; /* not available */ }
+    CTxIn GetTxIn() const override
+    {
+        throw "can't be bothered";
+    }
 };
 
 #endif //PIVX_LEGACY_ZPOS_H
