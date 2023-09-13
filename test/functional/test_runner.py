@@ -94,6 +94,7 @@ BASE_SCRIPTS= [
     'rpc_bind.py --nonloopback',                # ~ 126 sec
     'feature_uacomment.py',                     # ~ 125 sec
     'interface_rest.py',                        # ~ 120 sec
+    'mining_shield_pos.py',                     # ~ 120 sec
 
     # vv Tests less than 2m vv
     'wallet_upgrade.py',                        # ~ 119 sec
