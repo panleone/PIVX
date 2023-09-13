@@ -64,6 +64,17 @@ bool Stake(const CBlockIndex* pindexPrev, CStakeInput* stakeInput, unsigned int 
 bool CheckProofOfStake(const CBlock& block, std::string& strError, const CBlockIndex* pindexPrev = nullptr);
 
 /*
+ * CheckProofOfStake    Check if block has valid proof of shield stake
+ *
+ * @param[in]   block           block with the proof being verified
+ * @param[out]  strError        string returning error message (if any, else empty)
+ * @param[in]   pindexPrev      index of the parent block
+ *                              (if nullptr, it will be searched in mapBlockIndex)
+ * @return      bool            true if the block has a valid proof of stake
+ */
+bool CheckProofOfShieldStake(const CBlock& block, std::string& strError);
+
+/*
  * GetStakeKernelHash   Return stake kernel of a block
  *
  * @param[out]  hashRet         hash of the kernel (set by this function)

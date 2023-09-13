@@ -7,15 +7,20 @@
 
 #include "kernel.h"
 
+#include "chainparams.h"
+#include "consensus/params.h"
+#include "consensus/validation.h"
 #include "db.h"
 #include "legacy/stakemodifier.h"
 #include "policy/policy.h"
+#include "sapling/sapling_validation.h"
 #include "script/interpreter.h"
 #include "stakeinput.h"
 #include "util/system.h"
 #include "utilmoneystr.h"
 #include "validation.h"
 #include "zpiv/zpos.h"
+#include <memory>
 
 /**
  * CStakeKernel Constructor
@@ -32,18 +37,28 @@ CStakeKernel::CStakeKernel(const CBlockIndex* const pindexPrev, CStakeInput* sta
     stakeValue(stakeInput->GetValue())
 {
     // Set kernel stake modifier
-    if (!Params().GetConsensus().NetworkUpgradeActive(pindexPrev->nHeight + 1, Consensus::UPGRADE_V3_4)) {
-        uint64_t nStakeModifier = 0;
-        if (!GetOldStakeModifier(stakeInput, nStakeModifier))
-            LogPrintf("%s : ERROR: Failed to get kernel stake modifier\n", __func__);
-        // Modifier v1
-        stakeModifier << nStakeModifier;
+    if (!stakeInput->IsShieldPIV()) {
+        if (!Params().GetConsensus().NetworkUpgradeActive(pindexPrev->nHeight + 1, Consensus::UPGRADE_V3_4)) {
+            uint64_t nStakeModifier = 0;
+            if (!GetOldStakeModifier(stakeInput, nStakeModifier))
+                LogPrintf("%s : ERROR: Failed to get kernel stake modifier\n", __func__);
+            // Modifier v1
+            stakeModifier << nStakeModifier;
+        } else {
+            // Modifier v2
+            stakeModifier << pindexPrev->GetStakeModifierV2();
+        }
+        const CBlockIndex* pindexFrom = stakeInput->GetIndexFrom();
+        nTimeBlockFrom = pindexFrom->nTime;
     } else {
-        // Modifier v2
-        stakeModifier << pindexPrev->GetStakeModifierV2();
+        if (!Params().GetConsensus().NetworkUpgradeActive(pindexPrev->nHeight + 1, Consensus::UPGRADE_SHIELD_STAKING)) {
+            LogPrintf("%s : ShieldStaking is not yet active!", __func__);
+        } else {
+            stakeModifier << pindexPrev->GetStakeModifierV2();
+        }
+        // For ShieldStaking we have no knowledge on the note block, so we just set the time to 0
+        nTimeBlockFrom = 0;
     }
-    const CBlockIndex* pindexFrom = stakeInput->GetIndexFrom();
-    nTimeBlockFrom = pindexFrom->nTime;
 }
 
 // Return stake kernel hash
@@ -94,13 +109,21 @@ static bool LoadStakeInput(const CBlock& block, std::unique_ptr<CStakeInput>& st
     if (!block.IsProofOfStake())
         return error("called on non PoS block");
 
-    // Construct the stakeinput object
-    const CTxIn& txin = block.vtx[1]->vin[0];
-    stake = txin.IsZerocoinSpend() ?
-            std::unique_ptr<CStakeInput>(CLegacyZPivStake::NewZPivStake(txin, nHeight)) :
-            std::unique_ptr<CStakeInput>(CPivStake::NewPivStake(txin, nHeight, block.nTime));
+    if (block.IsProofOfShieldStake()) {
+        // Sapling data existence is guaranteed with isProofOfShieldStake call
+        const auto& saplingData = block.vtx[1]->sapData.get();
+        stake = std::unique_ptr<CStakeInput>(CShieldStake::NewShieldStake(saplingData.vShieldedSpend.at(0), block.shieldStakeProof.amount, nHeight, block.nTime));
+        return stake != nullptr;
+    } else {
+        // Construct the stakeinput object
+        const CTxIn& txin = block.vtx[1]->vin[0];
 
-    return stake != nullptr;
+        stake = txin.IsZerocoinSpend() ?
+                    std::unique_ptr<CStakeInput>(CLegacyZPivStake::NewZPivStake(txin, nHeight)) :
+                    std::unique_ptr<CStakeInput>(CPivStake::NewPivStake(txin, nHeight, block.nTime));
+
+        return stake != nullptr;
+    }
 }
 
 /*
@@ -126,6 +149,16 @@ bool Stake(const CBlockIndex* pindexPrev, CStakeInput* stakeInput, unsigned int 
     return stakeKernel.CheckKernelHash(true);
 }
 
+// This checks if the provided note value is valid
+bool CheckShieldStakeValidity(const CBlock& block, std::string& strError, CShieldStake& stakeInput)
+{
+    CValidationState state;
+    if (!SaplingValidation::CheckShieldStake(block, state, Params())) {
+        strError = state.GetRejectReason();
+        return false;
+    }
+    return true;
+}
 
 /*
  * CheckProofOfStake    Check if block has valid proof of stake
@@ -153,9 +186,19 @@ bool CheckProofOfStake(const CBlock& block, std::string& strError, const CBlockI
         return false;
     }
 
+    if (stakeInput->IsShieldPIV()) {
+        // Check proof validity
+        // TODO: refactor, just for testing
+        auto& shieldStake = static_cast<CShieldStake&>(*stakeInput);
+
+        if (!CheckShieldStakeValidity(block, strError, shieldStake)) {
+            return false;
+        }
+        return true;
+    }
+
     // zPoS disabled (ContextCheck) before blocks V7, and the tx input signature is in CoinSpend
     if (stakeInput->IsZPIV()) return true;
-
     // Verify tx input signature
     CTxOut stakePrevout;
     if (!stakeInput->GetTxOutFrom(stakePrevout)) {
@@ -174,7 +217,6 @@ bool CheckProofOfStake(const CBlock& block, std::string& strError, const CBlockI
     // All good
     return true;
 }
-
 
 /*
  * GetStakeKernelHash   Return stake kernel of a block
