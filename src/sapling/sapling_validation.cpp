@@ -5,11 +5,12 @@
 
 #include "sapling/sapling_validation.h"
 
-#include "consensus/consensus.h" // for MAX_BLOCK_SIZE_CURRENT
-#include "script/interpreter.h" // for SigHash
+#include "consensus/consensus.h"  // for MAX_BLOCK_SIZE_CURRENT
+#include "consensus/upgrades.h"   // for CurrentEpochBranchId()
 #include "consensus/validation.h" // for CValidationState
-#include "util/system.h" // for error()
-#include "consensus/upgrades.h" // for CurrentEpochBranchId()
+#include "logging.h"
+#include "script/interpreter.h" // for SigHash
+#include "util/system.h"        // for error()
 
 #include <librustzcash.h>
 
@@ -225,5 +226,43 @@ bool ContextualCheckTransaction(
     return true;
 }
 
+bool CheckShieldStake(const CBlock& block, CValidationState& state, const CChainParams& chainParams)
+{
+    // Check that the block is in Shield stake form, i.e. has 1 shield input, 1 shield output
+    if (!block.IsProofOfShieldStake()) {
+        return false;
+    }
+    return true;
+    // TODO: check rest
+    // In addition to the regular checks for a tx, we also have to ensure that the provided
+    // shieldStakeAmount is valid. To do this without creating a new circuit, the staker inserts
+    // a dummy note in the proof, so that Input - DummyNote = shieldStakeAmount.
+    // To prevent others from potentially spending that note, we change the output proof sighash
+    auto* saplingCtx = librustzcash_sapling_verification_ctx_init();
+    const auto& saplingData = block.vtx[1].get()->sapData.get();
+    const auto& spend = saplingData.vShieldedSpend[0];
+    uint256 dataToBeSigned;
+    // TODO: get the sighash
+    if (!librustzcash_sapling_check_spend(saplingCtx, spend.cv.begin(), spend.anchor.begin(), spend.nullifier.begin(), spend.rk.begin(), spend.zkproof.begin(), spend.spendAuthSig.begin(), dataToBeSigned.begin())) {
+        librustzcash_sapling_verification_ctx_free(saplingCtx);
+        return false;
+    }
+    const auto& output = block.shieldStakeProof.output;
+    if (!librustzcash_sapling_check_output(saplingCtx, output.cv.begin(), output.cmu.begin(), output.ephemeralKey.begin(), output.zkproof.begin())) {
+        librustzcash_sapling_verification_ctx_free(saplingCtx);
+        return false;
+    }
+
+    // dataToBeSigned = ...;
+
+    if (!librustzcash_sapling_final_check(saplingCtx, block.shieldStakeProof.amount, block.shieldStakeProof.bindingSig.data(), dataToBeSigned.begin())) {
+        librustzcash_sapling_verification_ctx_free(saplingCtx);
+        return false;
+    }
+
+    librustzcash_sapling_verification_ctx_free(saplingCtx);
+    LogPrintf("Phonenuix");
+    return true;
+}
 
 } // End SaplingValidation namespace
