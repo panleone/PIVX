@@ -1362,12 +1362,6 @@ bool SaplingScriptPubKeyMan::ComputeShieldStakeProof(CBlock& block, CStakeableSh
     ss << witnesses[0]->path();
     std::vector<unsigned char> witness(ss.begin(), ss.end());
     assert(anchor == spendNote.anchor);
-    librustzcash_sapling_spend_sig(
-        sk.expsk.ask.begin(),
-        alpha.begin(),
-        dataToBeSigned.begin(),
-        block.shieldStakeProof.spendSig.data());
-
     if (!librustzcash_sapling_spend_proof(ctx, sk.expsk.full_viewing_key().ak.begin(),
             sk.expsk.nsk.begin(),
             note.note.d.data(),
@@ -1410,6 +1404,7 @@ bool SaplingScriptPubKeyMan::ComputeShieldStakeProof(CBlock& block, CStakeableSh
         librustzcash_sapling_proving_ctx_free(ctx);
         return false;
     }
+
     librustzcash_sapling_proving_ctx_free(ctx);
     block.shieldStakeProof.amount = suggestedValue;
     LogPrintf("%s : Shield Stake proof generated with value %d\n", __func__, suggestedValue);

@@ -83,7 +83,6 @@ public:
     CAmount amount;
     uint256 inputCv;
     uint256 rk;
-    SpendDescription::spend_auth_sig_t spendSig;
     libzcash::GrothProof inputProof = {{0}};
 
     uint256 outputCv;
@@ -96,7 +95,6 @@ public:
     {
         amount = 0;
         inputCv.SetNull();
-        spendSig = {{0}};
         rk.SetNull();
         inputProof = {{0}};
         outputCv.SetNull();
@@ -110,7 +108,6 @@ public:
         READWRITE(obj.amount);
         READWRITE(obj.inputCv);
         READWRITE(obj.rk);
-        READWRITE(obj.spendSig);
         READWRITE(obj.inputProof);
         READWRITE(obj.epk);
         READWRITE(obj.cmu);

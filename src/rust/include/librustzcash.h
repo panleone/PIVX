@@ -1,6 +1,7 @@
 #ifndef LIBRUSTZCASH_INCLUDE_H_
 #define LIBRUSTZCASH_INCLUDE_H_
 
+#include <cstddef>
 #include <stdint.h>
 
 extern "C" {

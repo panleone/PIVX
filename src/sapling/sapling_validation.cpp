@@ -240,18 +240,7 @@ bool CheckShieldStake(const CBlock& block, CValidationState& state, const CChain
     const auto& p = block.shieldStakeProof;
     const int DOS_LEVEL_BLOCK = 100;
 
-    uint256 dataToBeSigned;
-    try {
-        // TODO: write signature for shield
-        // dataToBeSigned = SignatureHash(scriptCode, tx, NOT_AN_INPUT, SIGHASH_ALL, 0, SIGVERSION_SAPLING);
-    } catch (const std::logic_error& ex) {
-        // A logic error should never occur because we pass NOT_AN_INPUT and
-        // SIGHASH_ALL to SignatureHash().
-        return state.DoS(100, error("%s: error computing signature hash", __func__),
-            REJECT_INVALID, "error-computing-signature-hash");
-    }
-
-    if (!librustzcash_sapling_check_spend(ctx, p.inputCv.begin(), inputNote.anchor.begin(), inputNote.nullifier.begin(), p.rk.begin(), p.inputProof.begin(), p.spendSig.begin(), dataToBeSigned.begin())) {
+    if (!librustzcash_sapling_check_spend(ctx, p.inputCv.begin(), inputNote.anchor.begin(), inputNote.nullifier.begin(), p.rk.begin(), p.inputProof.begin(), nullptr, nullptr)) {
         librustzcash_sapling_verification_ctx_free(ctx);
         return state.DoS(
             DOS_LEVEL_BLOCK,
@@ -265,7 +254,7 @@ bool CheckShieldStake(const CBlock& block, CValidationState& state, const CChain
             REJECT_INVALID, "bad-txns-sapling-output-description-invalid");
     }
 
-    if (!librustzcash_sapling_final_check(ctx, block.shieldStakeProof.amount, block.shieldStakeProof.sig.data(), dataToBeSigned.begin())) {
+    if (!librustzcash_sapling_final_check(ctx, block.shieldStakeProof.amount, block.shieldStakeProof.sig.data(), nullptr)) {
         librustzcash_sapling_verification_ctx_free(ctx);
         return state.DoS(
             100,

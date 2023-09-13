@@ -588,9 +588,12 @@ pub extern "system" fn librustzcash_sapling_check_spend(
     };
 
     // Deserialize the signature
-    let spend_auth_sig = match Signature::read(&(unsafe { &*spend_auth_sig })[..]) {
-        Ok(sig) => sig,
-        Err(_) => return false,
+    // Spend auth sig is not needed in shield stake proofs.
+    // See #2836 for details
+    let spend_auth_sig = if spend_auth_sig.is_null() {
+        None
+    } else {
+        Signature::read(&(unsafe { &*spend_auth_sig })[..]).ok()
     };
 
     // Deserialize the proof
@@ -599,12 +602,18 @@ pub extern "system" fn librustzcash_sapling_check_spend(
         Err(_) => return false,
     };
 
+    let sighash_value = if sighash_value.is_null() {
+        [0u8; 32]
+    } else {
+        unsafe { *sighash_value }
+    };
+
     unsafe { &mut *ctx }.check_spend(
         &cv,
         anchor,
         unsafe { &*nullifier },
         rk.clone(),
-        unsafe { &*sighash_value },
+        &sighash_value,
         spend_auth_sig,
         zkproof.clone(),
         unsafe { SAPLING_SPEND_VK.as_ref() }.unwrap(),
@@ -684,7 +693,15 @@ pub extern "system" fn librustzcash_sapling_final_check(
         Err(_) => return false,
     };
 
-    unsafe { &*ctx }.final_check(value_balance, unsafe { &*sighash_value }, binding_sig)
+    // Sighash is not needed in Shield stake proof.
+    // See #2836 for details.
+    let sighash_value = if sighash_value.is_null() {
+        [0u8; 32]
+    } else {
+        unsafe { *sighash_value }
+    };
+
+    unsafe { &*ctx }.final_check(value_balance, &sighash_value, binding_sig)
 }
 
 #[no_mangle]
