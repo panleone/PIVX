@@ -135,7 +135,7 @@ bool CTransaction::IsCoinStake() const
 {
     if (vin.empty())
         return false;
-    if (!sapData->vShieldedSpend.empty())
+    if (sapData && !sapData->vShieldedSpend.empty())
         return false;
     bool fAllowNull = vin[0].IsZerocoinSpend();
     if (vin[0].prevout.IsNull() && !fAllowNull)

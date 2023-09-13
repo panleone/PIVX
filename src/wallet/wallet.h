@@ -1131,7 +1131,6 @@ public:
     // Shielded balances
     CAmount GetAvailableShieldedBalance(bool fUseCache = true) const;
     CAmount GetUnconfirmedShieldedBalance() const;
-
     static CFeeRate minTxFee;
 
     size_t KeypoolCountExternalKeys();
@@ -1345,7 +1344,7 @@ class CStakeableShieldNote : public SaplingNoteEntry, public CStakeableInterface
 {
 public:
     uint256 nullifier;
-
+    CAmount suggestedValue = 0;
     explicit CStakeableShieldNote(const SaplingNoteEntry& _note, uint256 _nullifier) : SaplingNoteEntry(_note), nullifier(_nullifier) {}
     std::unique_ptr<CStakeInput> ToInput() const override
     {

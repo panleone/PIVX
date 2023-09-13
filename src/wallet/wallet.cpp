@@ -8,9 +8,16 @@
 #include "consensus/params.h"
 #include "optional.h"
 #include "primitives/transaction.h"
+#include "sapling/address.h"
+#include "sapling/incrementalmerkletree.h"
+#include "sapling/note.h"
+#include "sapling/sapling_transaction.h"
+#include "sapling/sapling_util.h"
 #include "sapling/saplingscriptpubkeyman.h"
 #include "sapling/zip32.h"
+#include "serialize.h"
 #include "stakeinput.h"
+#include "version.h"
 #include <memory>
 #include <vector>
 #if defined(HAVE_CONFIG_H)
@@ -3425,7 +3432,12 @@ CStakeableInterface* CWallet::CreateCoinStake(const CBlockIndex& indexPrev, unsi
         }
         ++nAttempts;
 
-        bool fKernelFound = Stake(&indexPrev, &*stakeInput, nBits, nTxNewTime);
+        CAmount suggestedValue;
+        bool fKernelFound = Stake(&indexPrev, &*stakeInput, nBits, nTxNewTime, &suggestedValue);
+        // Refactor maybe
+        if (stakeInput->IsShieldPIV()) {
+            static_cast<CStakeableShieldNote*>(stakeOutput.get())->suggestedValue = suggestedValue;
+        }
 
         // update staker status (time, attemps)
         pStakerStatus->SetLastTime(nTxNewTime);
@@ -3465,6 +3477,7 @@ bool CWallet::CreateShieldReward(const CBlockIndex& indexPrev, const CStakeableS
     noteop.emplace_back(shieldNote.op);
     m_sspk_man->GetSaplingNoteWitnesses(noteop, witnesses, anchor);
     txBuilder.AddSaplingSpend(sk.expsk, shieldNote.note, anchor, witnesses[0].get());
+
     const auto& txTrial = txBuilder.Build().GetTx();
     if (txTrial) {
         txNew = CMutableTransaction(*txTrial);

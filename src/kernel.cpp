@@ -7,6 +7,7 @@
 
 #include "kernel.h"
 
+#include "arith_uint256.h"
 #include "chainparams.h"
 #include "consensus/params.h"
 #include "consensus/validation.h"
@@ -70,7 +71,7 @@ uint256 CStakeKernel::GetHash() const
 }
 
 // Check that the kernel hash meets the target required
-bool CStakeKernel::CheckKernelHash(bool fSkipLog) const
+bool CStakeKernel::CheckKernelHash(bool fSkipLog)
 {
     // Get weighted target
     arith_uint256 bnTarget;
@@ -80,7 +81,8 @@ bool CStakeKernel::CheckKernelHash(bool fSkipLog) const
     // Check PoS kernel hash
     const arith_uint256& hashProofOfStake = UintToArith256(GetHash());
     const bool res = hashProofOfStake < bnTarget;
-
+    suggestedValue = ComputeSuggestedValue(stakeValue, bnTarget, hashProofOfStake);
+    LogPrintf("%d\n", suggestedValue);
     if (!fSkipLog || res) {
         LogPrint(BCLog::STAKING, "%s : Proof Of Stake:"
                             "\nstakeModifier=%s"
@@ -97,6 +99,14 @@ bool CStakeKernel::CheckKernelHash(bool fSkipLog) const
     return res;
 }
 
+CAmount CStakeKernel::ComputeSuggestedValue(CAmount stakevalue, const arith_uint256& bnTarget, const arith_uint256& hashProofOfStake) const
+{
+    arith_uint256 diff;
+    diff.SetCompact(nBits);
+    auto total = static_cast<CAmount>((((hashProofOfStake) / diff).Get64() + 1) * 100);
+    if (total > stakevalue) return stakevalue;
+    return total;
+}
 
 /*
  * PoS Validation
@@ -135,7 +145,7 @@ static bool LoadStakeInput(const CBlock& block, std::unique_ptr<CStakeInput>& st
  * @param[in]   nTimeTx         new blocktime
  * @return      bool            true if stake kernel hash meets target protocol
  */
-bool Stake(const CBlockIndex* pindexPrev, CStakeInput* stakeInput, unsigned int nBits, int64_t& nTimeTx)
+bool Stake(const CBlockIndex* pindexPrev, CStakeInput* stakeInput, unsigned int nBits, int64_t& nTimeTx, CAmount* suggestedValue)
 {
     if (!stakeInput) return false;
 
@@ -146,7 +156,11 @@ bool Stake(const CBlockIndex* pindexPrev, CStakeInput* stakeInput, unsigned int 
 
     // Verify Proof Of Stake
     CStakeKernel stakeKernel(pindexPrev, stakeInput, nBits, nTimeTx);
-    return stakeKernel.CheckKernelHash(true);
+    bool check = stakeKernel.CheckKernelHash(true);
+    if (suggestedValue)
+        *suggestedValue = stakeKernel.GetSuggestedValue();
+
+    return check;
 }
 
 // This checks if the provided note value is valid
