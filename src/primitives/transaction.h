@@ -378,6 +378,7 @@ public:
     }
 
     bool IsCoinStake() const;
+    bool IsCoinShieldStake() const;
     bool HasP2CSOutputs() const;
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)

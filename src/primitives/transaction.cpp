@@ -135,12 +135,26 @@ bool CTransaction::IsCoinStake() const
 {
     if (vin.empty())
         return false;
-
+    if (!sapData->vShieldedSpend.empty())
+        return false;
     bool fAllowNull = vin[0].IsZerocoinSpend();
     if (vin[0].prevout.IsNull() && !fAllowNull)
         return false;
 
     return (vout.size() >= 2 && vout[0].IsEmpty());
+}
+
+// Vout[0] must be empty, no transparent input and non empty sapling input and output
+bool CTransaction::IsCoinShieldStake() const
+{
+    if (!sapData)
+        return false;
+    if (sapData->vShieldedSpend.empty())
+        return false;
+    if (!vin.empty())
+        return false;
+
+    return (vout.size() == 1 && vout[0].IsEmpty());
 }
 
 bool CTransaction::HasP2CSOutputs() const

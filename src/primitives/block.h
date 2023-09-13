@@ -7,10 +7,12 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
-#include "primitives/transaction.h"
 #include "keystore.h"
+#include "primitives/transaction.h"
+#include "sapling/sapling_transaction.h"
 #include "serialize.h"
 #include "uint256.h"
+#include <cstddef>
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
@@ -23,7 +25,7 @@ class CBlockHeader
 {
 public:
     // header
-    static const int32_t CURRENT_VERSION=11;    // since v5.2.99
+    static const int32_t CURRENT_VERSION = 12; // since v6.0
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
@@ -75,6 +77,28 @@ public:
     }
 };
 
+class ShieldStakeProof
+{
+public:
+    CAmount amount;
+    SpendDescription input;
+    OutputDescription output;
+    std::vector<unsigned char> bindingSig;
+
+    void SetNull()
+    {
+        amount = 0;
+        output = OutputDescription();
+        bindingSig.clear();
+    }
+
+    SERIALIZE_METHODS(ShieldStakeProof, obj)
+    {
+        READWRITE(obj.amount);
+        READWRITE(obj.output);
+        READWRITE(obj.bindingSig);
+    }
+};
 
 class CBlock : public CBlockHeader
 {
@@ -84,6 +108,9 @@ public:
 
     // ppcoin: block signature - signed by one of the coin base txout[N]'s owner
     std::vector<unsigned char> vchBlockSig;
+
+    // Shield Stake proof bytes only for version 12+
+    ShieldStakeProof shieldStakeProof;
 
     // memory only
     mutable bool fChecked{false};
@@ -105,6 +132,11 @@ public:
         READWRITE(obj.vtx);
         if(obj.vtx.size() > 1 && obj.vtx[1]->IsCoinStake())
             READWRITE(obj.vchBlockSig);
+
+        // Shield Staking Proof
+        if (obj.nVersion >= 12 && obj.IsProofOfStake()) {
+            READWRITE(obj.shieldStakeProof);
+        }
     }
 
     void SetNull()
@@ -113,6 +145,7 @@ public:
         vtx.clear();
         fChecked = false;
         vchBlockSig.clear();
+        shieldStakeProof.SetNull();
     }
 
     CBlockHeader GetBlockHeader() const
@@ -133,7 +166,12 @@ public:
 
     bool IsProofOfStake() const
     {
-        return (vtx.size() > 1 && vtx[1]->IsCoinStake());
+        return (vtx.size() > 1 && vtx[1]->IsCoinStake()) || IsProofOfShieldStake();
+    }
+
+    bool IsProofOfShieldStake() const
+    {
+        return (vtx.size() > 1 && vtx[1]->IsCoinShieldStake());
     }
 
     bool IsProofOfWork() const
