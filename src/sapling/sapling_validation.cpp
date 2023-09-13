@@ -232,36 +232,47 @@ bool CheckShieldStake(const CBlock& block, CValidationState& state, const CChain
     if (!block.IsProofOfShieldStake()) {
         return false;
     }
-    return true;
-    // TODO: check rest
-    // In addition to the regular checks for a tx, we also have to ensure that the provided
-    // shieldStakeAmount is valid. To do this without creating a new circuit, the staker inserts
-    // a dummy note in the proof, so that Input - DummyNote = shieldStakeAmount.
-    // To prevent others from potentially spending that note, we change the output proof sighash
-    auto* saplingCtx = librustzcash_sapling_verification_ctx_init();
+    LogPrintf("%d", block.shieldStakeProof.amount);
+
     const auto& saplingData = block.vtx[1].get()->sapData.get();
-    const auto& spend = saplingData.vShieldedSpend[0];
+    auto ctx = librustzcash_sapling_verification_ctx_init();
+    const auto& inputNote = saplingData.vShieldedSpend[0];
+    const auto& p = block.shieldStakeProof;
+    const int DOS_LEVEL_BLOCK = 100;
+
     uint256 dataToBeSigned;
-    // TODO: get the sighash
-    if (!librustzcash_sapling_check_spend(saplingCtx, spend.cv.begin(), spend.anchor.begin(), spend.nullifier.begin(), spend.rk.begin(), spend.zkproof.begin(), spend.spendAuthSig.begin(), dataToBeSigned.begin())) {
-        librustzcash_sapling_verification_ctx_free(saplingCtx);
-        return false;
-    }
-    const auto& output = block.shieldStakeProof.output;
-    if (!librustzcash_sapling_check_output(saplingCtx, output.cv.begin(), output.cmu.begin(), output.ephemeralKey.begin(), output.zkproof.begin())) {
-        librustzcash_sapling_verification_ctx_free(saplingCtx);
-        return false;
-    }
-
-    // dataToBeSigned = ...;
-
-    if (!librustzcash_sapling_final_check(saplingCtx, block.shieldStakeProof.amount, block.shieldStakeProof.bindingSig.data(), dataToBeSigned.begin())) {
-        librustzcash_sapling_verification_ctx_free(saplingCtx);
-        return false;
+    try {
+        // TODO: write signature for shield
+        // dataToBeSigned = SignatureHash(scriptCode, tx, NOT_AN_INPUT, SIGHASH_ALL, 0, SIGVERSION_SAPLING);
+    } catch (const std::logic_error& ex) {
+        // A logic error should never occur because we pass NOT_AN_INPUT and
+        // SIGHASH_ALL to SignatureHash().
+        return state.DoS(100, error("%s: error computing signature hash", __func__),
+            REJECT_INVALID, "error-computing-signature-hash");
     }
 
-    librustzcash_sapling_verification_ctx_free(saplingCtx);
-    LogPrintf("Phonenuix");
+    if (!librustzcash_sapling_check_spend(ctx, p.inputCv.begin(), inputNote.anchor.begin(), inputNote.nullifier.begin(), p.rk.begin(), p.inputProof.begin(), p.spendSig.begin(), dataToBeSigned.begin())) {
+        librustzcash_sapling_verification_ctx_free(ctx);
+        return state.DoS(
+            DOS_LEVEL_BLOCK,
+            error("%s: Sapling spend description invalid", __func__),
+            REJECT_INVALID, "bad-txns-sapling-spend-description-invalid");
+    }
+
+    if (!librustzcash_sapling_check_output(ctx, p.outputCv.begin(), p.cmu.begin(), p.epk.begin(), p.outputProof.begin())) {
+        librustzcash_sapling_verification_ctx_free(ctx);
+        return state.DoS(100, error("%s: Sapling output description invalid", __func__),
+            REJECT_INVALID, "bad-txns-sapling-output-description-invalid");
+    }
+
+    if (!librustzcash_sapling_final_check(ctx, block.shieldStakeProof.amount, block.shieldStakeProof.sig.data(), dataToBeSigned.begin())) {
+        librustzcash_sapling_verification_ctx_free(ctx);
+        return state.DoS(
+            100,
+            error("%s: Sapling binding signature invalid", __func__),
+            REJECT_INVALID, "bad-txns-sapling-binding-signature-invalid");
+    }
+    librustzcash_sapling_verification_ctx_free(ctx);
     return true;
 }
 

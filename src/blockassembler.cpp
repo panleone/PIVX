@@ -108,7 +108,9 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
 
     if (pblock->IsProofOfShieldStake()) {
         auto& shieldStake = *static_cast<CStakeableShieldNote*>(pStake);
-        pwallet->ComputeShieldStakeProof(*pblock, shieldStake, shieldStake.note.value());
+        if (!pwallet->GetSaplingScriptPubKeyMan()->ComputeShieldStakeProof(*pblock, shieldStake, shieldStake.suggestedValue)) {
+            return false;
+        }
     }
     return true;
 }

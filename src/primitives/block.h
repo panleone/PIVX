@@ -81,22 +81,42 @@ class ShieldStakeProof
 {
 public:
     CAmount amount;
-    SpendDescription input;
-    OutputDescription output;
-    std::vector<unsigned char> bindingSig;
+    uint256 inputCv;
+    uint256 rk;
+    SpendDescription::spend_auth_sig_t spendSig;
+    libzcash::GrothProof inputProof = {{0}};
+
+    uint256 outputCv;
+    uint256 epk;
+    uint256 cmu;
+    libzcash::GrothProof outputProof = {{0}};
+    libzcash::GrothProof sig = {{0}};
 
     void SetNull()
     {
         amount = 0;
-        output = OutputDescription();
-        bindingSig.clear();
+        inputCv.SetNull();
+        spendSig = {{0}};
+        rk.SetNull();
+        inputProof = {{0}};
+        outputCv.SetNull();
+        epk.SetNull();
+        cmu.SetNull();
+        outputProof = {{0}};
     }
 
     SERIALIZE_METHODS(ShieldStakeProof, obj)
     {
         READWRITE(obj.amount);
-        READWRITE(obj.output);
-        READWRITE(obj.bindingSig);
+        READWRITE(obj.inputCv);
+        READWRITE(obj.rk);
+        READWRITE(obj.spendSig);
+        READWRITE(obj.inputProof);
+        READWRITE(obj.epk);
+        READWRITE(obj.cmu);
+        READWRITE(obj.outputCv);
+        READWRITE(obj.outputProof);
+        READWRITE(obj.sig);
     }
 };
 
@@ -134,7 +154,7 @@ public:
             READWRITE(obj.vchBlockSig);
 
         // Shield Staking Proof
-        if (obj.nVersion >= 12 && obj.IsProofOfStake()) {
+        if (obj.nVersion >= 12 && obj.IsProofOfShieldStake()) {
             READWRITE(obj.shieldStakeProof);
         }
     }
