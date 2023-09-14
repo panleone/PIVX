@@ -87,6 +87,7 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
         stopPoSOnNewBlock);
     if (!pStake) {
         LogPrint(BCLog::STAKING, "%s : stake not found\n", __func__);
+        std::cout << "Stake not found! ouch" << std::endl;
         return false;
     }
     // Stake found
@@ -99,6 +100,7 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
 
     if (!pwallet->SignCoinStake(txCoinStake)) {
         const COutPoint& stakeIn = txCoinStake.vin[0].prevout;
+        std::cout << "Cannot Sign coinstake" << std::endl;
         return error("Unable to sign coinstake with input %s-%d", stakeIn.hash.ToString(), stakeIn.n);
     }
 
@@ -109,6 +111,7 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
     if (pblock->IsProofOfShieldStake()) {
         auto& shieldStake = *static_cast<CStakeableShieldNote*>(pStake);
         if (!pwallet->GetSaplingScriptPubKeyMan()->ComputeShieldStakeProof(*pblock, shieldStake, shieldStake.suggestedValue)) {
+            std::cout << "Cannot compute proof" << std::endl;
             return false;
         }
     }
