@@ -211,6 +211,7 @@ std::shared_ptr<CBlock> CreateBlockInternal(CWallet* pwalletMain, const std::vec
         pblock->hashFinalSaplingRoot = CalculateSaplingTreeRoot(&*pblock, nHeight, Params());
         assert(SignBlock(*pblock, *pwalletMain));
     }
+    std::cout << "Block resigned!" << std::endl;
     return pblock;
 }
 
