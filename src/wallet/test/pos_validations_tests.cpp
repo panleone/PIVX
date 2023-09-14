@@ -158,6 +158,7 @@ std::shared_ptr<CBlock> CreateBlockInternal(CWallet* pwalletMain, const std::vec
 {
     std::vector<std::unique_ptr<CStakeableInterface>> availableCoins;
     if (!isShieldStake) {
+        std::cout << "Not shield stake block" << std::endl;
         std::vector<CStakeableOutput> availableUTXOs;
         BOOST_CHECK(pwalletMain->StakeableUTXOs(&availableUTXOs));
 
@@ -179,6 +180,7 @@ std::shared_ptr<CBlock> CreateBlockInternal(CWallet* pwalletMain, const std::vec
             availableCoins.push_back(std::make_unique<CStakeableOutput>(utxo));
         }
     } else {
+        std::cout << "Shield stake block" << std::endl;
         std::vector<CStakeableShieldNote> availableNotes;
         BOOST_CHECK(pwalletMain->StakeableNotes(&availableNotes));
         for (auto& note : availableNotes) {

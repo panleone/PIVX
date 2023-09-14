@@ -176,8 +176,10 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     resetBlock();
 
     pblocktemplate.reset(new CBlockTemplate());
-
-    if(!pblocktemplate) return nullptr;
+    if (!pblocktemplate) {
+        std::cout << "Cannot get template" << std::endl;
+        return nullptr;
+    }
     pblock = &pblocktemplate->block; // pointer for convenience
 
     pblocktemplate->vTxFees.push_back(-1); // updated at end
@@ -198,6 +200,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     // Depending on the tip height, try to find a coinstake who solves the block or create a coinbase tx.
     if (!(fProofOfStake ? SolveProofOfStake(pblock, pindexPrev, txCoinStake, pwallet, availableCoins, stopPoSOnNewBlock) : CreateCoinbaseTx(pblock, scriptPubKeyIn, pindexPrev))) {
+        std::cout << "Cannot solve proof of stake!" << std::endl;
         return nullptr;
     }
 
@@ -249,17 +252,22 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         LogPrintf("CPUMiner : proof-of-stake block found %s \n", pblock->GetHash().GetHex());
         if (!SignBlock(*pblock, *pwallet, txCoinStake.shieldStakeRandomness, txCoinStake.shieldStakePrivKey)) {
             LogPrintf("%s: Signing new block with UTXO key failed \n", __func__);
+            std::cout << "Cannot sign the block!" << std::endl;
             return nullptr;
         }
     }
 
     {
         LOCK(cs_main);
-        if (prevBlock == nullptr && chainActive.Tip() != pindexPrev) return nullptr; // new block came in, move on
+        if (prevBlock == nullptr && chainActive.Tip() != pindexPrev) {
+            std::cout << "Tip of chain active is not pindexprev!" << std::endl;
+            return nullptr;
+        } // new block came in, move on
 
         CValidationState state;
         if (fTestValidity &&
             !TestBlockValidity(state, *pblock, pindexPrev, false, false, false)) {
+            std::cout << "Validity test failed!" << std::endl;
             throw std::runtime_error(
                     strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
         }
