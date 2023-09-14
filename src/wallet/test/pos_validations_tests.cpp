@@ -618,11 +618,12 @@ BOOST_FIXTURE_TEST_CASE(coinshieldstake_tests, TestPoSChainSetup)
         std::shared_ptr<CBlock> pblockB = std::make_shared<CBlock>(*pblock);
         uint256 shieldStakeNullifier = pblock.get()->vtx[1]->sapData->vShieldedSpend[0].nullifier;
 
-        // Build a random shield tx that spends the shield stake note.
-        SaplingOperation operation = CreateOperationAndBuildTx(pwalletMain, 5 * COIN, false);
-        // Sanity check on the note that was spent
-        BOOST_CHECK(operation.getFinalTx().sapData->vShieldedSpend[0].nullifier == shieldStakeNullifier);
-        BOOST_CHECK(operation.getFinalTx().sapData->vShieldedSpend.size() == 1);
+        // Build a random shield tx that spends the shield stake note (we are spending both to be sure that the shield stake note is spent).
+        SaplingOperation operation = CreateOperationAndBuildTx(pwalletMain, 11000 * COIN, false);
+        // Sanity check on the notes that was spent
+        auto vecShieldSpend = operation.getFinalTx().sapData->vShieldedSpend;
+        BOOST_CHECK(vecShieldSpend[0].nullifier == shieldStakeNullifier || vecShieldSpend[1].nullifier == shieldStakeNullifier);
+        BOOST_CHECK(operation.getFinalTx().sapData->vShieldedSpend.size() == 2);
 
         // Update the block, resign and try to process
         pblockB->vtx.emplace_back(operation.getFinalTxRef());
