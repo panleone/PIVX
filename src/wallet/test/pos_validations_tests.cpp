@@ -187,6 +187,7 @@ std::shared_ptr<CBlock> CreateBlockInternal(CWallet* pwalletMain, const std::vec
             availableCoins.push_back(std::make_unique<CStakeableShieldNote>(note));
         }
     }
+    std::cout << "Creating new Block:" << std::endl;
     std::unique_ptr<CBlockTemplate> pblocktemplate = BlockAssembler(
         Params(), false)
                                                          .CreateNewBlock(CScript(),
@@ -198,6 +199,7 @@ std::shared_ptr<CBlock> CreateBlockInternal(CWallet* pwalletMain, const std::vec
                                                              customPrevBlock,
                                                              false);
     BOOST_ASSERT(pblocktemplate);
+    std::cout << "Block created!" << std::endl;
     auto pblock = std::make_shared<CBlock>(pblocktemplate->block);
     if (!txns.empty()) {
         if (isShieldStake) BOOST_CHECK(false);

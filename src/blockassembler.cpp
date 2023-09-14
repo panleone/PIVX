@@ -79,6 +79,7 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
     pwallet->BlockUntilSyncedToCurrentChain();
 
     int64_t nTxNewTime = 0;
+    std::cout << "Creating Coin Stake:" << std::endl;
     CStakeableInterface* pStake = pwallet->CreateCoinStake(*pindexPrev,
         pblock->nBits,
         txCoinStake,
@@ -91,7 +92,7 @@ bool SolveProofOfStake(CBlock* pblock, CBlockIndex* pindexPrev, CMutableTransact
         return false;
     }
     // Stake found
-
+    std::cout << "Coin Stake Created!" << std::endl;
     // Create coinbase tx and add masternode/budget payments
     CMutableTransaction txCoinbase = NewCoinbase(pindexPrev->nHeight + 1);
     FillBlockPayee(txCoinbase, txCoinStake, pindexPrev, true);
@@ -201,12 +202,13 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     CMutableTransaction txCoinStake;
 
+    std::cout << "Solving PoS:" << std::endl;
     // Depending on the tip height, try to find a coinstake who solves the block or create a coinbase tx.
     if (!(fProofOfStake ? SolveProofOfStake(pblock, pindexPrev, txCoinStake, pwallet, availableCoins, stopPoSOnNewBlock) : CreateCoinbaseTx(pblock, scriptPubKeyIn, pindexPrev))) {
         std::cout << "Cannot solve proof of stake!" << std::endl;
         return nullptr;
     }
-
+    std::cout << "PoS Solved!" << std::endl;
     // After v6 enforcement, add LLMQ commitments if needed
     const Consensus::Params& consensus = Params().GetConsensus();
     if (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V6_0) && fIncludeQfc) {
