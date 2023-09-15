@@ -3452,11 +3452,13 @@ bool ProcessNewBlock(const std::shared_ptr<const CBlock>& pblock, const FlatFile
             GetMainSignals().BlockChecked(*pblock, state);
             return error ("%s : CheckBlock FAILED for block %s, %s", __func__, pblock->GetHash().GetHex(), FormatStateMessage(state));
         }
-
+        std::cout << "Block checked!" << std::endl;
         // Store to disk
         CBlockIndex* pindex = nullptr;
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp);
+        std::cout << "Block accepted!" << std::endl;
         CheckBlockIndex();
+        std::cout << "Block index checked!" << std::endl;
         if (!ret) {
             GetMainSignals().BlockChecked(*pblock, state);
             return error("%s : AcceptBlock FAILED", __func__);
@@ -3468,6 +3470,7 @@ bool ProcessNewBlock(const std::shared_ptr<const CBlock>& pblock, const FlatFile
     if (!ActivateBestChain(state, pblock))
         return error("%s : ActivateBestChain failed", __func__);
 
+    std::cout << "best chain activate!" << std::endl;
     LogPrintf("%s : ACCEPTED Block %ld in %ld milliseconds with size=%d\n", __func__, newHeight, GetTimeMillis() - nStartTime,
               GetSerializeSize(*pblock, CLIENT_VERSION));
 
