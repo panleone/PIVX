@@ -138,7 +138,7 @@ UniValue listquorums(const JSONRPCRequest& request)
     for (auto& p : Params().GetConsensus().llmqs) {
         UniValue v(UniValue::VARR);
 
-        auto quorums = llmq::quorumManager->ScanQuorums(p.first, chainActive.Tip()->GetBlockHash(), count);
+        auto quorums = llmq::quorumManager->ScanQuorums(p.first, chainActive.Tip(), count);
         for (auto& q : quorums) {
             v.push_back(q->pindexQuorum->GetBlockHash().ToString());
         }

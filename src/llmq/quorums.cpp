@@ -43,7 +43,9 @@ CQuorum::~CQuorum()
 {
     // most likely the thread is already done
     stopCachePopulatorThread = true;
-    if (cachePopulatorThread.joinable()) {
+    // watch out to not join the thread when we're called from inside the thread, which might happen on shutdown. This
+    // is because on shutdown the thread is the last owner of the shared CQuorum instance and thus the destroyer of it.
+    if (cachePopulatorThread.joinable() && cachePopulatorThread.get_id() != std::this_thread::get_id()) {
         cachePopulatorThread.join();
     }
 }
@@ -158,18 +160,16 @@ CQuorumManager::CQuorumManager(CEvoDB& _evoDb, CBLSWorker& _blsWorker, CDKGSessi
 {
 }
 
-void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload)
+void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitialDownload)
 {
     if (fInitialDownload || !activeMasternodeManager || !deterministicMNManager->IsDIP3Enforced(pindexNew->nHeight)) {
         return;
     }
 
-    LOCK(cs_main);
-
     for (auto& p : Params().GetConsensus().llmqs) {
         const auto& params = Params().GetConsensus().llmqs.at(p.first);
 
-        auto lastQuorums = ScanQuorums(p.first, (size_t)params.keepOldConnections);
+        auto lastQuorums = ScanQuorums(p.first, pindexNew, (size_t)params.keepOldConnections);
 
         llmq::EnsureLatestQuorumConnections(p.first, pindexNew, activeMasternodeManager->GetProTx(), lastQuorums);
     }
@@ -178,14 +178,9 @@ void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockI
 
 bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const CBlockIndex* pindexQuorum, const uint256& minedBlockHash, std::shared_ptr<CQuorum>& quorum) const
 {
-    AssertLockHeld(cs_main);
+    assert(pindexQuorum);
+    assert(qc.quorumHash == pindexQuorum->GetBlockHash());
 
-    if (!mapBlockIndex.count(qc.quorumHash)) {
-        LogPrintf("CQuorumManager::%s -- block %s not found", __func__, qc.quorumHash.ToString());
-        return false;
-    }
-    auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)qc.llmqType);
-    auto quorumIndex = mapBlockIndex[qc.quorumHash];
     auto members = deterministicMNManager->GetAllQuorumMembers((Consensus::LLMQType)qc.llmqType, pindexQuorum);
     quorum->Init(minedBlockHash, pindexQuorum, members, qc.validMembers, qc.quorumPublicKey);
 
@@ -197,7 +192,7 @@ bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const
             quorum->WriteContributions(evoDb);
             hasValidVvec = true;
         } else {
-            LogPrintf("CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed", __func__, qc.quorumHash.ToString());
+            LogPrintf("CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed\n", __func__, qc.quorumHash.ToString());
         }
     }
 
@@ -254,33 +249,22 @@ bool CQuorumManager::HasQuorum(Consensus::LLMQType llmqType, const uint256& quor
 
 std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, size_t maxCount)
 {
-    LOCK(cs_main);
-    return ScanQuorums(llmqType, chainActive.Tip()->GetBlockHash(), maxCount);
+    const CBlockIndex* pindex = WITH_LOCK(cs_main, return chainActive.Tip());
+    return ScanQuorums(llmqType, pindex, maxCount);
 }
 
-std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, const uint256& startBlock, size_t maxCount)
+std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqType, const CBlockIndex* pindexStart, size_t maxCount)
 {
+    // TODO: speed up even more by using a cache
+    auto& params = Params().GetConsensus().llmqs.at(llmqType);
+    auto quorumIndexes = quorumBlockProcessor->GetMinedCommitmentsUntilBlock(params.type, pindexStart, maxCount);
     std::vector<CQuorumCPtr> result;
-
-    LOCK(cs_main);
-    if (!mapBlockIndex.count(startBlock)) {
-        return result;
-    }
-
-    result.reserve(maxCount);
-
-    CBlockIndex* pindex = mapBlockIndex[startBlock];
-
-    while (pindex != NULL && result.size() < maxCount && deterministicMNManager->IsDIP3Enforced(pindex->nHeight)) {
-        if (HasQuorum(llmqType, pindex->GetBlockHash())) {
-            auto quorum = GetQuorum(llmqType, pindex->GetBlockHash());
-            if (quorum) {
-                result.emplace_back(quorum);
-            }
-        }
-
-        // TODO speedup (skip blocks where no quorums could have been mined)
-        pindex = pindex->pprev;
+    result.reserve(quorumIndexes.size());
+    for (auto& quorumIndex : quorumIndexes) {
+        assert(quorumIndex);
+        auto quorum = GetQuorum(params.type, quorumIndex);
+        assert(quorum != nullptr);
+        result.emplace_back(quorum);
     }
 
     return result;
@@ -291,13 +275,12 @@ CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const uint25
     CBlockIndex* pindexQuorum;
     {
         LOCK(cs_main);
-        auto quorumIt = mapBlockIndex.find(quorumHash);
+        pindexQuorum = LookupBlockIndex(quorumHash);
 
-        if (quorumIt == mapBlockIndex.end()) {
+        if (!pindexQuorum) {
             LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- block %s not found", __func__, quorumHash.ToString());
             return nullptr;
         }
-        pindexQuorum = quorumIt->second;
     }
     return GetQuorum(llmqType, pindexQuorum);
 }
@@ -336,15 +319,6 @@ CQuorumCPtr CQuorumManager::GetQuorum(Consensus::LLMQType llmqType, const CBlock
     quorumsCache.emplace(std::make_pair(llmqType, quorumHash), quorum);
 
     return quorum;
-}
-
-CQuorumCPtr CQuorumManager::GetNewestQuorum(Consensus::LLMQType llmqType)
-{
-    auto quorums = ScanQuorums(llmqType, 1);
-    if (quorums.empty()) {
-        return nullptr;
-    }
-    return quorums.front();
 }
 
 } // namespace llmq

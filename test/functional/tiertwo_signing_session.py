@@ -30,6 +30,12 @@ class SigningSessionTest(PivxDMNTestFramework):
         self.log.info("----------------------------------")
         (qfc, badmembers) = self.mine_quorum()
         assert_equal(171, miner.getblockcount())
+
+        # in order to avoid sync issues signing sessions quorum selection looks for quorums mined at most at chaintip - 8 blocks.
+        # let's round it and mine 10 blocks
+        miner.generate(10)
+        self.sync_all()
+
         # Quorum members
         members = self.get_quorum_members(qfc['quorumHash'])
 

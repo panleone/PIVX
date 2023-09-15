@@ -550,16 +550,16 @@ CQuorumCPtr CSigningManager::SelectQuorumForSigning(Consensus::LLMQType llmqType
     auto& llmqParams = Params().GetConsensus().llmqs.at(llmqType);
     size_t poolSize = (size_t)llmqParams.signingActiveQuorumCount;
 
-    uint256 startBlock;
+    CBlockIndex* pindexStart;
     {
         LOCK(cs_main);
         if (signHeight > chainActive.Height()) {
             return nullptr;
         }
-        startBlock = chainActive[signHeight - SIGN_HEIGHT_OFFSET]->GetBlockHash();
+        pindexStart = chainActive[signHeight - SIGN_HEIGHT_OFFSET];
     }
 
-    auto quorums = quorumManager->ScanQuorums(llmqType, startBlock, poolSize);
+    auto quorums = quorumManager->ScanQuorums(llmqType, pindexStart, poolSize);
     if (quorums.empty()) {
         return nullptr;
     }

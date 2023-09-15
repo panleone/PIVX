@@ -50,7 +50,6 @@ std::string ToHexStr(const std::vector<bool>& vBits)
 
 bool IsQuorumActive(Consensus::LLMQType llmqType, const uint256& quorumHash)
 {
-    AssertLockHeld(cs_main);
 
     auto& params = Params().GetConsensus().llmqs.at(llmqType);
 
