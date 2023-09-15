@@ -11,6 +11,8 @@
 #include "consensus/params.h"
 #include "evo/deterministicmns.h"
 #include "evo/evodb.h"
+#include "saltedhasher.h"
+#include "unordered_lru_cache.h"
 #include "validationinterface.h"
 
 namespace llmq
@@ -84,7 +86,8 @@ private:
     CDKGSessionManager& dkgManager;
 
     RecursiveMutex quorumsCacheCs;
-    std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumPtr> quorumsCache;
+    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, CQuorumCPtr, StaticSaltedHasher>> mapQuorumsCache;
+    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, std::vector<CQuorumCPtr>, StaticSaltedHasher>> scanQuorumsCache;
 
 public:
     CQuorumManager(CEvoDB& _evoDb, CBLSWorker& _blsWorker, CDKGSessionManager& _dkgManager);
