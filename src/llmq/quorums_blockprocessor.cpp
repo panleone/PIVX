@@ -28,8 +28,7 @@ static const std::string DB_MINED_COMMITMENT_BY_INVERSED_HEIGHT = "q_mcih";
 CQuorumBlockProcessor::CQuorumBlockProcessor(CEvoDB &_evoDb) :
     evoDb(_evoDb)
 {
-    // TODO: add unordered lru cache
-    //utils::InitQuorumsCache(mapHasMinedCommitmentCache);
+    utils::InitQuorumsCache(mapHasMinedCommitmentCache);
 }
 
 template<typename... Args>
@@ -178,7 +177,7 @@ bool CQuorumBlockProcessor::ProcessCommitment(int nHeight, const uint256& blockH
 
     {
         LOCK(minableCommitmentsCs);
-        //mapHasMinedCommitmentCache[qc.llmqType].erase(qc.quorumHash);
+        mapHasMinedCommitmentCache.at((Consensus::LLMQType)qc.llmqType).erase(qc.quorumHash);
         minableCommitmentsByQuorum.erase(cacheKey);
         minableCommitments.erase(::SerializeHash(qc));
     }
@@ -207,7 +206,7 @@ bool CQuorumBlockProcessor::UndoBlock(const CBlock& block, const CBlockIndex* pi
         evoDb.Erase(BuildInversedHeightKey((Consensus::LLMQType)qc.llmqType, pindex->nHeight));
         {
             LOCK(minableCommitmentsCs);
-            //mapHasMinedCommitmentCache[qc.llmqType].erase(qc.quorumHash);
+            mapHasMinedCommitmentCache.at((Consensus::LLMQType)qc.llmqType).erase(qc.quorumHash);
         }
 
         // if a reorg happened, we should allow to mine this commitment later
@@ -281,21 +280,17 @@ uint256 CQuorumBlockProcessor::GetQuorumBlockHash(Consensus::LLMQType llmqType, 
 bool CQuorumBlockProcessor::HasMinedCommitment(Consensus::LLMQType llmqType, const uint256& quorumHash)
 {
     bool fExists;
-    /*
     {
         LOCK(minableCommitmentsCs);
-        if (mapHasMinedCommitmentCache[llmqType].get(quorumHash, fExists)) {
+        if (mapHasMinedCommitmentCache.at((Consensus::LLMQType)llmqType).get(quorumHash, fExists)) {
             return fExists;
         }
     }
-    */
 
     fExists = evoDb.Exists(std::make_pair(DB_MINED_COMMITMENT, std::make_pair(static_cast<uint8_t>(llmqType), quorumHash)));
 
-    /*
     LOCK(minableCommitmentsCs);
-    mapHasMinedCommitmentCache[llmqType].insert(quorumHash, fExists);
-    */
+    mapHasMinedCommitmentCache.at((Consensus::LLMQType)llmqType).insert(quorumHash, fExists);
 
     return fExists;
 }
