@@ -474,7 +474,9 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
         return;
     }
 
-    CBLSInsecureBatchVerifier<NodeId, SigShareKey> batchVerifier;
+    // It's ok to perform insecure batched verification here as we verify against the quorum public key shares,
+    // which are not craftable by individual entities, making the rogue public key attack impossible
+    CBLSBatchVerifier<NodeId, SigShareKey> batchVerifier(false, true);
 
     size_t verifyCount = 0;
     for (auto& p : sigSharesByNodes) {
@@ -502,7 +504,7 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
     }
 
     cxxtimer::Timer verifyTimer;
-    batchVerifier.Verify(true);
+    batchVerifier.Verify();
     verifyTimer.stop();
 
     LogPrintf("llmq", "CSigSharesManager::%s -- verified sig shares. count=%d, vt=%d, nodes=%d\n", __func__, verifyCount, verifyTimer.count(), sigSharesByNodes.size());
