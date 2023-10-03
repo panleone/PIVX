@@ -7,7 +7,16 @@
 
 #include "chain.h" // for CBlockIndex
 #include "primitives/transaction.h"
+#include "consensus/params.h"
+#include "primitives/block.h"
+#include "sapling/incrementalmerkletree.h"
+#include "uint256.h"
 #include "validation.h" // for ReadBlockFromDisk()
+#include "wallet/wallet.h"
+#include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
 
 void SaplingScriptPubKeyMan::AddToSaplingSpends(const uint256& nullifier, const uint256& wtxid)
 {
@@ -194,7 +203,7 @@ void WitnessNoteIfMine(SaplingNoteData* nd,
     assert(nWitnessCacheSize >= (int64_t) nd->witnesses.size());
 }
 
-template<typename NoteDataMap>
+template <typename NoteDataMap>
 void UpdateWitnessHeights(NoteDataMap& noteDataMap, int indexHeight, int64_t nWitnessCacheSize)
 {
     for (auto& item : noteDataMap) {
@@ -208,6 +217,97 @@ void UpdateWitnessHeights(NoteDataMap& noteDataMap, int indexHeight, int64_t nWi
             assert(nWitnessCacheSize >= (int64_t) nd->witnesses.size());
         }
     }
+}
+
+bool SaplingScriptPubKeyMan::BuildWitnessChain(const CBlockIndex* pTargetBlock, const Consensus::Params& params, std::string& errorStr)
+{
+    // If V5 is not enforced building the witness cache is useless
+    if (!params.NetworkUpgradeActive(chainActive.Height(), Consensus::UPGRADE_V5_0)) {
+        return true;
+    }
+
+    LOCK2(cs_main, wallet->cs_wallet);
+    // Target is the last block we want to invalidate
+    rollbackTargetHeight = pTargetBlock->nHeight;
+    cachedWitnessMap.clear();
+
+    // Find the oldest sapling note
+    int minHeight = INT_MAX;
+    for (auto& it : wallet->mapWallet) {
+        CWalletTx& wtx = it.second;
+        if (wtx.mapSaplingNoteData.empty()) continue;
+        // Skip abandoned and conflicted txs for which the block_height is not defined (more precisely it it set to 0 by default)
+        if (wtx.m_confirm.status != CWalletTx::CONFIRMED) continue;
+        minHeight = std::min(wtx.m_confirm.block_height, minHeight);
+    }
+
+    // Read blocks from the disk from chaintip to the minimum found height
+    std::vector<CBlock> cblocks;
+    const CBlockIndex* pIndex = GetChainTip();
+    int currentHeight = GetChainTip()->nHeight;
+    while (currentHeight >= minHeight) {
+        CBlock cblock;
+        ReadBlockFromDisk(cblock, pIndex);
+        cblocks.insert(cblocks.begin(), cblock);
+        pIndex = pIndex->pprev;
+        currentHeight = pIndex->nHeight;
+    }
+
+    SaplingMerkleTree initialSaplingTree = SaplingMerkleTree();
+    // Load the SaplingMerkleTree for the block before the oldest note (if the hash is zero then continue with an empty merkle tree)
+    if (!(pIndex->hashFinalSaplingRoot == UINT256_ZERO) && !pcoinsTip->GetSaplingAnchorAt(pIndex->hashFinalSaplingRoot, initialSaplingTree)) {
+        errorStr = "Cannot fetch the sapling anchor!";
+        return false;
+    }
+    // Finally build the witness cache for each sapling note of your wallet
+    int height = minHeight;
+    for (CBlock& block : cblocks) {
+        // Finally build the witness cache for each sapling note
+        std::vector<uint256> noteCommitments;
+        std::vector<SaplingNoteData*> inBlockArrivingNotes;
+        for (const auto& tx : block.vtx) {
+            const auto& hash = tx->GetHash();
+            auto it = wallet->mapWallet.find(hash);
+            bool txIsOurs = it != wallet->mapWallet.end();
+
+            if (!tx->IsShieldedTx()) continue;
+            for (uint32_t i = 0; i < tx->sapData->vShieldedOutput.size(); i++) {
+                const auto& cmu = tx->sapData->vShieldedOutput[i].cmu;
+                noteCommitments.emplace_back(cmu);
+                for (auto& item : inBlockArrivingNotes) {
+                    item->witnesses.front().append(cmu);
+                }
+                initialSaplingTree.append(cmu);
+                if (txIsOurs) {
+                    CWalletTx* wtx = &it->second;
+                    auto ndIt = wtx->mapSaplingNoteData.find({hash, i});
+                    if (ndIt != wtx->mapSaplingNoteData.end()) {
+                        SaplingNoteData* nd = &ndIt->second;
+                        nd->witnesses.push_front(initialSaplingTree.witness());
+                        inBlockArrivingNotes.emplace_back(nd);
+                    }
+                }
+            }
+        }
+        for (auto& it2 : cachedWitnessMap) {
+            // Don't duplicate if the block is too old
+            if (height >= rollbackTargetHeight) {
+                it2.second.emplace_front(it2.second.front());
+            }
+            for (auto& noteComm : noteCommitments) {
+                it2.second.front().append(noteComm);
+            }
+        }
+        for (auto nd : inBlockArrivingNotes) {
+            if (nd->nullifier) {
+                std::list<SaplingWitness> witnesses;
+                witnesses.push_front(nd->witnesses.front());
+                cachedWitnessMap.emplace(*(nd->nullifier), witnesses);
+            }
+        }
+        height++;
+    }
+    return true;
 }
 
 void SaplingScriptPubKeyMan::IncrementNoteWitnesses(const CBlockIndex* pindex,
@@ -293,6 +393,34 @@ void SaplingScriptPubKeyMan::IncrementNoteWitnesses(const CBlockIndex* pindex,
     // CWallet::SetBestChain() (which also ensures that overall consistency
     // of the wallet.dat is maintained).
 }
+/*
+ * Clear and eventually reset each witness of noteDataMap with the corresponding front-value of cachedWitnessMap, indexHeight is the blockHeight being invalidated
+ */
+void ResetNoteWitnesses(std::map<SaplingOutPoint, SaplingNoteData>& noteDataMap, std::map<uint256, std::list<SaplingWitness>>& cachedWitnessMap, int indexHeight)
+{
+    // For each note that you own:
+    for (auto& item : noteDataMap) {
+        auto& nd = (item.second);
+        // skip externally sent notes
+        if (!nd.IsMyNote()) continue;
+        // Clear the cache
+        nd.witnesses.clear();
+        // The withnessHeight must be EITHER -1 or equal to the block indexHeight
+        // The case in which indexHeight > witnessHeight is due to conflicted notes, which are irrelevant
+        // TODO: Allow invalidating blocks only if there are not conflicted txs?
+        if (nd.witnessHeight <= indexHeight) {
+            assert((nd.witnessHeight == -1) || (nd.witnessHeight == indexHeight));
+        }
+        // Decrease the witnessHeight
+        nd.witnessHeight = indexHeight - 1;
+        if (nd.nullifier && cachedWitnessMap.at(*nd.nullifier).size() > 0) {
+            // Update the witness value with the cached one
+            nd.witnesses.push_front(cachedWitnessMap.at(*nd.nullifier).front());
+            cachedWitnessMap.at(*nd.nullifier).pop_front();
+        }
+    }
+}
+
 
 template<typename NoteDataMap>
 void DecrementNoteWitnesses(NoteDataMap& noteDataMap, int indexHeight, int64_t nWitnessCacheSize)
@@ -336,9 +464,30 @@ void DecrementNoteWitnesses(NoteDataMap& noteDataMap, int indexHeight, int64_t n
     }
 }
 
-void SaplingScriptPubKeyMan::DecrementNoteWitnesses(int nChainHeight)
+void SaplingScriptPubKeyMan::DecrementNoteWitnesses(const CBlockIndex* pindex)
 {
+    assert(pindex);
     LOCK(wallet->cs_wallet);
+    int nChainHeight = pindex->nHeight;
+    // if the targetHeight is different from -1 we have a cache to use
+    if (rollbackTargetHeight != -1) {
+        for (std::pair<const uint256, CWalletTx>& wtxItem : wallet->mapWallet) {
+            if (!wtxItem.second.mapSaplingNoteData.empty()) {
+                // For each sapling note that you own reset the current witness with the cached one
+                ResetNoteWitnesses(wtxItem.second.mapSaplingNoteData, cachedWitnessMap, nChainHeight);
+            }
+        }
+        nWitnessCacheSize = 1;
+        nWitnessCacheNeedsUpdate = true;
+        // If we reached the target height empty the cache and reset the target height to -1
+        // Remember that the targetHeight is indeed the last block we want to invalidate
+        if (rollbackTargetHeight == pindex->nHeight) {
+            cachedWitnessMap.clear();
+            rollbackTargetHeight = -1;
+        }
+        return;
+    }
+
     for (std::pair<const uint256, CWalletTx>& wtxItem : wallet->mapWallet) {
         ::DecrementNoteWitnesses(wtxItem.second.mapSaplingNoteData, nChainHeight, nWitnessCacheSize);
     }
@@ -517,7 +666,6 @@ void SaplingScriptPubKeyMan::GetFilteredNotes(
         for (const auto& it : wtx.mapSaplingNoteData) {
             const SaplingOutPoint& op = it.first;
             const SaplingNoteData& nd = it.second;
-
             // skip sent notes
             if (!nd.IsMyNote()) continue;
 
