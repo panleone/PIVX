@@ -33,20 +33,51 @@ bool CRecoveredSigsDb::HasRecoveredSig(Consensus::LLMQType llmqType, const uint2
 
 bool CRecoveredSigsDb::HasRecoveredSigForId(Consensus::LLMQType llmqType, const uint256& id)
 {
+    auto cacheKey = std::make_pair(llmqType, id);
+    bool ret;
+    {
+        LOCK(cs);
+        if (hasSigForIdCache.get(cacheKey, ret)) {
+            return ret;
+        }
+    }
     auto k = std::make_tuple('r', (uint8_t)llmqType, id);
-    return db.Exists(k);
+    ret = db.Exists(k);
+    LOCK(cs);
+    hasSigForIdCache.insert(cacheKey, ret);
+    return ret;
 }
 
 bool CRecoveredSigsDb::HasRecoveredSigForSession(const uint256& signHash)
 {
+    bool ret;
+    {
+        LOCK(cs);
+        if (hasSigForSessionCache.get(signHash, ret)) {
+            return ret;
+        }
+    }
     auto k = std::make_tuple('s', signHash);
-    return db.Exists(k);
+    ret = db.Exists(k);
+    LOCK(cs);
+    hasSigForSessionCache.insert(signHash, ret);
+    return ret;
 }
 
 bool CRecoveredSigsDb::HasRecoveredSigForHash(const uint256& hash)
 {
+    bool ret;
+    {
+        LOCK(cs);
+        if (hasSigForHashCache.get(hash, ret)) {
+            return ret;
+        }
+    }
     auto k = std::make_tuple('h', hash);
-    return db.Exists(k);
+    ret = db.Exists(k);
+    LOCK(cs);
+    hasSigForHashCache.insert(hash, ret);
+    return ret;
 }
 
 bool CRecoveredSigsDb::ReadRecoveredSig(Consensus::LLMQType llmqType, const uint256& id, CRecoveredSig& ret)
@@ -98,7 +129,8 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
     batch.Write(k3, std::make_pair(recSig.llmqType, recSig.id));
 
     // store by signHash
-    auto k4 = std::make_tuple('s', llmq::utils::BuildSignHash(recSig));
+    auto signHash = llmq::utils::BuildSignHash(recSig);
+    auto k4 = std::make_tuple('s', signHash);
     batch.Write(k4, (uint8_t)1);
 
     // remove the votedForId entry as we won't need it anymore
@@ -110,6 +142,12 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
     batch.Write(k6, (uint8_t)1);
 
     db.WriteBatch(batch);
+    {
+        LOCK(cs);
+        hasSigForIdCache.insert(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id), true);
+        hasSigForSessionCache.insert(signHash, true);
+        hasSigForHashCache.insert(recSig.GetHash(), true);
+    }
 }
 
 void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
@@ -145,24 +183,32 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
     }
 
     CDBBatch batch;
-    for (auto& e : toDelete) {
-        CRecoveredSig recSig;
-        if (!ReadRecoveredSig(e.first, e.second, recSig)) {
-            continue;
+    {
+        LOCK(cs);
+        for (auto& e : toDelete) {
+            CRecoveredSig recSig;
+            if (!ReadRecoveredSig(e.first, e.second, recSig)) {
+                continue;
+            }
+
+            auto signHash = llmq::utils::BuildSignHash(recSig);
+
+            auto k1 = std::make_tuple('r', recSig.llmqType, recSig.id);
+            auto k2 = std::make_tuple('r', recSig.llmqType, recSig.id, recSig.msgHash);
+            auto k3 = std::make_tuple('h', recSig.GetHash());
+            auto k4 = std::make_tuple('s', signHash);
+            auto k5 = std::make_tuple('v', recSig.llmqType, recSig.id);
+            batch.Erase(k1);
+            batch.Erase(k2);
+            batch.Erase(k3);
+            batch.Erase(k4);
+            batch.Erase(k5);
+
+            hasSigForIdCache.erase(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id));
+            hasSigForSessionCache.erase(signHash);
+            hasSigForHashCache.erase(recSig.GetHash());
         }
-
-        auto k1 = std::make_tuple('r', recSig.llmqType, recSig.id);
-        auto k2 = std::make_tuple('r', recSig.llmqType, recSig.id, recSig.msgHash);
-        auto k3 = std::make_tuple('h', recSig.GetHash());
-        auto k4 = std::make_tuple('s', llmq::utils::BuildSignHash(recSig));
-        auto k5 = std::make_tuple('v', recSig.llmqType, recSig.id);
-        batch.Erase(k1);
-        batch.Erase(k2);
-        batch.Erase(k3);
-        batch.Erase(k4);
-        batch.Erase(k5);
     }
-
     for (auto& e : toDelete2) {
         batch.Erase(e);
     }

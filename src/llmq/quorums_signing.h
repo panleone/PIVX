@@ -10,7 +10,11 @@
 
 #include "chainparams.h"
 #include "net.h"
+#include "saltedhasher.h"
 #include "sync.h"
+#include "unordered_lru_cache.h"
+
+#include <unordered_map>
 
 namespace llmq
 {
@@ -64,11 +68,15 @@ public:
     }
 };
 
-// TODO implement caching to speed things up
 class CRecoveredSigsDb
 {
 private:
     CDBWrapper db;
+
+    RecursiveMutex cs;
+    unordered_lru_cache<std::pair<Consensus::LLMQType, uint256>, bool, StaticSaltedHasher, 30000> hasSigForIdCache;
+    unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForSessionCache;
+    unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForHashCache;
 
 public:
     CRecoveredSigsDb(bool fMemory);
