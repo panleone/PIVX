@@ -300,19 +300,15 @@ bool CSigningManager::PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& 
         return false;
     }
 
-    CQuorumCPtr quorum;
-    {
-        LOCK(cs_main);
+    CQuorumCPtr quorum = quorumManager->GetQuorum(llmqType, recoveredSig.quorumHash);
 
-        quorum = quorumManager->GetQuorum(llmqType, recoveredSig.quorumHash);
-        if (!quorum) {
-            LogPrintf("CSigningManager::%s -- quorum %s not found, node=%d\n", __func__,
-                recoveredSig.quorumHash.ToString(), nodeId);
-            return false;
-        }
-        if (!llmq::utils::IsQuorumActive(llmqType, quorum->pindexQuorum->GetBlockHash())) {
-            return false;
-        }
+    if (!quorum) {
+        LogPrintf("CSigningManager::%s -- quorum %s not found, node=%d\n", __func__,
+            recoveredSig.quorumHash.ToString(), nodeId);
+        return false;
+    }
+    if (!llmq::utils::IsQuorumActive(llmqType, quorum->pindexQuorum->GetBlockHash())) {
+        return false;
     }
 
     if (!recoveredSig.sig.IsValid()) {
@@ -355,37 +351,34 @@ void CSigningManager::CollectPendingRecoveredSigsToVerify(
         }
     }
 
-    {
-        LOCK(cs_main);
-        for (auto& p : retSigShares) {
-            NodeId nodeId = p.first;
-            auto& v = p.second;
+    for (auto& p : retSigShares) {
+        NodeId nodeId = p.first;
+        auto& v = p.second;
 
-            for (auto it = v.begin(); it != v.end();) {
-                auto& recSig = *it;
+        for (auto it = v.begin(); it != v.end();) {
+            auto& recSig = *it;
 
-                Consensus::LLMQType llmqType = (Consensus::LLMQType)recSig.llmqType;
-                auto quorumKey = std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.quorumHash);
-                if (!retQuorums.count(quorumKey)) {
-                    CQuorumCPtr quorum = quorumManager->GetQuorum(llmqType, recSig.quorumHash);
-                    if (!quorum) {
-                        LogPrintf("CSigningManager::%s -- quorum %s not found, node=%d\n", __func__,
-                            recSig.quorumHash.ToString(), nodeId);
-                        it = v.erase(it);
-                        continue;
-                    }
-                    if (!llmq::utils::IsQuorumActive(llmqType, quorum->pindexQuorum->GetBlockHash())) {
-                        LogPrintf("CSigningManager::%s -- quorum %s not active anymore, node=%d\n", __func__,
-                            recSig.quorumHash.ToString(), nodeId);
-                        it = v.erase(it);
-                        continue;
-                    }
-
-                    retQuorums.emplace(quorumKey, quorum);
+            Consensus::LLMQType llmqType = (Consensus::LLMQType)recSig.llmqType;
+            auto quorumKey = std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.quorumHash);
+            if (!retQuorums.count(quorumKey)) {
+                CQuorumCPtr quorum = quorumManager->GetQuorum(llmqType, recSig.quorumHash);
+                if (!quorum) {
+                    LogPrintf("CSigningManager::%s -- quorum %s not found, node=%d\n", __func__,
+                        recSig.quorumHash.ToString(), nodeId);
+                    it = v.erase(it);
+                    continue;
+                }
+                if (!llmq::utils::IsQuorumActive(llmqType, quorum->pindexQuorum->GetBlockHash())) {
+                    LogPrintf("CSigningManager::%s -- quorum %s not active anymore, node=%d\n", __func__,
+                        recSig.quorumHash.ToString(), nodeId);
+                    it = v.erase(it);
+                    continue;
                 }
 
-                ++it;
+                retQuorums.emplace(quorumKey, quorum);
             }
+
+            ++it;
         }
     }
 }
