@@ -679,14 +679,13 @@ CQuorumCPtr CSigningManager::SelectQuorumForSigning(Consensus::LLMQType llmqType
 
 bool CSigningManager::VerifyRecoveredSig(Consensus::LLMQType llmqType, int signedAtHeight, const uint256& id, const uint256& msgHash, const CBLSSignature& sig)
 {
-    auto& llmqParams = Params().GetConsensus().llmqs.at(Params().GetConsensus().llmqChainLocks);
+    auto quorum = SelectQuorumForSigning(llmqType, signedAtHeight, id);
 
-    auto quorum = SelectQuorumForSigning(llmqParams.type, signedAtHeight, id);
     if (!quorum) {
         return false;
     }
 
-    uint256 signHash = llmq::utils::BuildSignHash(llmqParams.type, quorum->pindexQuorum->GetBlockHash(), id, msgHash);
+    uint256 signHash = llmq::utils::BuildSignHash(llmqType, quorum->pindexQuorum->GetBlockHash(), id, msgHash);
     return sig.VerifyInsecure(quorum->quorumPublicKey, signHash);
 }
 
