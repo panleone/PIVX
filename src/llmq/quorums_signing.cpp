@@ -138,7 +138,7 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
     batch.Erase(k5);
 
     // store by current time. Allows fast cleanup of old recSigs
-    auto k6 = std::make_tuple('t', (uint32_t)GetAdjustedTime(), recSig.llmqType, recSig.id);
+    auto k6 = std::make_tuple('t', (uint32_t)htobe32(GetAdjustedTime()), recSig.llmqType, recSig.id);
     batch.Write(k6, (uint8_t)1);
 
     db.WriteBatch(batch);
@@ -155,7 +155,7 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
     std::unique_ptr<CDBIterator> pcursor(db.NewIterator());
 
     auto start = std::make_tuple('t', (uint32_t)0, (uint8_t)0, uint256());
-    auto end = std::make_tuple('t', (uint32_t)(GetAdjustedTime() - maxAge), (uint8_t)0, uint256());
+    uint32_t endTime = (uint32_t)(GetAdjustedTime() - maxAge);
     pcursor->Seek(start);
 
     std::vector<std::pair<Consensus::LLMQType, uint256>> toDelete;
@@ -163,11 +163,10 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
 
     while (pcursor->Valid()) {
         decltype(start) k;
-
-        if (!pcursor->GetKey(k)) {
+        if (!pcursor->GetKey(k) || std::get<0>(k) != 't') {
             break;
         }
-        if (k >= end) {
+        if (be32toh(std::get<1>(k)) >= endTime) {
             break;
         }
 
@@ -207,6 +206,11 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
             hasSigForIdCache.erase(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id));
             hasSigForSessionCache.erase(signHash);
             hasSigForHashCache.erase(recSig.GetHash());
+
+            if (batch.SizeEstimate() >= (1 << 24)) {
+                db.WriteBatch(batch);
+                batch.Clear();
+            }
         }
     }
     for (auto& e : toDelete2) {
@@ -214,6 +218,8 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
     }
 
     db.WriteBatch(batch);
+
+    LogPrintf("CRecoveredSigsDb::%d -- deleted %d entries\n", __func__, toDelete.size());
 }
 
 bool CRecoveredSigsDb::HasVotedOnId(Consensus::LLMQType llmqType, const uint256& id)
