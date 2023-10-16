@@ -458,10 +458,20 @@ void CSigningManager::ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& re
             signHash.ToString(), recoveredSig.id.ToString(), recoveredSig.msgHash.ToString(), nodeId);
 
         if (db.HasRecoveredSigForId(llmqType, recoveredSig.id)) {
-            // this should really not happen, as each masternode is participating in only one vote,
-            // even if it's a member of multiple quorums. so a majority is only possible on one quorum and one msgHash per id
-            LogPrintf("CSigningManager::%s -- conflicting recoveredSig for id=%s, msgHash=%s\n", __func__,
-                recoveredSig.id.ToString(), recoveredSig.msgHash.ToString());
+            CRecoveredSig otherRecoveredSig;
+            if (db.GetRecoveredSigById(llmqType, recoveredSig.id, otherRecoveredSig)) {
+                auto otherSignHash = llmq::utils::BuildSignHash(recoveredSig);
+                if (signHash != otherSignHash) {
+                    // this should really not happen, as each masternode is participating in only one vote,
+                    // even if it's a member of multiple quorums. so a majority is only possible on one quorum and one msgHash per id
+                    LogPrintf("CSigningManager::%s -- conflicting recoveredSig for id=%s, msgHash=%s\n", __func__,
+                        recoveredSig.id.ToString(), recoveredSig.msgHash.ToString());
+                } else {
+                    // In this case we are processing an already known recovered sig, do not print anything
+                }
+            }
+
+
             return;
         }
 
@@ -523,7 +533,7 @@ bool CSigningManager::AsyncSignIfMember(Consensus::LLMQType llmqType, const uint
 
         if (db.HasRecoveredSigForId(llmqType, id)) {
             // no need to sign it if we already have a recovered sig
-            return false;
+            return true;
         }
         db.WriteVoteForId(llmqType, id, msgHash);
     }
