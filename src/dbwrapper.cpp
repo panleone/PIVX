@@ -52,7 +52,7 @@ static leveldb::Options GetOptions(size_t nCacheSize)
     return options;
 }
 
-CDBWrapper::CDBWrapper(const fs::path& path, size_t nCacheSize, bool fMemory, bool fWipe)
+CDBWrapper::CDBWrapper(const fs::path& path, size_t nCacheSize, bool fMemory, bool fWipe, int nVersion)
 {
     penv = nullptr;
     readoptions.verify_checksums = true;
@@ -61,6 +61,7 @@ CDBWrapper::CDBWrapper(const fs::path& path, size_t nCacheSize, bool fMemory, bo
     syncoptions.sync = true;
     options = GetOptions(nCacheSize);
     options.create_if_missing = true;
+    this->nVersion = nVersion;
     if (fMemory) {
         penv = leveldb::NewMemEnv(leveldb::Env::Default());
         options.env = penv;

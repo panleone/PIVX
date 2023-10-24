@@ -4,6 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "quorums_signing.h"
+#include "clientversion.h"
+#include "netaddress.h"
 #include "quorums_signing_shares.h"
 #include "quorums_utils.h"
 
@@ -21,7 +23,7 @@ namespace llmq
 
 CSigningManager* quorumSigningManager;
 
-CRecoveredSigsDb::CRecoveredSigsDb(bool fMemory) : db(fMemory ? "" : (GetDataDir() / "llmq"), 1 << 20, fMemory)
+CRecoveredSigsDb::CRecoveredSigsDb(bool fMemory) : db(fMemory ? "" : (GetDataDir() / "llmq"), 1 << 20, fMemory, false, CLIENT_VERSION | ADDRV2_FORMAT)
 {
 }
 
@@ -84,7 +86,7 @@ bool CRecoveredSigsDb::GetRecoveredSigById(Consensus::LLMQType llmqType, const u
 
 void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
 {
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION | ADDRV2_FORMAT);
 
     // we put these close to each other to leverage leveldb's key compaction
     // this way, the second key can be used for fast HasRecoveredSig checks while the first key stores the recSig
@@ -144,7 +146,7 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
         return;
     }
 
-    CDBBatch batch;
+    CDBBatch batch(CLIENT_VERSION | ADDRV2_FORMAT);
     for (auto& e : toDelete) {
         CRecoveredSig recSig;
         if (!ReadRecoveredSig(e.first, e.second, recSig)) {

@@ -4,6 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "evodb.h"
+#include "clientversion.h"
+#include "netaddress.h"
 
 std::unique_ptr<CEvoDB> evoDb;
 
@@ -32,11 +34,10 @@ void CEvoDBScopedCommitter::Rollback()
     evoDB.RollbackCurTransaction();
 }
 
-CEvoDB::CEvoDB(size_t nCacheSize, bool fMemory, bool fWipe) :
-        db(fMemory ? "" : (GetDataDir() / "evodb"), nCacheSize, fMemory, fWipe),
-        rootBatch(),
-        rootDBTransaction(db, rootBatch),
-        curDBTransaction(rootDBTransaction, rootDBTransaction)
+CEvoDB::CEvoDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(fMemory ? "" : (GetDataDir() / "evodb"), nCacheSize, fMemory, fWipe, CLIENT_VERSION | ADDRV2_FORMAT),
+                                                              rootBatch(CLIENT_VERSION | ADDRV2_FORMAT),
+                                                              rootDBTransaction(db, rootBatch, CLIENT_VERSION | ADDRV2_FORMAT),
+                                                              curDBTransaction(rootDBTransaction, rootDBTransaction, CLIENT_VERSION | ADDRV2_FORMAT)
 {
 }
 
