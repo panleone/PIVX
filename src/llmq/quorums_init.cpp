@@ -57,6 +57,7 @@ void StartLLMQSystem()
         quorumDKGSessionManager->StartThreads();
     }
     if (quorumSigSharesManager) {
+        quorumSigSharesManager->RegisterAsRecoveredSigsListener();
         quorumSigSharesManager->StartWorkerThread();
     }
 }
@@ -68,6 +69,7 @@ void StopLLMQSystem()
     }
     if (quorumSigSharesManager) {
         quorumSigSharesManager->StopWorkerThread();
+        quorumSigSharesManager->UnregisterAsRecoveredSigsListener();
     }
     if (blsWorker) {
         blsWorker->Stop();

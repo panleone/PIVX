@@ -16,6 +16,7 @@
 #include "uint256.h"
 
 #include "llmq/quorums.h"
+#include "llmq/quorums_signing.h"
 
 #include <mutex>
 #include <thread>
@@ -190,9 +191,10 @@ public:
     void RemoveSession(const uint256& signHash);
 };
 
-class CSigSharesManager
+class CSigSharesManager : public CRecoveredSigsListener
 {
-    static const int64_t SIGNING_SESSION_TIMEOUT = 60 * 1000;
+    static const int64_t SESSION_NEW_SHARES_TIMEOUT = 60 * 1000;
+    static const int64_t SESSION_TOTAL_TIMEOUT = 5 * 60 * 1000;
     static const int64_t SIG_SHARE_REQUEST_TIMEOUT = 5 * 1000;
 
 private:
@@ -202,7 +204,9 @@ private:
     CThreadInterrupt workInterrupt;
 
     std::map<SigShareKey, CSigShare> sigShares;
-    std::map<uint256, int64_t> firstSeenForSessions;
+
+    // stores time of first and last receivedSigShare. Used to detect timeouts
+    std::map<uint256, std::pair<int64_t, int64_t>> timeSeenForSessions;
 
     std::map<NodeId, CSigSharesNodeState> nodeStates;
     std::map<SigShareKey, std::pair<NodeId, int64_t>> sigSharesRequested;
@@ -221,6 +225,8 @@ public:
 
     void StartWorkerThread();
     void StopWorkerThread();
+    void RegisterAsRecoveredSigsListener();
+    void UnregisterAsRecoveredSigsListener();
     void InterruptWorkerThread();
 
 public:
@@ -228,6 +234,8 @@ public:
 
     void AsyncSign(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash);
     void Sign(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash);
+
+    void HandleNewRecoveredSig(const CRecoveredSig& recoveredSig);
 
 private:
     void ProcessMessageSigSharesInv(CNode* pfrom, const CSigSharesInv& inv, CConnman& connman);
