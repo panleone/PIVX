@@ -519,7 +519,7 @@ bool CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
         }
     }
 
-    cxxtimer::Timer verifyTimer;
+    cxxtimer::Timer verifyTimer(true);
     batchVerifier.Verify();
     verifyTimer.stop();
 
