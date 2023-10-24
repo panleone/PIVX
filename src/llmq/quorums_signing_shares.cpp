@@ -179,15 +179,20 @@ CSigSharesInv CBatchedSigShares::ToInv() const
 
 CSigSharesManager::CSigSharesManager()
 {
+    workInterrupt.reset();
 }
 
 CSigSharesManager::~CSigSharesManager()
 {
-    StopWorkerThread();
 }
 
 void CSigSharesManager::StartWorkerThread()
 {
+    // can't start new thread if we have one running already
+    if (workThread.joinable()) {
+        assert(false);
+    }
+
     workThread = std::thread(&TraceThread<std::function<void()>>, "quorum-sigshares", [this]() {
         WorkThreadMain();
     });
@@ -195,14 +200,19 @@ void CSigSharesManager::StartWorkerThread()
 
 void CSigSharesManager::StopWorkerThread()
 {
-    if (stopWorkThread) {
-        return;
+    // make sure to call InterruptWorkerThread() first
+    if (!workInterrupt) {
+        assert(false);
     }
 
-    stopWorkThread = true;
     if (workThread.joinable()) {
         workThread.join();
     }
+}
+
+void CSigSharesManager::InterruptWorkerThread()
+{
+    workInterrupt();
 }
 
 void CSigSharesManager::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
@@ -1100,7 +1110,13 @@ void CSigSharesManager::BanNode(NodeId nodeId)
 void CSigSharesManager::WorkThreadMain()
 {
     int64_t lastProcessTime = GetTimeMillis();
-    while (!stopWorkThread && !ShutdownRequested()) {
+    while (!workInterrupt) {
+        if (!quorumSigningManager || !g_connman || !quorumSigningManager) {
+            if (!workInterrupt.sleep_for(std::chrono::milliseconds(100))) {
+                return;
+            }
+            continue;
+        }
         RemoveBannedNodeStates();
         quorumSigningManager->ProcessPendingRecoveredSigs(*g_connman);
         ProcessPendingSigShares(*g_connman);
@@ -1110,7 +1126,9 @@ void CSigSharesManager::WorkThreadMain()
         quorumSigningManager->Cleanup();
 
         // TODO Wakeup when pending signing is needed?
-        MilliSleep(100);
+        if (!workInterrupt.sleep_for(std::chrono::milliseconds(100))) {
+            return;
+        }
     }
 }
 

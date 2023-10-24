@@ -328,3 +328,8 @@ void DeleteTierTwo()
     deterministicMNManager.reset();
     evoDb.reset();
 }
+
+void InterruptTierTwo()
+{
+    llmq::InterruptLLMQSystem();
+}

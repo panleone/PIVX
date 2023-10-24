@@ -56,5 +56,7 @@ void StopTierTwoThreads();
 /** Cleans manager and worker objects pointers */
 void DeleteTierTwo();
 
+/** Interrupt tier two workers */
+void InterruptTierTwo();
 
 #endif //PIVX_TIERTWO_INIT_H

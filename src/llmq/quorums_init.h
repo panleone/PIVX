@@ -21,6 +21,7 @@ void DestroyLLMQSystem();
 // Manage scheduled tasks, threads, listeners etc.
 void StartLLMQSystem();
 void StopLLMQSystem();
+void InterruptLLMQSystem();
 
 } // namespace llmq
 

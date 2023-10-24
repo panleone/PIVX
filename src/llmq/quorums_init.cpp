@@ -74,4 +74,11 @@ void StopLLMQSystem()
     }
 }
 
+void InterruptLLMQSystem()
+{
+    if (quorumSigSharesManager) {
+        quorumSigSharesManager->InterruptWorkerThread();
+    }
+}
+
 } // namespace llmq
