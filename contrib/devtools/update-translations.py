@@ -2,7 +2,7 @@
 # Copyright (c) 2014 Wladimir J. van der Laan
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-'''
+"""
 Run this script from the root of the repository to update all translations from
 transifex.
 It will do the following automatically:
@@ -11,9 +11,11 @@ It will do the following automatically:
 - post-process them into valid and committable format
   - remove invalid control characters
   - remove location tags (makes diffs less noisy)
+  - drop untranslated languages
 - update git for added translations
 - update build system
-'''
+"""
+
 import argparse
 import subprocess
 import re
@@ -24,16 +26,23 @@ import xml.etree.ElementTree as ET
 
 # Name of transifex tool
 TX = 'tx'
-# Name of source language file
-SOURCE_LANG = 'pivx_en.ts'
+# Name of source language file without extension
+SOURCE_LANG = 'pivx_en'
 # Directory with locale files
 LOCALE_DIR = 'src/qt/locale'
-# Minimum number of messages for translation to be considered at all
-MIN_NUM_MESSAGES = 10
+# Minimum number of non-numerus messages for translation to be considered at all
+MIN_NUM_NONNUMERUS_MESSAGES = 10
 # Minimum completion percentage required to download from transifex
 MINIMUM_PERC = 80
 # Path to git
 GIT = os.getenv("GIT", "git")
+# Original content file suffix
+ORIGINAL_SUFFIX = '.orig'
+# Native Qt translation file (TS) format
+FORMAT_TS = '.ts'
+# XLIFF file format
+FORMAT_XLIFF = '.xlf'
+
 
 def check_at_repository_root():
     if not os.path.exists('.git'):
@@ -41,27 +50,38 @@ def check_at_repository_root():
         print('Execute this script at the root of the repository', file=sys.stderr)
         sys.exit(1)
 
+
 def remove_current_translations():
-    '''
-    Remove current translations, as well as temporary files that might be left behind
+    """
+    Remove current translations.
     We only want the active translations that are currently on transifex.
     This leaves pivx_en.ts untouched.
-    '''
-    for (_,name) in all_ts_files():
+    """
+    for (_, name) in all_ts_files():
         os.remove(name)
-    for (_,name) in all_ts_files('.orig'):
-        os.remove(name + '.orig')
 
-def fetch_all_translations(fAll = False):
-    call_list = [TX, 'pull', '-f', '-a']
+
+def remove_orig_files():
+    """
+    Remove temporary files that might be left behind.
+    """
+    for (_, name) in all_ts_files(suffix=ORIGINAL_SUFFIX):
+        os.remove(name + ORIGINAL_SUFFIX)
+
+
+def fetch_all_translations(fAll=False):
+    call_list = [TX, 'pull', '--translations', '--force', '--all']
     if not fAll:
         call_list.append('--minimum-perc=%s' % MINIMUM_PERC)
     if subprocess.call(call_list):
         print('Error while fetching translations', file=sys.stderr)
         sys.exit(1)
 
+
 def find_format_specifiers(s):
-    '''Find all format specifiers in a string.'''
+    """
+    Find all format specifiers in a string.
+    """
     pos = 0
     specifiers = []
     while True:
@@ -75,12 +95,15 @@ def find_format_specifiers(s):
         pos = percent+2
     return specifiers
 
+
 def split_format_specifiers(specifiers):
-    '''Split format specifiers between numeric (Qt) and others (strprintf)'''
+    """
+    Split format specifiers between numeric (Qt) and others (strprintf)
+    """
     numeric = []
     other = []
     for s in specifiers:
-        if s in {'1','2','3','4','5','6','7','8','9'}:
+        if s in {'1', '2', '3', '4', '5', '6', '7', '8', '9'}:
             numeric.append(s)
         else:
             other.append(s)
@@ -94,17 +117,21 @@ def split_format_specifiers(specifiers):
         other = []
 
     # numeric (Qt) can be present in any order, others (strprintf) must be in specified order
-    return set(numeric),other
+    return set(numeric), other
+
 
 def sanitize_string(s):
-    '''Sanitize string for printing'''
-    return s.replace('\n',' ')
+    """
+    Sanitize string for printing
+    """
+    return s.replace('\n', ' ')
+
 
 def check_format_specifiers(source, translation, errors, numerus):
     source_f = split_format_specifiers(find_format_specifiers(source))
     # assert that no source messages contain both Qt and strprintf format specifiers
     # if this fails, go change the source as this is hacky and confusing!
-    assert not source_f[0] and source_f[1]
+    assert not (source_f[0] and source_f[1])
     try:
         translation_f = split_format_specifiers(find_format_specifiers(translation))
     except IndexError:
@@ -119,29 +146,74 @@ def check_format_specifiers(source, translation, errors, numerus):
             return False
     return True
 
-def all_ts_files(suffix='', include_source=False):
+
+def all_ts_files(file_format=FORMAT_TS, suffix='', include_source=False):
     for filename in os.listdir(LOCALE_DIR):
         # process only language files, and do not process source language
-        if not filename.endswith('.ts'+suffix) or (not include_source and filename == SOURCE_LANG+suffix):
+        if not filename.endswith(file_format + suffix) or (not include_source and filename == SOURCE_LANG + file_format + suffix):
             continue
-        if suffix: # remove provided suffix
+        if suffix:  # remove provided suffix
             filename = filename[0:-len(suffix)]
         filepath = os.path.join(LOCALE_DIR, filename)
         yield filename, filepath
 
+
 FIX_RE = re.compile(b'[\x00-\x09\x0b\x0c\x0e-\x1f]')
+
+
 def remove_invalid_characters(s):
-    '''Remove invalid characters from translation string'''
+    """
+    Remove invalid characters from translation string
+    """
     return FIX_RE.sub(b'', s)
+
 
 # Override cdata escape function to make our output match Qt's (optional, just for cleaner diffs for
 # comparison, disable by default)
 _orig_escape_cdata = None
+
+
 def escape_cdata(text):
     text = _orig_escape_cdata(text)
     text = text.replace("'", '&apos;')
     text = text.replace('"', '&quot;')
     return text
+
+
+def postprocess_message(filename, message):
+    translation_node = message.find('translation')
+    if translation_node.get('type') == 'unfinished':
+        return False
+
+    numerus = message.get('numerus') == 'yes'
+    source = message.find('source').text
+    # pick all numerusforms
+    if numerus:
+        translations = [i.text for i in translation_node.findall('numerusform')]
+    else:
+        if translation_node.text is None or translation_node.text == source:
+            return False
+
+        translations = [translation_node.text]
+
+    for translation in translations:
+        if translation is None:
+            continue
+        errors = []
+        valid = check_format_specifiers(source, translation, errors, numerus)
+
+        for error in errors:
+            print('%s: %s' % (filename, error))
+
+        if not valid:
+            return False
+
+    # Remove location tags
+    for location in message.findall('location'):
+        message.remove(location)
+
+    return True
+
 
 def postprocess_translations(reduce_diff_hacks=False):
     print('Checking and postprocessing...')
@@ -151,14 +223,13 @@ def postprocess_translations(reduce_diff_hacks=False):
         _orig_escape_cdata = ET._escape_cdata
         ET._escape_cdata = escape_cdata
 
-    for (filename,filepath) in all_ts_files():
-        os.rename(filepath, filepath+'.orig')
+    for (filename, filepath) in all_ts_files():
+        os.rename(filepath, filepath + ORIGINAL_SUFFIX)
 
-    have_errors = False
-    for (filename,filepath) in all_ts_files('.orig'):
+    for (filename, filepath) in all_ts_files(suffix=ORIGINAL_SUFFIX):
         # pre-fixups to cope with transifex output
-        parser = ET.XMLParser(encoding='utf-8') # need to override encoding because 'utf8' is not understood only 'utf-8'
-        with open(filepath + '.orig', 'rb') as f:
+        parser = ET.XMLParser(encoding='utf-8')  # need to override encoding because 'utf8' is not understood only 'utf-8'
+        with open(filepath + ORIGINAL_SUFFIX, 'rb') as f:
             data = f.read()
         # remove control characters; this must be done over the entire file otherwise the XML parser will fail
         data = remove_invalid_characters(data)
@@ -168,44 +239,21 @@ def postprocess_translations(reduce_diff_hacks=False):
         root = tree.getroot()
         for context in root.findall('context'):
             for message in context.findall('message'):
-                numerus = message.get('numerus') == 'yes'
-                source = message.find('source').text
-                translation_node = message.find('translation')
-                # pick all numerusforms
-                if numerus:
-                    translations = [i.text for i in translation_node.findall('numerusform')]
-                else:
-                    translations = [translation_node.text]
-
-                for translation in translations:
-                    if translation is None:
-                        continue
-                    errors = []
-                    valid = check_format_specifiers(source, translation, errors, numerus)
-
-                    for error in errors:
-                        print('%s: %s' % (filename, error))
-
-                    if not valid: # set type to unfinished and clear string if invalid
-                        translation_node.clear()
-                        translation_node.set('type', 'unfinished')
-                        have_errors = True
-
-                # Remove location tags
-                for location in message.findall('location'):
-                    message.remove(location)
-
-                # Remove entire message if it is an unfinished translation
-                if translation_node.get('type') == 'unfinished':
+                if not postprocess_message(filename, message):
                     context.remove(message)
 
+            if not context.findall('message'):
+                root.remove(context)
+
         # check if document is (virtually) empty, and remove it if so
-        num_messages = 0
+        num_nonnumerus_messages = 0
         for context in root.findall('context'):
             for message in context.findall('message'):
-                num_messages += 1
-        if num_messages < MIN_NUM_MESSAGES:
-            print('Removing %s, as it contains only %i messages' % (filepath, num_messages))
+                if message.get('numerus') != 'yes':
+                    num_nonnumerus_messages += 1
+
+        if num_nonnumerus_messages < MIN_NUM_NONNUMERUS_MESSAGES:
+            print('Removing %s, as it contains only %i non-numerus messages' % (filepath, num_nonnumerus_messages))
             continue
 
         # write fixed-up tree
@@ -219,21 +267,21 @@ def postprocess_translations(reduce_diff_hacks=False):
                 f.write(out)
         else:
             tree.write(filepath, encoding='utf-8')
-    return have_errors
+
 
 def update_git():
-    '''
+    """
     Add new files to git repository.
     (Removing files isn't necessary here, as `git commit -a` will take care of removing files that are gone)
-    '''
+    """
     file_paths = [filepath for (filename, filepath) in all_ts_files()]
     subprocess.check_call([GIT, 'add'] + file_paths)
 
 
 def update_build_systems():
-    '''
+    """
     Update build system and Qt resource descriptors.
-    '''
+    """
     filename_lang = [re.match(r'((pivx_(.*)).ts)$', filename).groups() for (filename, filepath) in all_ts_files(include_source=True)]
     filename_lang.sort(key=lambda x: x[0])
 
@@ -250,7 +298,7 @@ def update_build_systems():
     with open('src/Makefile.qt_locale.include', 'w', encoding="utf8") as f:
         f.write('QT_TS = \\\n')
         f.write(' \\\n'.join(f'  qt/locale/{filename}' for (filename, basename, lang) in filename_lang))
-        f.write('\n') # make sure last line doesn't end with a backslash
+        f.write('\n')  # make sure last line doesn't end with a backslash
 
 
 if __name__ == '__main__':
@@ -268,4 +316,4 @@ if __name__ == '__main__':
     postprocess_translations()
     update_git()
     update_build_systems()
-
+    remove_orig_files()
