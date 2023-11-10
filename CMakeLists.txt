@@ -67,7 +67,18 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(ENDIAN_INCLUDES)
         message(STATUS "Found endian.h: ${ENDIAN_INCLUDES}")
     endif()
-    #add_definitions("-D__BYTE_ORDER -D__LITTLE_ENDIAN -D__GLIBC__ -DHAVE_DECL_BSWAP_16=0 -DHAVE_DECL_BSWAP_32=0 -DHAVE_DECL_BSWAP_64=0")
+endif()
+
+# Disable Qt GUI wallet build
+if(DEFINED ENV{NO_QT})
+    message(STATUS "Skipping GUI Wallet Build!")
+endif()
+
+# Github Actions specific Boost override
+if(DEFINED ENV{CI_BOOST})
+    set(BOOST_R "--with-boost=/usr/local/opt/boost@1.76")
+    set(ENV{BOOSTROOT} "/usr/local/opt/boost@1.76")
+    message(STATUS "Boost Root set to: ${BOOST_R}")
 endif()
 
 # Find Dependencies
@@ -89,6 +100,8 @@ find_package(NAT-PMP)
 find_package(Boost COMPONENTS system filesystem chrono thread REQUIRED)
 find_package(Sodium REQUIRED)
 
+include_directories(${GMP_INCLUDE_DIR})
+
 # run autogen.sh if missing header files from configure on Linux/Mac
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/configure")
 else()
@@ -102,7 +115,7 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/config/pivx-config.h")
 else()
     execute_process(
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/configure ${CONFIGSITE} ${BDB_CONFIGURE_FLAGS} ${BIGNUM_CONFIGURE_FLAGS}
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/configure ${BDB_CONFIGURE_FLAGS} ${BOOST_R}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()
@@ -287,7 +300,7 @@ target_include_directories(SERVER_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/chiabls/src
     ${relic_SOURCE_DIR}/include
     ${relic_BINARY_DIR}/include
-    ${ZMQ_INCLUDE_DIR} ${LIBEVENT_INCLUDE_DIR} ${BerkeleyDB_INCLUDE_DIRS}
+    ${LIBEVENT_INCLUDE_DIR} ${BerkeleyDB_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR}
     )
 
 if(ZMQ_FOUND)
@@ -297,7 +310,7 @@ if(ZMQ_FOUND)
         ./src/zmq/zmqpublishnotifier.cpp
     )
     add_library(ZMQ_A STATIC ${BitcoinHeaders} ${ZMQ_SOURCES} ${ZMQ_LIB})
-    target_include_directories(ZMQ_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${ZMQ_INCLUDE_DIR})
+    target_include_directories(ZMQ_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${ZMQ_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
     target_compile_definitions(ZMQ_A PUBLIC "-DZMQ_STATIC")
 endif()
 
@@ -329,7 +342,7 @@ target_include_directories(WALLET_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/chiabls/src
         ${relic_SOURCE_DIR}/include
         ${relic_BINARY_DIR}/include
-        ${BerkeleyDB_INCLUDE_DIRS}
+        ${BerkeleyDB_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR} ${GMP_INCLUDE_DIR}
         )
 
 set(BITCOIN_CRYPTO_SOURCES
@@ -394,7 +407,7 @@ set(ZEROCOIN_SOURCES
         ./src/libzerocoin/Params.cpp
         )
 add_library(ZEROCOIN_A STATIC ${ZEROCOIN_SOURCES})
-target_include_directories(ZEROCOIN_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(ZEROCOIN_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${GMP_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 
 set(COMMON_SOURCES
         ./src/activemasternode.cpp
@@ -478,7 +491,7 @@ target_include_directories(COMMON_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/chiabls/src
         ${relic_SOURCE_DIR}/include
         ${relic_BINARY_DIR}/include
-        ${BerkeleyDB_INCLUDE_DIRS}
+        ${BerkeleyDB_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR}
         )
 
 set(UTIL_SOURCES
@@ -511,6 +524,7 @@ add_library(UTIL_A STATIC ${BitcoinHeaders} ${UTIL_SOURCES})
 target_include_directories(UTIL_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/univalue/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src/rust/include
+        ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR}
         )
 
 set(CLI_A_SOURCES ./src/rpc/client.cpp)
@@ -542,7 +556,7 @@ target_include_directories(SAPLING_A PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/sapling
         ${CMAKE_CURRENT_SOURCE_DIR}/src/rust/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src/univalue/include
-        ${BerkeleyDB_INCLUDE_DIRS}
+        ${BerkeleyDB_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR}
         )
 
 link_directories(
@@ -654,6 +668,9 @@ endif()
 
 target_link_libraries(pivxd ${sodium_LIBRARY_RELEASE} -ldl -lpthread)
 
-add_subdirectory(src/qt)
+if(NOT DEFINED ENV{NO_QT})
+  add_subdirectory(src/qt)
+endif()
+
 add_subdirectory(src/test)
 add_subdirectory(src/bench)

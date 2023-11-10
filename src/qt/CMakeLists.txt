@@ -177,6 +177,7 @@ target_include_directories(qt_stuff PUBLIC ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/pivx
         ${CMAKE_CURRENT_SOURCE_DIR}/pivx/settings
         ${BerkeleyDB_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
         )
 set_property(TARGET qt_stuff PROPERTY CXX_STANDARD 14)
 
@@ -193,7 +194,7 @@ QT5_ADD_RESOURCES(QRC_LOCALE_RESOURCE pivx_locale.qrc)
 
 add_executable(pivx-qt pivx.cpp ${QM} ${QRC_RESOURCE} ${QRC_LOCALE_RESOURCE})
 add_dependencies(pivx-qt translations_target libunivalue libsecp256k1 libzcashrust leveldb crc32c bls)
-target_include_directories(pivx-qt PUBLIC ${ENDIAN_INCLUDES} ${GMP_INCLUDE_DIR})
+target_include_directories(pivx-qt PUBLIC ${ENDIAN_INCLUDES} ${GMP_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${sodium_INCLUDE_DIR})
 target_link_libraries(pivx-qt
         qt_stuff
         univalue
