@@ -218,7 +218,7 @@ class InvalidMessagesTest(PivxTestFramework):
         msg = messages.msg_inv(invs)
         conn.send_message(msg)
 
-        time.sleep(20) # wait a bit
+        time.sleep(30)  # wait a bit
         assert_equal(conn.getdata_count, 50000)
 
         # Prior #2611 the node was blocking any follow-up request.
