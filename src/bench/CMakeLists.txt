@@ -66,7 +66,9 @@ target_include_directories(bench_pivx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/src/leveldb/include
         ${CMAKE_SOURCE_DIR}/src/leveldb/helpers/memenv
         ${LIBEVENT_INCLUDE_DIR}
-        ${GMP_INCLUDE_DIR})
+        ${GMP_INCLUDE_DIR}
+        ${Boost_INCLUDE_DIRS}
+        ${sodium_INCLUDE_DIR})
 target_link_libraries(bench_pivx PRIVATE
         SERVER_A
         CLI_A
