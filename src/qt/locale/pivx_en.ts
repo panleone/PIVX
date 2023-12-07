@@ -36,129 +36,6 @@
     </message>
 </context>
 <context>
-    <name>AddressBookPage</name>
-    <message>
-        <location filename="../forms/addressbookpage.ui" line="+67"/>
-        <source>Right-click to edit address or label</source>
-        <translation>Right-click to edit address or label</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Create a new address</source>
-        <translation>Create a new address</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;New</source>
-        <translation>&amp;New</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Copy the currently selected address to the system clipboard</source>
-        <translation>Copy the currently selected address to the system clipboard</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Copy</source>
-        <translation>&amp;Copy</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Delete the currently selected address from the list</source>
-        <translation>Delete the currently selected address from the list</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Delete</source>
-        <translation>&amp;Delete</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Export the data in the current tab to a file</source>
-        <translation>Export the data in the current tab to a file</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Export</source>
-        <translation>&amp;Export</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>C&amp;lose</source>
-        <translation>C&amp;lose</translation>
-    </message>
-    <message>
-        <location filename="../addressbookpage.cpp" line="+44"/>
-        <source>Choose the address to send coins to</source>
-        <translation>Choose the address to send coins to</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Choose the address to receive coins with</source>
-        <translation>Choose the address to receive coins with</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>C&amp;hoose</source>
-        <translation>C&amp;hoose</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Sending addresses</source>
-        <translation>Sending addresses</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Receiving addresses</source>
-        <translation>Receiving addresses</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>These are your PIVX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>These are your PIVX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>&amp;Copy Address</source>
-        <translation>&amp;Copy Address</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Copy &amp;Label</source>
-        <translation>Copy &amp;Label</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Edit</source>
-        <translation>&amp;Edit</translation>
-    </message>
-    <message>
-        <location line="+182"/>
-        <source>Export Address List</source>
-        <translation>Export Address List</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Comma separated file (*.csv)</source>
-        <translation>Comma separated file (*.csv)</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Exporting Failed</source>
-        <translation>Exporting Failed</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>There was an error trying to save the address list to %1. Please try again.</source>
-        <translation>There was an error trying to save the address list to %1. Please try again.</translation>
-    </message>
-</context>
-<context>
     <name>AddressTableModel</name>
     <message>
         <location filename="../addresstablemodel.cpp" line="+317"/>
@@ -3149,7 +3026,12 @@ Address: %4
         <translation>&amp;Wallet Repair</translation>
     </message>
     <message>
-        <location line="+260"/>
+        <location line="+28"/>
+        <source>The buttons below will restart the wallet with command-line options to repair the wallet, fix issues with corrupt blockchain files or missing/obsolete transactions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+232"/>
         <source>Delete local Blockchain Folders</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3244,12 +3126,7 @@ Address: %4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-246"/>
-        <source>The buttons below will restart the wallet with command-line options to repair the wallet, fix issues with corrupt blockhain files or missing/obsolete transactions.</source>
-        <translation>The buttons below will restart the wallet with command-line options to repair the wallet, fix issues with corrupt blockhain files or missing/obsolete transactions.</translation>
-    </message>
-    <message>
-        <location line="-13"/>
+        <location line="-259"/>
         <source>Wallet repair options.</source>
         <translation>Wallet repair options.</translation>
     </message>
@@ -3682,7 +3559,7 @@ try unlocking the wallet</source>
     <name>SendChangeAddressDialog</name>
     <message>
         <location filename="../pivx/forms/sendchangeaddressdialog.ui" line="+252"/>
-        <location filename="../pivx/sendchangeaddressdialog.cpp" line="+64"/>
+        <location filename="../pivx/sendchangeaddressdialog.cpp" line="+63"/>
         <source>CANCEL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3707,13 +3584,18 @@ try unlocking the wallet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+35"/>
         <source>Invalid address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cannot use cold staking addresses for change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cannot use a transparent change for a shield transaction</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3849,13 +3731,13 @@ try unlocking the wallet</source>
 <context>
     <name>SendWidget</name>
     <message>
-        <location filename="../pivx/send.cpp" line="+160"/>
+        <location filename="../pivx/send.cpp" line="+164"/>
         <source>Total remaining from the selected UTXO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+228"/>
-        <location line="+233"/>
+        <location line="+230"/>
+        <location line="+235"/>
         <source>Warning!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3867,22 +3749,22 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+375"/>
+        <location line="+384"/>
         <source>Customize Fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-695"/>
+        <location line="-706"/>
         <source>Maximum amount of outputs reached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-225"/>
+        <location line="-227"/>
         <source>Parse a PIVX URI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+255"/>
         <source>Invalid entry, previous entries must be valid before add a new one</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3907,7 +3789,7 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+84"/>
         <source>WARNING:
 Transaction spends a cold-stake delegation, voiding it.
 These coins will no longer be cold-staked.</source>
@@ -3924,7 +3806,7 @@ These coins will no longer be cold-staked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+58"/>
         <source>Invalid URI</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3944,7 +3826,7 @@ These coins will no longer be cold-staked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-928"/>
+        <location line="-941"/>
         <source>Coin Control</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3970,12 +3852,12 @@ These coins will no longer be cold-staked.</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+655"/>
+        <location line="+668"/>
         <source>Shield Coins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-654"/>
+        <location line="-667"/>
         <source>Convert all transparent coins into shielded coins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3985,7 +3867,7 @@ These coins will no longer be cold-staked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+216"/>
+        <location line="+218"/>
         <source>Cannot send memo to address
 %1
 
@@ -3997,12 +3879,12 @@ Do you wish to proceed without memo?
     </message>
     <message>
         <location line="+31"/>
-        <location line="+281"/>
+        <location line="+292"/>
         <source>Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-264"/>
+        <location line="-275"/>
         <source>On going process being executed, please wait until it&apos;s finished to create a new transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4012,12 +3894,12 @@ Do you wish to proceed without memo?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+134"/>
+        <location line="+133"/>
         <source>Processing full, refreshing amounts later</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+127"/>
         <source>You don&apos;t have any %1 to select.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5087,7 +4969,7 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pivx/settings/settingssignmessagewidgets.cpp" line="+46"/>
+        <location filename="../pivx/settings/settingssignmessagewidgets.cpp" line="+45"/>
         <source>Select mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5139,7 +5021,7 @@ Are you sure?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+32"/>
         <location line="+52"/>
         <source>The entered address is invalid.</source>
         <translation type="unfinished">The entered address is invalid.</translation>
@@ -6672,12 +6554,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished">Error</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Error: A fatal internal error occured, see debug.log for details</source>
-        <translation type="unfinished">Error: A fatal internal error occured, see debug.log for details</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Error: Disk space is low!</source>
         <translation type="unfinished">Error: Disk space is low!</translation>
     </message>
@@ -6712,17 +6589,17 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-98"/>
+        <location line="-97"/>
         <source>This is a pre-release test build - use at your own risk - do not use for staking or merchant applications!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+78"/>
         <source>Error: A fatal internal error occurred, see debug.log for details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-121"/>
         <source>Cannot upgrade to Sapling wallet (already running Sapling support). Version: %d</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6808,7 +6685,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Error: Disk space is low for %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6973,7 +6850,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-184"/>
+        <location line="-183"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7048,7 +6925,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+33"/>
         <source>Failed to accept tx in the memory pool (reason: %s)
 </source>
         <translation type="unfinished"></translation>
@@ -7239,7 +7116,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-179"/>
+        <location line="-178"/>
         <source>Invalid -wallet path &apos;%s&apos;. -wallet path should point to a directory where wallet.dat and database/log.?????????? files can be stored, a location where such a directory could be created or (for backwards compatibility) the name of an existing data file in -walletdir (%s)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7285,7 +7162,7 @@ Select fewer inputs with coin control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+71"/>
         <source>Specified -walletdir &quot;%s&quot; does not exist</source>
         <translation type="unfinished"></translation>
     </message>
