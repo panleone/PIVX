@@ -13,7 +13,7 @@
 
 #include <string>
 
-std::string EncodeDestination(const CTxDestination& dest, bool isStaking);
+std::string EncodeDestination(const CTxDestination& dest, bool isStaking, bool isExchange);
 std::string EncodeDestination(const CTxDestination& dest, const CChainParams::Base58Type addrType = CChainParams::PUBKEY_ADDRESS);
 // DecodeDestinationisStaking flag is set to true when the string arg is from an staking address
 CTxDestination DecodeDestination(const std::string& str, bool& isStaking);

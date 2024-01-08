@@ -94,6 +94,7 @@ isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey)
             return ISMINE_SPENDABLE;
         break;
     case TX_PUBKEYHASH:
+    case TX_EXCHANGEADDR:
         keyID = CKeyID(uint160(vSolutions[0]));
         if(keystore.HaveKey(keyID))
             return ISMINE_SPENDABLE;

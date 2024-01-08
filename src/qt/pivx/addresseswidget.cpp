@@ -184,8 +184,11 @@ void AddressesWidget::onStoreContactClicked()
         QString label = ui->lineEditName->text();
         QString address = ui->lineEditAddress->text();
 
-        bool isStakingAddress = false;
-        auto pivAdd = Standard::DecodeDestination(address.toUtf8().constData(), isStakingAddress);
+        Standard::DecodeOptions options;
+        options.isStaking = false;
+        options.isShielded = false;
+        options.isExchange = false;
+        auto pivAdd = Standard::DecodeDestination(address.toUtf8().constData(), options.isStaking);
 
         if (!Standard::IsValidDestination(pivAdd)) {
             setCssEditLine(ui->lineEditAddress, false, true);

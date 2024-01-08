@@ -113,6 +113,7 @@ public:
     bool AddKeyPubKey(const CKey& key, const CPubKey& pubkey);
     bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
     bool HaveKey(const CKeyID& address) const;
+    bool HaveKey(const CExchangeKeyID& address) const;
     std::set<CKeyID> GetKeys() const;
     bool GetKey(const CKeyID& address, CKey& keyOut) const;
 

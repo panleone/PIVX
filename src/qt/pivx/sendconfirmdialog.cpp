@@ -349,8 +349,9 @@ void TxDetailDialog::onOutputsClicked()
                     QString labelRes;
                     CTxDestination dest;
                     bool isCsAddress = out.scriptPubKey.IsPayToColdStaking();
+                    bool isExchange = out.scriptPubKey.IsPayToExchangeAddress();
                     if (ExtractDestination(out.scriptPubKey, dest, isCsAddress)) {
-                        std::string address = EncodeDestination(dest, isCsAddress);
+                        std::string address = EncodeDestination(dest, isCsAddress, isExchange);
                         labelRes = QString::fromStdString(address);
                         labelRes = labelRes.left(16) + "..." + labelRes.right(16);
                     } else {

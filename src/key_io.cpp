@@ -31,6 +31,13 @@ namespace
             return EncodeBase58Check(data);
         }
 
+        std::string operator()(const CExchangeKeyID& id) const
+        {
+            std::vector<unsigned char> data = m_params.Base58Prefix(CChainParams::EXCHANGE_ADDRESS);
+            data.insert(data.end(), id.begin(), id.end());
+            return EncodeBase58Check(data);
+        }
+
         std::string operator()(const CScriptID& id) const
         {
             std::vector<unsigned char> data = m_params.Base58Prefix(CChainParams::SCRIPT_ADDRESS);
@@ -54,6 +61,12 @@ namespace
                 std::copy(data.begin() + pubkey_prefix.size(), data.end(), hash.begin());
                 return CKeyID(hash);
             }
+            // Exchange Transparent addresses have version 31
+            const std::vector<unsigned char>& exchange_pubkey_prefix = params.Base58Prefix(CChainParams::EXCHANGE_ADDRESS);
+            if (data.size() == hash.size() + exchange_pubkey_prefix.size() && std::equal(exchange_pubkey_prefix.begin(), exchange_pubkey_prefix.end(), data.begin())) {
+                std::copy(data.begin() + exchange_pubkey_prefix.size(), data.end(), hash.begin());
+                return CExchangeKeyID(hash);
+            }
             // Public-key-hash-coldstaking-addresses have version 63 (or 73 testnet).
             const std::vector<unsigned char>& staking_prefix = params.Base58Prefix(CChainParams::STAKING_ADDRESS);
             if (data.size() == hash.size() + staking_prefix.size() && std::equal(staking_prefix.begin(), staking_prefix.end(), data.begin())) {
@@ -74,9 +87,13 @@ namespace
 
 } // anon namespace
 
-std::string EncodeDestination(const CTxDestination& dest, bool isStaking)
+std::string EncodeDestination(const CTxDestination& dest, bool isStaking, bool isExchange)
 {
-    return EncodeDestination(dest, isStaking ? CChainParams::STAKING_ADDRESS : CChainParams::PUBKEY_ADDRESS);
+    if (isExchange) {
+        return EncodeDestination(dest, CChainParams::EXCHANGE_ADDRESS);
+    } else {
+        return EncodeDestination(dest, isStaking ? CChainParams::STAKING_ADDRESS : CChainParams::PUBKEY_ADDRESS);
+    }
 }
 
 std::string EncodeDestination(const CTxDestination& dest, const CChainParams::Base58Type addrType)

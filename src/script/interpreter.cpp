@@ -256,6 +256,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
 
     try
     {
+        bool fExchangeAddr = true;
         while (pc < pend)
         {
             bool fExec = !count(vfExec.begin(), vfExec.end(), false);
@@ -331,6 +332,11 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                 // Control
                 //
                 case OP_NOP:
+                    break;
+
+                case OP_EXCHANGEADDR:
+                    if (!fExchangeAddr)
+                        return set_error(serror, SCRIPT_ERR_BAD_OPCODE);
                     break;
 
                 case OP_CHECKLOCKTIMEVERIFY:
@@ -981,6 +987,8 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
             // Size limits
             if (stack.size() + altstack.size() > 1000)
                 return set_error(serror, SCRIPT_ERR_STACK_SIZE);
+
+            fExchangeAddr = false;
         }
     }
     catch (...)

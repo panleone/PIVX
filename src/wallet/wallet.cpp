@@ -100,6 +100,11 @@ public:
             vKeys.push_back(keyId);
     }
 
+    void operator()(const CExchangeKeyID& keyId) {
+        if (keystore.HaveKey(keyId))
+            vKeys.push_back(keyId);
+    }
+
     void operator()(const CScriptID& scriptId)
     {
         CScript script;
@@ -3601,9 +3606,14 @@ DBErrors CWallet::ZapWalletTx(std::vector<CWalletTx>& vWtx)
 }
 
 std::string CWallet::ParseIntoAddress(const CWDestination& dest, const std::string& purpose) {
-    const CChainParams::Base58Type addrType =
-            AddressBook::IsColdStakingPurpose(purpose) ?
-            CChainParams::STAKING_ADDRESS : CChainParams::PUBKEY_ADDRESS;
+    CChainParams::Base58Type addrType;
+    if (AddressBook::IsColdStakingPurpose(purpose)) {
+        addrType = CChainParams::STAKING_ADDRESS;
+    } else if (AddressBook::IsExchangePurpose(purpose)) {
+        addrType = CChainParams::EXCHANGE_ADDRESS;
+    } else {
+        addrType = CChainParams::PUBKEY_ADDRESS;
+    }
     return Standard::EncodeDestination(dest, addrType);
 }
 

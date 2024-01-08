@@ -246,6 +246,17 @@ public:
         return obj;
     }
 
+    UniValue operator()(const CExchangeKeyID &keyID) const {
+        UniValue obj(UniValue::VOBJ);
+        CPubKey vchPubKey;
+        obj.pushKV("isscript", false);
+        if (pwallet && pwallet->GetPubKey(keyID, vchPubKey)) {
+            obj.pushKV("exchangepubkey", HexStr(vchPubKey));
+            obj.pushKV("iscompressed", vchPubKey.IsCompressed());
+        }
+        return obj;
+    }
+
     UniValue operator()(const CScriptID &scriptID) const {
         UniValue obj(UniValue::VOBJ);
         obj.pushKV("isscript", true);
@@ -420,8 +431,11 @@ UniValue validateaddress(const JSONRPCRequest& request)
     std::string strAddress = request.params[0].get_str();
 
     // First check if it's a regular address
-    bool isStakingAddress = false;
-    CTxDestination dest = DecodeDestination(strAddress, isStakingAddress);
+    Standard::DecodeOptions options;
+    options.isStaking = false;
+    options.isShielded = false;
+    options.isExchange = false;
+    CTxDestination dest = DecodeDestination(strAddress, options);
     bool isValid = IsValidDestination(dest);
 
     PPaymentAddress finalAddress;
@@ -436,7 +450,7 @@ UniValue validateaddress(const JSONRPCRequest& request)
     ret.pushKV("isvalid", isValid);
     if (isValid) {
         ret.pushKV("address", strAddress);
-        UniValue detail = boost::apply_visitor(DescribePaymentAddressVisitor(pwallet, isStakingAddress), finalAddress);
+        UniValue detail = boost::apply_visitor(DescribePaymentAddressVisitor(pwallet, options.isStaking), finalAddress);
         ret.pushKVs(detail);
     }
 

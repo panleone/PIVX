@@ -22,6 +22,7 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_NONSTANDARD: return "nonstandard";
     case TX_PUBKEY: return "pubkey";
     case TX_PUBKEYHASH: return "pubkeyhash";
+    case TX_EXCHANGEADDR: return "exchangeaddress";
     case TX_SCRIPTHASH: return "scripthash";
     case TX_MULTISIG: return "multisig";
     case TX_COLDSTAKE: return "coldstake";
@@ -126,6 +127,15 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::v
         return true;
     }
 
+    if (scriptPubKey.IsPayToExchangeAddress())
+    {
+        typeRet = TX_EXCHANGEADDR;
+        std::vector<unsigned char> hashBytes(scriptPubKey.begin()+4, scriptPubKey.begin()+24);
+        vSolutionsRet.push_back(hashBytes);
+        return true;
+    }
+
+
     std::vector<unsigned char> data1;
     if (MatchPayToColdStaking(scriptPubKey, data, data1)) {
         typeRet = TX_COLDSTAKE;
@@ -167,9 +177,11 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet,
     } else if (whichType == TX_PUBKEYHASH) {
         addressRet = CKeyID(uint160(vSolutions[0]));
         return true;
-
     } else if (whichType == TX_SCRIPTHASH) {
         addressRet = CScriptID(uint160(vSolutions[0]));
+        return true;
+    } else if (whichType == TX_EXCHANGEADDR) {
+        addressRet = CExchangeKeyID(uint160(vSolutions[0]));
         return true;
     } else if (whichType == TX_COLDSTAKE) {
         addressRet = CKeyID(uint160(vSolutions[!fColdStake]));
@@ -245,6 +257,12 @@ public:
     bool operator()(const CKeyID &keyID) const {
         script->clear();
         *script << OP_DUP << OP_HASH160 << ToByteVector(keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
+        return true;
+    }
+
+    bool operator()(const CExchangeKeyID &keyID) const {
+        script->clear();
+        *script << OP_EXCHANGEADDR << OP_DUP << OP_HASH160 << ToByteVector(keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
         return true;
     }
 

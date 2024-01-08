@@ -151,6 +151,9 @@ const char* GetOpName(opcodetype opcode)
     case OP_CHECKCOLDSTAKEVERIFY_LOF   : return "OP_CHECKCOLDSTAKEVERIFY_LOF";
     case OP_CHECKCOLDSTAKEVERIFY       : return "OP_CHECKCOLDSTAKEVERIFY";
 
+    // exchange address
+    case OP_EXCHANGEADDR           : return "OP_EXCHANGEADDR";
+
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
 
     default:
@@ -246,6 +249,17 @@ bool CScript::IsPayToColdStaking() const
 bool CScript::IsPayToColdStakingLOF() const
 {
     return IsPayToColdStaking() && (*this)[4] == OP_CHECKCOLDSTAKEVERIFY_LOF;
+}
+
+bool CScript::IsPayToExchangeAddress() const
+{
+    return (this->size() == 26 &&
+            (*this)[0] == OP_EXCHANGEADDR &&
+            (*this)[1] == OP_DUP &&
+            (*this)[2] == OP_HASH160 &&
+            (*this)[3] == 0x14 &&
+            (*this)[24] == OP_EQUALVERIFY &&
+            (*this)[25] == OP_CHECKSIG);
 }
 
 bool CScript::StartsWithOpcode(const opcodetype opcode) const

@@ -6,6 +6,7 @@
 
 #include "bip38.h"
 #include "key_io.h"
+#include "destination_io.h"
 #include "rpc/server.h"
 #include "sapling/key_io_sapling.h"
 #include "script/script.h"
@@ -243,13 +244,16 @@ UniValue importaddress(const JSONRPCRequest& request)
     {
         LOCK2(cs_main, pwallet->cs_wallet);
 
-        bool isStakingAddress = false;
-        CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStakingAddress);
+        Standard::DecodeOptions options;
+        options.isStaking = false;
+        options.isShielded = false;
+        options.isExchange = false;
+        CTxDestination dest = DecodeDestination(request.params[0].get_str(), options);
 
         if (IsValidDestination(dest)) {
             if (fP2SH)
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Cannot use the p2sh flag with an address - use a script instead");
-            ImportAddress(pwallet, dest, strLabel, isStakingAddress ?
+            ImportAddress(pwallet, dest, strLabel, options.isStaking ?
                                             AddressBook::AddressBookPurpose::COLD_STAKING :
                                             AddressBook::AddressBookPurpose::RECEIVE);
 

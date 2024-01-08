@@ -21,6 +21,10 @@ static bool GetKeyIDFromUTXO(const CTxOut& utxo, CKeyID& keyIDRet)
         keyIDRet = CKeyID(uint160(vSolutions[0]));
         return true;
     }
+    if (whichType == TX_EXCHANGEADDR) {
+        keyIDRet = CExchangeKeyID(uint160(vSolutions[0]));
+        return true;
+    }
     return false;
 }
 

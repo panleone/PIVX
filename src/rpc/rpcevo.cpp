@@ -168,8 +168,11 @@ static void CheckEvoUpgradeEnforcement()
 
 // Allows to specify PIVX address or priv key (as strings). In case of PIVX address, the priv key is taken from the wallet
 static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, bool allowAddresses = true) {
-    bool isStaking{false}, isShield{false};
-    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, isStaking, isShield);
+    Standard::DecodeOptions options;
+    options.isStaking = false;
+    options.isShielded = false;
+    options.isExchange = false;
+    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, options);
     if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
@@ -198,8 +201,11 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
 
 static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress)
 {
-    bool isStaking{false}, isShield{false};
-    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, isStaking, isShield);
+    Standard::DecodeOptions options;
+    options.isStaking = false;
+    options.isShielded = false;
+    options.isExchange = false;
+    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, options);
     if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }

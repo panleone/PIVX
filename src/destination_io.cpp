@@ -7,6 +7,11 @@
 #include "sapling/key_io_sapling.h"
 
 namespace Standard {
+    struct DecodeOptions {
+        bool isStaking = false;
+        bool isShielded = false;
+        bool isExchange = false;
+    };
 
     std::string EncodeDestination(const CWDestination &address, const CChainParams::Base58Type addrType) {
         const CTxDestination *dest = boost::get<CTxDestination>(&address);
@@ -16,27 +21,15 @@ namespace Standard {
         return EncodeDestination(*dest, addrType);
     };
 
-    CWDestination DecodeDestination(const std::string& strAddress)
-    {
-        bool isStaking = false;
-        return DecodeDestination(strAddress, isStaking);
-    }
-
-    CWDestination DecodeDestination(const std::string& strAddress, bool& isStaking)
-    {
-        bool isShielded = false;
-        return DecodeDestination(strAddress, isStaking, isShielded);
-    }
-
     // agregar isShielded
-    CWDestination DecodeDestination(const std::string& strAddress, bool& isStaking, bool& isShielded)
+    CWDestination DecodeDestination(const std::string& strAddress, DecodeOptions options)
     {
         CWDestination dest;
-        CTxDestination regDest = ::DecodeDestination(strAddress, isStaking);
+        CTxDestination regDest = ::DecodeDestination(strAddress, options.isStaking);
         if (!IsValidDestination(regDest)) {
             const auto sapDest = KeyIO::DecodeSaplingPaymentAddress(strAddress);
             if (sapDest) {
-                isShielded = true;
+                options.isShielded = true;
                 return *sapDest;
             }
         }
@@ -70,6 +63,7 @@ Destination& Destination::operator=(const Destination& from)
 {
     this->dest = from.dest;
     this->isP2CS = from.isP2CS;
+    this->isExchange = from.isExchange;
     return *this;
 }
 
@@ -86,6 +80,9 @@ std::string Destination::ToString() const
         // Invalid address
         return "";
     }
-    return Standard::EncodeDestination(dest, isP2CS ? CChainParams::STAKING_ADDRESS : CChainParams::PUBKEY_ADDRESS);
+    CChainParams::Base58Type addrType = isP2CS ? CChainParams::STAKING_ADDRESS
+                                 : (isExchange ? CChainParams::EXCHANGE_ADDRESS
+                                 : CChainParams::PUBKEY_ADDRESS);
+    return Standard::EncodeDestination(dest, addrType);
 }
 

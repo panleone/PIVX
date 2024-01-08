@@ -33,8 +33,8 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state, CAmount& 
 
     // From here, all of the checks are done in v3+ transactions.
 
-    // if the tx has shielded data, cannot be a coinstake, coinbase, zcspend and zcmint
-    if (tx.IsCoinStake() || tx.IsCoinBase() || tx.HasZerocoinSpendInputs() || tx.HasZerocoinMintOutputs())
+    // if the tx has shielded data, cannot be a coinstake, coinbase, zcspend and zcmint or exchange address
+    if (tx.IsCoinStake() || tx.IsCoinBase() || tx.HasZerocoinSpendInputs() || tx.HasZerocoinMintOutputs() || tx.HasExchangeAddr())
         return state.DoS(100, error("%s: Sapling version with invalid data", __func__),
                          REJECT_INVALID, "bad-txns-invalid-sapling");
 
