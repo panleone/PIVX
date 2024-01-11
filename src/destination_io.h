@@ -13,8 +13,15 @@ typedef boost::variant<CTxDestination, libzcash::SaplingPaymentAddress> CWDestin
 
 namespace Standard {
 
+    struct DecodeOptions {
+        bool isStaking = false;
+        bool isShielded = false;
+        bool isExchange = false;
+    };
+
     std::string EncodeDestination(const CWDestination &address, const CChainParams::Base58Type addrType = CChainParams::PUBKEY_ADDRESS);
 
+    CWDestination DecodeDestination(const std::string& strAddress);
     CWDestination DecodeDestination(const std::string& strAddress, DecodeOptions options);
 
     bool IsValidDestination(const CWDestination& dest);

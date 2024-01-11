@@ -191,7 +191,11 @@ UniValue getaddressinfo(const JSONRPCRequest& request)
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("address", strAdd);
 
-    const CWDestination& dest = Standard::DecodeDestination(strAdd);
+    Standard::DecodeOptions options;
+    options.isStaking = false;
+    options.isShielded = false;
+    options.isExchange = false;
+    const CWDestination& dest = Standard::DecodeDestination(strAdd, options);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -781,13 +785,10 @@ UniValue delegatoradd(const JSONRPCRequest& request)
             HelpExampleRpc("delegatoradd", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\"") +
             HelpExampleRpc("delegatoradd", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\" \"myPaperWallet\""));
 
-
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CTxDestination dest = DecodeDestination(request.params[0].get_str(), options.isStaking);
-    if (!IsValidDestination(dest) || options.isStaking)
+    bool isStaking = false;
+    bool isExchange = false;
+    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStaking, isExchange);
+    if (!IsValidDestination(dest) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
 
     const std::string strLabel = (request.params.size() > 1 ? request.params[1].get_str() : "");
@@ -822,12 +823,10 @@ UniValue delegatorremove(const JSONRPCRequest& request)
             HelpExampleCli("delegatorremove", "DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6") +
             HelpExampleRpc("delegatorremove", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\""));
 
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CTxDestination dest = DecodeDestination(request.params[0].get_str(), options.isStaking;
-    if (!IsValidDestination(dest) || options.isStaking)
+    bool isStaking = false;
+    bool isExchange = false;
+    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStaking, isExchange);
+    if (!IsValidDestination(dest) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
 
     const CKeyID* keyID = boost::get<CKeyID>(&dest);
@@ -1042,7 +1041,11 @@ UniValue setlabel(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str());
+    Standard::DecodeOptions options;
+    options.isStaking = false;
+    options.isShielded = false;
+    options.isExchange = false;
+    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str(), options);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -1191,7 +1194,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     options.isExchange = false;
     const std::string addrStr = request.params[0].get_str();
     const CWDestination& destination = Standard::DecodeDestination(addrStr, options);
-    if (!Standard::IsValidDestination(destination) || isStaking)
+    if (!Standard::IsValidDestination(destination) || options.isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
     const std::string commentStr = (request.params.size() > 2 && !request.params[2].isNull()) ?
                                    request.params[2].get_str() : "";
@@ -1199,7 +1202,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
                                    request.params[3].get_str() : "";
     bool fSubtractFeeFromAmount = request.params.size() > 4 && request.params[4].get_bool();
 
-    if (isShielded) {
+    if (options.isShielded) {
         UniValue sendTo(UniValue::VOBJ);
         sendTo.pushKV(addrStr, request.params[1]);
         UniValue subtractFeeFromAmount(UniValue::VARR);
@@ -1244,12 +1247,9 @@ static UniValue CreateColdStakeDelegation(CWallet* const pwallet, const UniValue
     }
 
     // Get Staking Address
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CTxDestination stakeAddr = DecodeDestination(params[0].get_str(), options);
-    if (!IsValidDestination(stakeAddr) || !options.isStaking)
+    bool isStaking{false};
+    CTxDestination stakeAddr = DecodeDestination(params[0].get_str());
+    if (!IsValidDestination(stakeAddr) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX staking address");
 
     CKeyID* stakeKey = boost::get<CKeyID>(&stakeAddr);
@@ -1277,10 +1277,12 @@ static UniValue CreateColdStakeDelegation(CWallet* const pwallet, const UniValue
     // Get Owner Address
     std::string ownerAddressStr;
     CKeyID ownerKey;
+    bool isStakingAddress = false;
+    bool isExchange = false;
     if (params.size() > 2 && !params[2].isNull() && !params[2].get_str().empty()) {
         // Address provided
-        CTxDestination dest = DecodeDestination(params[2].get_str(), options.isStaking);
-        if (!IsValidDestination(dest) || options.isStaking)
+        CTxDestination dest = DecodeDestination(params[2].get_str(), isStakingAddress, isExchange);
+        if (!IsValidDestination(dest) || isStakingAddress)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX spending address");
         ownerKey = *boost::get<CKeyID>(&dest);
         // Check that the owner address belongs to this wallet, or fForceExternalAddr is true
@@ -2367,12 +2369,10 @@ static UniValue legacy_sendmany(CWallet* const pwallet, const UniValue& sendTo, 
     CAmount totalAmount = 0;
     std::vector<std::string> keys = sendTo.getKeys();
     for (const std::string& name_ : keys) {
-        Standard::DecodeOptions options;
-        options.isStaking = false;
-        options.isShielded = false;
-        options.isExchange = false;
-        CTxDestination dest = DecodeDestination(name_, options);
-        if (!IsValidDestination(dest) || options.isStaking)
+        bool isStaking = false;
+        bool isExchange = false;
+        CTxDestination dest = DecodeDestination(name_, isStaking, isExchange);
+        if (!IsValidDestination(dest) || isStaking)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid PIVX address: ")+name_);
 
         if (setAddress.count(dest))
@@ -2509,7 +2509,7 @@ UniValue sendmany(const JSONRPCRequest& request)
         options.isShielded = false;
         options.isExchange = false;
         Standard::DecodeDestination(key, options);
-        if (isShielded) {
+        if (options.isShielded) {
             fShieldSend = true;
             break;
         }

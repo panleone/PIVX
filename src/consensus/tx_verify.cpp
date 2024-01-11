@@ -118,22 +118,24 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state, bool fCol
     // input scripts cannot have OP_EXCHANGEADDR at all
     for (const auto &vin: tx.vin) {
         if (vin.scriptSig.size() >= 1 && vin.scriptSig[0] == OP_EXCHANGEADDR) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-vin");
         }
     }
 
     bool hasExchangeUTXOs = false;
-    if (tx.HasExchangeAddr())
+    if (tx.HasExchangeAddr()) {
         hasExchangeUTXOs = true;
+    }
+    bool isIDB = IsInitialBlockDownload();
     int nTxHeight = chainActive.Height();
-    if (hasExchangeUTXOs && nTxHeight < ::Params().GetConsensus().nExchangeAddrStart)
-        return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+    if (hasExchangeUTXOs && !isIDB && nTxHeight < ::Params().GetConsensus().nExchangeAddrStart)
+        return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-not-started");
 
     if (tx.IsCoinBase()) {
         if (tx.vin[0].scriptSig.size() < 2 || tx.vin[0].scriptSig.size() > 150)
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-length");
         if (hasExchangeUTXOs)
-            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address");
+            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-in-cb");
     } else {
         for (const CTxIn& txin : tx.vin)
             if (txin.prevout.IsNull() && !txin.IsZerocoinSpend())

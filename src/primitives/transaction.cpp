@@ -146,11 +146,11 @@ bool CTransaction::IsCoinStake() const
 bool CTransaction::HasExchangeAddr() const
 {
     for(const CTxOut& txout : vout) {
-        if (txout.scriptPubKey.size() >= 1 && !txout.scriptPubKey.IsPayToExchangeAddress()) {
-            return false;
+        if (txout.scriptPubKey.size() >= 1 && txout.scriptPubKey.IsPayToExchangeAddress()) {
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool CTransaction::HasP2CSOutputs() const

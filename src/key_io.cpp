@@ -48,7 +48,7 @@ namespace
         std::string operator()(const CNoDestination& no) const { return ""; }
     };
 
-    CTxDestination DecodeDestination(const std::string& str, const CChainParams& params, bool& isStaking)
+    CTxDestination DecodeDestination(const std::string& str, const CChainParams& params, bool& isStaking, bool& isExchange)
     {
         std::vector<unsigned char> data;
         uint160 hash;
@@ -64,6 +64,7 @@ namespace
             // Exchange Transparent addresses have version 31
             const std::vector<unsigned char>& exchange_pubkey_prefix = params.Base58Prefix(CChainParams::EXCHANGE_ADDRESS);
             if (data.size() == hash.size() + exchange_pubkey_prefix.size() && std::equal(exchange_pubkey_prefix.begin(), exchange_pubkey_prefix.end(), data.begin())) {
+                isExchange = true;
                 std::copy(data.begin() + exchange_pubkey_prefix.size(), data.end(), hash.begin());
                 return CExchangeKeyID(hash);
             }
@@ -104,18 +105,20 @@ std::string EncodeDestination(const CTxDestination& dest, const CChainParams::Ba
 CTxDestination DecodeDestination(const std::string& str)
 {
     bool isStaking;
-    return DecodeDestination(str, Params(), isStaking);
+    bool isExchange;
+    return DecodeDestination(str, Params(), isStaking, isExchange);
 }
 
-CTxDestination DecodeDestination(const std::string& str, bool& isStaking)
+CTxDestination DecodeDestination(const std::string& str, bool& isStaking, bool& isExchange)
 {
-    return DecodeDestination(str, Params(), isStaking);
+    return DecodeDestination(str, Params(), isStaking, isExchange);
 }
 
 bool IsValidDestinationString(const std::string& str, bool fStaking, const CChainParams& params)
 {
     bool isStaking = false;
-    return IsValidDestination(DecodeDestination(str, params, isStaking)) && (isStaking == fStaking);
+    bool isExchange = false;
+    return IsValidDestination(DecodeDestination(str, params, isStaking, isExchange)) && (isStaking == fStaking);
 }
 
 bool IsValidDestinationString(const std::string& str, bool isStaking)

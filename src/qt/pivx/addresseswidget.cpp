@@ -188,7 +188,7 @@ void AddressesWidget::onStoreContactClicked()
         options.isStaking = false;
         options.isShielded = false;
         options.isExchange = false;
-        auto pivAdd = Standard::DecodeDestination(address.toUtf8().constData(), options.isStaking);
+        auto pivAdd = Standard::DecodeDestination(address.toUtf8().constData(), options);
 
         if (!Standard::IsValidDestination(pivAdd)) {
             setCssEditLine(ui->lineEditAddress, false, true);
@@ -212,7 +212,7 @@ void AddressesWidget::onStoreContactClicked()
         bool isShielded = walletModel->IsShieldedDestination(pivAdd);
         if (walletModel->updateAddressBookLabels(pivAdd, label.toUtf8().constData(),
                          isShielded ? AddressBook::AddressBookPurpose::SHIELDED_SEND :
-                         isStakingAddress ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND)
+                         options.isStaking ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND)
                 ) {
             ui->lineEditAddress->setText("");
             ui->lineEditName->setText("");

@@ -910,9 +910,9 @@ void SendWidget::onContactMultiClicked()
         options.isStaking = false;
         options.isShielded = false;
         options.isExchange = false;
-        auto pivAdd = Standard::DecodeDestination(address.toStdString(), options.isStaking);
+        auto pivAdd = Standard::DecodeDestination(address.toStdString(), options);
 
-        if (!Standard::IsValidDestination(pivAdd) || isStakingAddr) {
+        if (!Standard::IsValidDestination(pivAdd) || options.isStaking) {
             inform(tr("Invalid address"));
             return;
         }

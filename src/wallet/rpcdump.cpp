@@ -244,16 +244,14 @@ UniValue importaddress(const JSONRPCRequest& request)
     {
         LOCK2(cs_main, pwallet->cs_wallet);
 
-        Standard::DecodeOptions options;
-        options.isStaking = false;
-        options.isShielded = false;
-        options.isExchange = false;
-        CTxDestination dest = DecodeDestination(request.params[0].get_str(), options);
+        bool isStaking = false;
+        bool isExchange = false;
+        CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStaking, isExchange);
 
         if (IsValidDestination(dest)) {
             if (fP2SH)
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Cannot use the p2sh flag with an address - use a script instead");
-            ImportAddress(pwallet, dest, strLabel, options.isStaking ?
+            ImportAddress(pwallet, dest, strLabel, isStaking ?
                                             AddressBook::AddressBookPurpose::COLD_STAKING :
                                             AddressBook::AddressBookPurpose::RECEIVE);
 

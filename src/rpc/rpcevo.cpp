@@ -173,10 +173,10 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
     options.isShielded = false;
     options.isExchange = false;
     const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, options);
-    if (isStaking) {
+    if (options.isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
-    if (isShield) {
+    if (options.isShielded) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "shield addresses not supported");
     }
     const CTxDestination* dest = Standard::GetTransparentDestination(cwdest);
@@ -206,10 +206,10 @@ static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress)
     options.isShielded = false;
     options.isExchange = false;
     const CWDestination& cwdest = Standard::DecodeDestination(strAddress, options);
-    if (isStaking) {
+    if (options.isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
-    if (isShield) {
+    if (options.isShielded) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "shield addresses not supported");
     }
     const CKeyID* keyID = boost::get<CKeyID>(Standard::GetTransparentDestination(cwdest));

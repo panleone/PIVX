@@ -7,12 +7,6 @@
 #include "sapling/key_io_sapling.h"
 
 namespace Standard {
-    struct DecodeOptions {
-        bool isStaking = false;
-        bool isShielded = false;
-        bool isExchange = false;
-    };
-
     std::string EncodeDestination(const CWDestination &address, const CChainParams::Base58Type addrType) {
         const CTxDestination *dest = boost::get<CTxDestination>(&address);
         if (!dest) {
@@ -21,11 +15,20 @@ namespace Standard {
         return EncodeDestination(*dest, addrType);
     };
 
+    CWDestination DecodeDestination(const std::string& strAddress)
+    {
+        Standard::DecodeOptions options;
+        options.isStaking = false;
+        options.isShielded = false;
+        options.isExchange = false;
+        return DecodeDestination(strAddress, options);
+    }
+
     // agregar isShielded
     CWDestination DecodeDestination(const std::string& strAddress, DecodeOptions options)
     {
         CWDestination dest;
-        CTxDestination regDest = ::DecodeDestination(strAddress, options.isStaking);
+        CTxDestination regDest = ::DecodeDestination(strAddress, options.isStaking, options.isExchange);
         if (!IsValidDestination(regDest)) {
             const auto sapDest = KeyIO::DecodeSaplingPaymentAddress(strAddress);
             if (sapDest) {

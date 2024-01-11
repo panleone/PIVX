@@ -431,11 +431,9 @@ UniValue validateaddress(const JSONRPCRequest& request)
     std::string strAddress = request.params[0].get_str();
 
     // First check if it's a regular address
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CTxDestination dest = DecodeDestination(strAddress, options);
+    bool isStaking = false;
+    bool isExchange = false;
+    CTxDestination dest = DecodeDestination(strAddress, isStaking, isExchange);
     bool isValid = IsValidDestination(dest);
 
     PPaymentAddress finalAddress;
@@ -450,7 +448,7 @@ UniValue validateaddress(const JSONRPCRequest& request)
     ret.pushKV("isvalid", isValid);
     if (isValid) {
         ret.pushKV("address", strAddress);
-        UniValue detail = boost::apply_visitor(DescribePaymentAddressVisitor(pwallet, options.isStaking), finalAddress);
+        UniValue detail = boost::apply_visitor(DescribePaymentAddressVisitor(pwallet, isStaking), finalAddress);
         ret.pushKVs(detail);
     }
 

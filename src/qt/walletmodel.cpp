@@ -420,7 +420,7 @@ bool WalletModel::validateAddress(const QString& address, bool fStaking, bool& i
     options.isStaking = false;
     options.isShielded = isShielded;
     options.isExchange = false;
-    CWDestination dest = Standard::DecodeDestination(address.toStdString(), options.isStaking);
+    CWDestination dest = Standard::DecodeDestination(address.toStdString(), options);
     if (IsShieldedDestination(dest)) {
         isShielded = true;
         return true;
@@ -606,7 +606,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
             options.isStaking = false;
             options.isShielded = false;
             options.isExchange = false;
-            auto address = Standard::DecodeDestination(rcp.address.toStdString(), options.isStaking);
+            auto address = Standard::DecodeDestination(rcp.address.toStdString(), options);
             std::string purpose = options.isShielded ? AddressBook::AddressBookPurpose::SHIELDED_SEND :
                                   options.isStaking ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND;
             std::string strLabel = rcp.label.toStdString();
@@ -1001,7 +1001,7 @@ bool WalletModel::updateAddressBookPurpose(const QString &addressStr, const std:
     options.isStaking = false;
     options.isShielded = false;
     options.isExchange = false;
-    CTxDestination address = DecodeDestination(addressStr.toStdString(), options.isStaking);
+    CTxDestination address = DecodeDestination(addressStr.toStdString(), options.isStaking, options.isExchange);
     if (options.isStaking)
         return error("Invalid PIVX address, cold staking address");
     CKeyID keyID;
