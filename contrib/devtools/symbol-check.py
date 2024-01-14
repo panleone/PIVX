@@ -40,7 +40,14 @@ import pixie
 #
 MAX_VERSIONS = {
     'GCC': (7, 0, 0),
-    'GLIBC': (2, 27),
+    'GLIBC': {
+        pixie.EM_386:    (2, 27),
+        pixie.EM_X86_64: (2, 27),
+        pixie.EM_ARM:    (2, 27),
+        pixie.EM_AARCH64:(2, 27),
+        pixie.EM_PPC64:  (2, 27),
+        pixie.EM_RISCV:  (2, 27),
+    },
     'LIBATOMIC': (1, 0),
     'V': (0, 5, 0),  # xkb (bitcoin-qt only)
 }
@@ -77,13 +84,6 @@ ELF_ALLOWED_LIBRARIES = {
     'libfontconfig.so.1',  # font support
     'libfreetype.so.6',  # font parsing
     'libdl.so.2'  # programming interface to dynamic linker
-}
-ARCH_MIN_GLIBC_VER = {
-pixie.EM_386:    (2, 27),
-pixie.EM_X86_64: (2, 27),
-pixie.EM_ARM:    (2, 27),
-pixie.EM_AARCH64:(2, 27),
-pixie.EM_RISCV:  (2, 27)
 }
 
 MACHO_ALLOWED_LIBRARIES = {
@@ -163,7 +163,10 @@ def check_version(max_versions, version, arch) -> bool:
     ver = tuple([int(x) for x in ver.split('.')])
     if not lib in max_versions:
         return False
-    return ver <= max_versions[lib] or lib == 'GLIBC' and ver <= ARCH_MIN_GLIBC_VER[arch]
+    if isinstance(max_versions[lib], tuple):
+        return ver <= max_versions[lib]
+    else:
+        return ver <= max_versions[lib][arch]
 
 def check_imported_symbols(filename) -> bool:
     elf = pixie.load(filename)
