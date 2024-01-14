@@ -61,7 +61,8 @@ DIST_CARGO = \
            $(top_srcdir)/params/install-params.sh
 
 BIN_CHECKS=$(top_srcdir)/contrib/devtools/symbol-check.py \
-           $(top_srcdir)/contrib/devtools/security-check.py
+           $(top_srcdir)/contrib/devtools/security-check.py \
+           $(top_srcdir)/contrib/devtools/pixie.py
 
 WINDOWS_PACKAGING = $(top_srcdir)/share/pixmaps/pivx.ico \
   $(top_srcdir)/share/pixmaps/nsis-header.bmp \
