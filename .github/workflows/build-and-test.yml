@@ -412,7 +412,7 @@ jobs:
             goal: install
             # -Wno-psabi is to disable ABI warnings: "note: parameter passing for argument of type ... changed in GCC 7.1"
             # This could be removed once the ABI change warning does not show up by default
-            BITCOIN_CONFIG: "--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust CXXFLAGS=-Wno-psabi"
+            BITCOIN_CONFIG: "--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust CXXFLAGS=-Wno-psabi LDFLAGS=-static-libstdc++"
 
           - name: AARCH64 [GOAL:install] [no unit or functional tests]
             id: ARM64
@@ -422,7 +422,7 @@ jobs:
             unit_tests: false
             functional_tests: false
             goal: install
-            BITCOIN_CONFIG: "--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
+            BITCOIN_CONFIG: "--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++"
 
           - name: Win64 [GOAL:deploy] [no unit or functional tests]
             id: Win64
@@ -444,7 +444,7 @@ jobs:
             functional_tests: true
             goal: install
             test_runner_extra: "--coverage --all  --exclude feature_dbcrash"
-            BITCOIN_CONFIG: "--enable-zmq --with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
+            BITCOIN_CONFIG: "--enable-zmq --with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++"
 
           - name: x86_64 Linux [GOAL:install] [no GUI, no unit tests, only functional tests on legacy pre-HD wallets]
             id: Linux-x86_64-nogui
@@ -455,7 +455,7 @@ jobs:
             functional_tests: true
             goal: install
             test_runner_extra: "--legacywallet"
-            BITCOIN_CONFIG: "--enable-zmq --with-gui=no --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
+            BITCOIN_CONFIG: "--enable-zmq --with-gui=no --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++"
 
           - name: macOS 10.12 [GOAL:deploy] [no unit or functional tests]
             id: macOS10.12
