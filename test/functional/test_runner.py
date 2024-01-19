@@ -122,6 +122,7 @@ BASE_SCRIPTS= [
     'feature_filelock.py',                      # ~ 71 sec
     'mempool_packages.py',                      # ~ 63 sec
     'sapling_wallet_encryption.py',
+    'feature_exchangeaddr.py',
 
     # vv Tests less than 60s vv
     'rpc_users.py',
