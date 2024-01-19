@@ -398,14 +398,11 @@ void WalletModel::updateWatchOnlyFlag(bool fHaveWatchonly)
 
 bool WalletModel::validateAddress(const QString& address)
 {
-    // Only regular base58 addresses, shielded addresses and exchange addresses accepted here
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CWDestination dest = Standard::DecodeDestination(address.toStdString(), options);
+    // Only regular base58 addresses and shielded addresses accepted here
+    bool isStaking, isExchange = false;
+    CWDestination dest = Standard::DecodeDestination(address.toStdString(), isStaking, isExchange);
     const auto regDest = boost::get<CTxDestination>(&dest);
-    if (regDest && IsValidDestination(*regDest) && options.isStaking) return false;
+    if (regDest && IsValidDestination(*regDest) && isStaking) return false;
     return Standard::IsValidDestination(dest);
 }
 
@@ -416,16 +413,13 @@ bool WalletModel::validateAddress(const QString& address, bool fStaking)
 
 bool WalletModel::validateAddress(const QString& address, bool fStaking, bool& isShielded)
 {
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = isShielded;
-    options.isExchange = false;
-    CWDestination dest = Standard::DecodeDestination(address.toStdString(), options);
+    bool isStaking, isExchange = false;
+    CWDestination dest = Standard::DecodeDestination(address.toStdString(), isStaking, isExchange);
     if (IsShieldedDestination(dest)) {
         isShielded = true;
         return true;
     }
-    return Standard::IsValidDestination(dest) && (options.isStaking == fStaking);
+    return Standard::IsValidDestination(dest) && (isStaking == fStaking);
 }
 
 bool WalletModel::updateAddressBookLabels(const CWDestination& dest, const std::string& strName, const std::string& strPurpose)
@@ -602,13 +596,10 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction& tran
     for (const SendCoinsRecipient& rcp : transaction.getRecipients()) {
         // Don't touch the address book when we have a payment request
         {
-            Standard::DecodeOptions options;
-            options.isStaking = false;
-            options.isShielded = false;
-            options.isExchange = false;
-            auto address = Standard::DecodeDestination(rcp.address.toStdString(), options);
-            std::string purpose = options.isShielded ? AddressBook::AddressBookPurpose::SHIELDED_SEND :
-                                  options.isStaking ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND;
+            bool isStaking, isExchange, isShielded = false;
+            auto address = Standard::DecodeDestination(rcp.address.toStdString(), isStaking, isExchange, isShielded);
+            std::string purpose = isShielded ? AddressBook::AddressBookPurpose::SHIELDED_SEND :
+                                  isStaking ? AddressBook::AddressBookPurpose::COLD_STAKING_SEND : AddressBook::AddressBookPurpose::SEND;
             std::string strLabel = rcp.label.toStdString();
             updateAddressBookLabels(address, strLabel, purpose);
         }
@@ -951,11 +942,8 @@ int64_t WalletModel::getKeyCreationTime(const CTxDestination& address)
 
 int64_t WalletModel::getKeyCreationTime(const std::string& address)
 {
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    return wallet->GetKeyCreationTime(Standard::DecodeDestination(address, options));
+    bool isStaking, isExchange, isShielded = false;
+    return wallet->GetKeyCreationTime(Standard::DecodeDestination(address, isStaking, isExchange, isShielded));
 }
 
 int64_t WalletModel::getKeyCreationTime(const libzcash::SaplingPaymentAddress& address)
@@ -997,12 +985,9 @@ bool WalletModel::blacklistAddressFromColdStaking(const QString &addressStr)
 
 bool WalletModel::updateAddressBookPurpose(const QString &addressStr, const std::string& purpose)
 {
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    CTxDestination address = DecodeDestination(addressStr.toStdString(), options.isStaking, options.isExchange);
-    if (options.isStaking)
+    bool isStaking, isExchange = false;
+    CTxDestination address = DecodeDestination(addressStr.toStdString(), isStaking, isExchange);
+    if (isStaking)
         return error("Invalid PIVX address, cold staking address");
     CKeyID keyID;
     if (!getKeyId(address, keyID))

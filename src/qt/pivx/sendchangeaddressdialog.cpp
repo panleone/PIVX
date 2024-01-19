@@ -73,17 +73,14 @@ void SendChangeAddressDialog::accept()
         QDialog::accept();
     } else {
         // validate address
-        Standard::DecodeOptions options;
-        options.isStaking = false;
-        options.isShielded = false;
-        options.isExchange = false;
-        dest = Standard::DecodeDestination(ui->lineEditAddress->text().toStdString(), options);
+        bool isStaking, isExchange, isShielded = false;
+        dest = Standard::DecodeDestination(ui->lineEditAddress->text().toStdString(), isStaking, isExchange, isShielded);
 
         if (!Standard::IsValidDestination(dest)) {
             inform(tr("Invalid address"));
-        } else if (options.isStaking) {
+        } else if (isStaking) {
             inform(tr("Cannot use cold staking addresses for change"));
-        } else if (!options.isShielded && !isTransparent) {
+        } else if (!isShielded && !isTransparent) {
             inform(tr("Cannot use a transparent change for a shield transaction"));
         } else {
             QDialog::accept();

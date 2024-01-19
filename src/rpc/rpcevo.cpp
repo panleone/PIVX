@@ -168,15 +168,12 @@ static void CheckEvoUpgradeEnforcement()
 
 // Allows to specify PIVX address or priv key (as strings). In case of PIVX address, the priv key is taken from the wallet
 static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, bool allowAddresses = true) {
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, options);
-    if (options.isStaking) {
+    bool isStaking{false}, isShield{false}, isExchange{false};
+    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, isStaking, isExchange, isShield);
+    if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
-    if (options.isShielded) {
+    if (isShield) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "shield addresses not supported");
     }
     const CTxDestination* dest = Standard::GetTransparentDestination(cwdest);
@@ -201,15 +198,12 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
 
 static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress)
 {
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, options);
-    if (options.isStaking) {
+    bool isStaking{false}, isShield{false}, isExchange{false};
+    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, isStaking, isExchange, isShield);
+    if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
-    if (options.isShielded) {
+    if (isShield) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "shield addresses not supported");
     }
     const CKeyID* keyID = boost::get<CKeyID>(Standard::GetTransparentDestination(cwdest));

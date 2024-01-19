@@ -187,7 +187,7 @@ enum opcodetype
     OP_CHECKCOLDSTAKEVERIFY_LOF = 0xd1,     // last output free for masternode/budget payments
     OP_CHECKCOLDSTAKEVERIFY = 0xd2,
 
-    // exchange address, NOP but identifies as a address not allowing private outputs
+    // exchange address, NOP but identifies as an address not allowing private outputs
     OP_EXCHANGEADDR = 0xe0,
 
     OP_INVALIDOPCODE = 0xff,

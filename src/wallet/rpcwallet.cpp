@@ -191,11 +191,8 @@ UniValue getaddressinfo(const JSONRPCRequest& request)
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("address", strAdd);
 
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    const CWDestination& dest = Standard::DecodeDestination(strAdd, options);
+    bool isStaking, isExchange, isShielded = false;
+    const CWDestination& dest = Standard::DecodeDestination(strAdd, isStaking, isExchange, isShielded);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -1041,11 +1038,8 @@ UniValue setlabel(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
-    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str(), options);
+    bool isStaking, isExchange, isShielded = false;
+    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str(), isStaking, isExchange, isShielded);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -1188,13 +1182,10 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    Standard::DecodeOptions options;
-    options.isStaking = false;
-    options.isShielded = false;
-    options.isExchange = false;
+    bool isStaking, isExchange, isShielded = false;
     const std::string addrStr = request.params[0].get_str();
-    const CWDestination& destination = Standard::DecodeDestination(addrStr, options);
-    if (!Standard::IsValidDestination(destination) || options.isStaking)
+    const CWDestination& destination = Standard::DecodeDestination(addrStr, isStaking, isExchange, isShielded);
+    if (!Standard::IsValidDestination(destination) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
     const std::string commentStr = (request.params.size() > 2 && !request.params[2].isNull()) ?
                                    request.params[2].get_str() : "";
@@ -1202,7 +1193,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
                                    request.params[3].get_str() : "";
     bool fSubtractFeeFromAmount = request.params.size() > 4 && request.params[4].get_bool();
 
-    if (options.isShielded) {
+    if (isShielded) {
         UniValue sendTo(UniValue::VOBJ);
         sendTo.pushKV(addrStr, request.params[1]);
         UniValue subtractFeeFromAmount(UniValue::VARR);
@@ -2504,12 +2495,9 @@ UniValue sendmany(const JSONRPCRequest& request)
     // Check  if any recipient address is shield
     bool fShieldSend = false;
     for (const std::string& key : sendTo.getKeys()) {
-        Standard::DecodeOptions options;
-        options.isStaking = false;
-        options.isShielded = false;
-        options.isExchange = false;
-        Standard::DecodeDestination(key, options);
-        if (options.isShielded) {
+        bool isStaking, isExchange, isShielded = false;
+        Standard::DecodeDestination(key, isStaking, isExchange, isShielded);
+        if (isShielded) {
             fShieldSend = true;
             break;
         }
@@ -4798,7 +4786,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "upgradewallet",            &upgradewallet,            true,  {} },
     { "wallet",             "sethdseed",                &sethdseed,                true,  {"newkeypool","seed"} },
     { "wallet",             "getnewaddress",            &getnewaddress,            true,  {"label"} },
-    { "hidden",             "getnewexchangeaddress",    &getnewexchangeaddress,    true,  {"label"} },
+    { "wallet",             "getnewexchangeaddress",    &getnewexchangeaddress,    true,  {"label"} },
     { "wallet",             "getnewstakingaddress",     &getnewstakingaddress,     true,  {"label"}  },
     { "wallet",             "getrawchangeaddress",      &getrawchangeaddress,      true,  {} },
     { "wallet",             "getreceivedbyaddress",     &getreceivedbyaddress,     false, {"address","minconf"} },

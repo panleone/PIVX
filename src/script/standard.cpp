@@ -177,6 +177,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet,
     } else if (whichType == TX_PUBKEYHASH) {
         addressRet = CKeyID(uint160(vSolutions[0]));
         return true;
+
     } else if (whichType == TX_SCRIPTHASH) {
         addressRet = CScriptID(uint160(vSolutions[0]));
         return true;

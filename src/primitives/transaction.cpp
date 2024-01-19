@@ -145,12 +145,7 @@ bool CTransaction::IsCoinStake() const
 
 bool CTransaction::HasExchangeAddr() const
 {
-    for(const CTxOut& txout : vout) {
-        if (txout.scriptPubKey.size() >= 1 && txout.scriptPubKey.IsPayToExchangeAddress()) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(vout.begin(), vout.end(), [](const auto& txout) { return txout.scriptPubKey.IsPayToExchangeAddress(); });
 }
 
 bool CTransaction::HasP2CSOutputs() const

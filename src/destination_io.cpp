@@ -17,22 +17,26 @@ namespace Standard {
 
     CWDestination DecodeDestination(const std::string& strAddress)
     {
-        Standard::DecodeOptions options;
-        options.isStaking = false;
-        options.isShielded = false;
-        options.isExchange = false;
-        return DecodeDestination(strAddress, options);
+        bool isStaking = false;
+        bool isExchange = false;
+        return DecodeDestination(strAddress, isStaking, isExchange);
+    }
+
+    CWDestination DecodeDestination(const std::string& strAddress, bool& isStaking, bool& isExchange)
+    {
+        bool isShielded = false;
+        return DecodeDestination(strAddress, isStaking, isExchange, isShielded);
     }
 
     // agregar isShielded
-    CWDestination DecodeDestination(const std::string& strAddress, DecodeOptions options)
+    CWDestination DecodeDestination(const std::string& strAddress, bool& isStaking, bool& isExchange, bool& isShielded)
     {
         CWDestination dest;
-        CTxDestination regDest = ::DecodeDestination(strAddress, options.isStaking, options.isExchange);
+        CTxDestination regDest = ::DecodeDestination(strAddress, isStaking, isExchange);
         if (!IsValidDestination(regDest)) {
             const auto sapDest = KeyIO::DecodeSaplingPaymentAddress(strAddress);
             if (sapDest) {
-                options.isShielded = true;
+                isShielded = true;
                 return *sapDest;
             }
         }

@@ -115,20 +115,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state, bool fCol
         }
     }
 
-    // input scripts cannot have OP_EXCHANGEADDR at all
-    for (const auto &vin: tx.vin) {
-        if (vin.scriptSig.size() >= 1 && vin.scriptSig[0] == OP_EXCHANGEADDR) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-vin");
-        }
-    }
-
-    bool hasExchangeUTXOs = false;
-    if (tx.HasExchangeAddr()) {
-        hasExchangeUTXOs = true;
-    }
-    bool isIDB = IsInitialBlockDownload();
+    bool hasExchangeUTXOs = tx.HasExchangeAddr();
     int nTxHeight = chainActive.Height();
-    if (hasExchangeUTXOs && !isIDB && nTxHeight < ::Params().GetConsensus().nExchangeAddrStart)
+    if (hasExchangeUTXOs && nTxHeight < ::Params().GetConsensus().nExchangeAddrStart)
         return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-not-started");
 
     if (tx.IsCoinBase()) {
