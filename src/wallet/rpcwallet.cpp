@@ -191,8 +191,7 @@ UniValue getaddressinfo(const JSONRPCRequest& request)
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("address", strAdd);
 
-    bool isStaking, isExchange, isShielded = false;
-    const CWDestination& dest = Standard::DecodeDestination(strAdd, isStaking, isExchange, isShielded);
+    const CWDestination& dest = Standard::DecodeDestination(strAdd);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -1038,7 +1037,7 @@ UniValue setlabel(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    bool isStaking, isExchange, isShielded = false;
+    bool isStaking = false, isExchange = false, isShielded = false;
     const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str(), isStaking, isExchange, isShielded);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
@@ -1182,7 +1181,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    bool isStaking, isExchange, isShielded = false;
+    bool isStaking = false, isExchange = false, isShielded = false;
     const std::string addrStr = request.params[0].get_str();
     const CWDestination& destination = Standard::DecodeDestination(addrStr, isStaking, isExchange, isShielded);
     if (!Standard::IsValidDestination(destination) || isStaking)
@@ -2495,7 +2494,7 @@ UniValue sendmany(const JSONRPCRequest& request)
     // Check  if any recipient address is shield
     bool fShieldSend = false;
     for (const std::string& key : sendTo.getKeys()) {
-        bool isStaking, isExchange, isShielded = false;
+        bool isStaking = false, isExchange = false, isShielded = false;
         Standard::DecodeDestination(key, isStaking, isExchange, isShielded);
         if (isShielded) {
             fShieldSend = true;

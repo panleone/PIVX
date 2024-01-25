@@ -86,3 +86,4 @@ class ExchangeAddrTest(PivxTestFramework):
 
 if __name__ == "__main__":
     ExchangeAddrTest().main()
+
