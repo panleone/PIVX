@@ -18,6 +18,8 @@ from decimal import Decimal
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
 
+FEATURE_PRE_SPLIT_KEYPOOL = 169900
+
 class ExchangeAddrTest(PivxTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
@@ -32,7 +34,6 @@ class ExchangeAddrTest(PivxTestFramework):
 
         # Get addresses for testing
         ex_addr = self.nodes[1].getnewexchangeaddress()
-        sapling_addr = self.nodes[0].getnewshieldaddress()
         t_addr = self.nodes[0].getnewaddress()
 
         # Attempt to send funds from transparent address to exchange address
@@ -56,6 +57,12 @@ class ExchangeAddrTest(PivxTestFramework):
         assert_equal(ex_result['txid'], tx2)
 
         # Transparent to Shield to Exchange should fail
+        # Check wallet version
+        wallet_info = self.nodes[0].getwalletinfo()
+        if wallet_info['walletversion'] < FEATURE_PRE_SPLIT_KEYPOOL:
+            self.log.info("Pre-HD wallet version detected. Skipping Shield tests.")
+            return
+        sapling_addr = self.nodes[0].getnewshieldaddress()
         self.nodes[0].sendtoaddress(sapling_addr, 2.0)
         self.nodes[0].generate(6)
         sap_to_ex = [{"address": ex_addr, "amount": Decimal('1')}]
