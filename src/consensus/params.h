@@ -37,6 +37,7 @@ enum UpgradeIndex : uint32_t {
     UPGRADE_V5_2,
     UPGRADE_V5_3,
     UPGRADE_V5_5,
+    UPGRADE_V5_6,
     UPGRADE_V6_0,
     UPGRADE_TESTDUMMY,
     // NOTE: Also add new upgrades to NetworkUpgradeInfo in upgrades.cpp
@@ -192,7 +193,6 @@ struct Params {
     int64_t nTargetSpacing;
     int nTimeSlotLength;
     int nMaxProposalPayments;
-    int nExchangeAddrStart;
 
     // spork keys
     std::string strSporkPubKey;

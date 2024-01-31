@@ -117,7 +117,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state, bool fCol
 
     bool hasExchangeUTXOs = tx.HasExchangeAddr();
     int nTxHeight = chainActive.Height();
-    if (hasExchangeUTXOs && nTxHeight < ::Params().GetConsensus().nExchangeAddrStart)
+    if (hasExchangeUTXOs && !Params().GetConsensus().NetworkUpgradeActive(nTxHeight, Consensus::UPGRADE_V5_6))
         return state.DoS(100, false, REJECT_INVALID, "bad-exchange-address-not-started");
 
     if (tx.IsCoinBase()) {

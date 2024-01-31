@@ -66,6 +66,10 @@ const struct NUInfo NetworkUpgradeInfo[Consensus::MAX_NETWORK_UPGRADES] = {
                 /*.strInfo =*/ "New rewards structure",
         },
         {
+                /*.strName =*/ "PIVX_v5.6",
+                /*.strInfo =*/ "Exchange address",
+        },
+        {
                 /*.strName =*/ "v6_evo",
                 /*.strInfo =*/ "Deterministic Masternodes",
         },
