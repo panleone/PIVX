@@ -12,12 +12,12 @@ jobs:
         shell: bash
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Initialize Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
@@ -104,7 +104,7 @@ jobs:
 
     steps:
       - name: Get Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Environment
         run: |
@@ -118,7 +118,7 @@ jobs:
           fi
 
       - name: ccache cache files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .ccache
           key: ${{ runner.os }}-cmake-${{ matrix.config.name }}-ccache
@@ -204,7 +204,7 @@ jobs:
 
     steps:
       - name: Get Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Environment
         run: |
@@ -219,7 +219,7 @@ jobs:
           fi
 
       - name: ccache cache files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .ccache
@@ -335,7 +335,7 @@ jobs:
 
     steps:
       - name: Get Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Environment
         run: |
@@ -343,7 +343,7 @@ jobs:
           sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.apt_get }}
 
       - name: depends cache files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             depends/built
@@ -472,7 +472,7 @@ jobs:
 
     steps:
       - name: Get Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Environment
         run: |
@@ -488,7 +488,7 @@ jobs:
 
       - name: depends cache files
         if: matrix.config.no_depends != 1
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             depends/built
@@ -498,7 +498,7 @@ jobs:
           restore-keys: ${{ runner.os }}-depends-${{ matrix.config.host }}
 
       - name: ccache cache files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .ccache
