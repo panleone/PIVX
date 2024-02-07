@@ -28,8 +28,6 @@ protected:
 public Q_SLOTS:
     void onSignMessageButtonSMClicked();
     void onVerifyMessage();
-    void onPasteButtonSMClicked();
-    void onAddressBookButtonSMClicked();
     void onGoClicked();
     void onClearAll();
     void onAddressesClicked();
