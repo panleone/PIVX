@@ -12,6 +12,7 @@
 typedef boost::variant<CTxDestination, libzcash::SaplingPaymentAddress> CWDestination;
 
 namespace Standard {
+
     std::string EncodeDestination(const CWDestination &address, const CChainParams::Base58Type addrType = CChainParams::PUBKEY_ADDRESS);
 
     CWDestination DecodeDestination(const std::string& strAddress);

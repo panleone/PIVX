@@ -7,6 +7,7 @@
 #include "sapling/key_io_sapling.h"
 
 namespace Standard {
+
     std::string EncodeDestination(const CWDestination &address, const CChainParams::Base58Type addrType) {
         const CTxDestination *dest = boost::get<CTxDestination>(&address);
         if (!dest) {

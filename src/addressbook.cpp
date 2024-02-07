@@ -53,5 +53,6 @@ namespace AddressBook {
         return IsShieldedPurpose(purpose);
     }
 
+
 }
 
