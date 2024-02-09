@@ -90,11 +90,7 @@ namespace
 
 std::string EncodeDestination(const CTxDestination& dest, bool isStaking, bool isExchange)
 {
-    if (isExchange) {
-        return EncodeDestination(dest, CChainParams::EXCHANGE_ADDRESS);
-    } else {
-        return EncodeDestination(dest, isStaking ? CChainParams::STAKING_ADDRESS : CChainParams::PUBKEY_ADDRESS);
-    }
+    return isExchange ? EncodeDestination(dest, CChainParams::EXCHANGE_ADDRESS) : (isStaking ? EncodeDestination(dest, CChainParams::STAKING_ADDRESS) : EncodeDestination(dest, CChainParams::PUBKEY_ADDRESS));
 }
 
 std::string EncodeDestination(const CTxDestination& dest, const CChainParams::Base58Type addrType)

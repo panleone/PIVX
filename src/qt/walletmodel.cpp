@@ -492,7 +492,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
                     if (!res) return CannotCreateInternalAddress;
                     ownerAdd = *res.getObjResult();
                 } else {
-                    ownerAdd = Destination(DecodeDestination(rcp.ownerAddress.toStdString()), false);
+                    ownerAdd = Destination(DecodeDestination(rcp.ownerAddress.toStdString()), false, false);
                 }
 
                 const CKeyID* stakerId = boost::get<CKeyID>(&out);
@@ -957,14 +957,14 @@ int64_t WalletModel::getKeyCreationTime(const libzcash::SaplingPaymentAddress& a
 CallResult<Destination> WalletModel::getNewAddress(const std::string& label) const
 {
     auto res = wallet->getNewAddress(label);
-    return res ? CallResult<Destination>(Destination(*res.getObjResult(), false)) :
+    return res ? CallResult<Destination>(Destination(*res.getObjResult(), false, false)) :
            CallResult<Destination>(res.getError());
 }
 
 CallResult<Destination> WalletModel::getNewStakingAddress(const std::string& label) const
 {
     auto res = wallet->getNewStakingAddress(label);
-    return res ? CallResult<Destination>(Destination(*res.getObjResult(), true)) :
+    return res ? CallResult<Destination>(Destination(*res.getObjResult(), true, false)) :
            CallResult<Destination>(res.getError());
 }
 
