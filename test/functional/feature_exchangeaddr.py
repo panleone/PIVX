@@ -8,9 +8,9 @@ Test that the OP_EXCHANGEADDR soft-fork activates at (regtest) block height
 1001, and that the following is capable
     t > e
     e > t
-and not capable
-    t > s > e
     e > s
+and not capable
+    s > e
 """
 
 from decimal import Decimal
@@ -80,15 +80,10 @@ class ExchangeAddrTest(PivxTestFramework):
         # Generate a new shielded address
         new_shielded_addr = self.nodes[1].getnewshieldaddress()
 
-        # Attempt to send funds from exchange address to shielded address
-        expected_error_message = "Failed to build transaction: Failed to sign transaction"
-
-        assert_raises_rpc_error(
-            expected_error_code,
-            expected_error_message,
-            self.nodes[1].sendtoaddress,
-            new_shielded_addr, 1.0
-        )
+        # Send to Shield from Exchange Addr
+        tx3 = self.nodes[1].sendtoaddress(new_shielded_addr, 1.0)
+        ex_result2 = self.nodes[1].gettransaction(tx3)
+        assert_equal(ex_result2['txid'], tx3)
 
 
 if __name__ == "__main__":
