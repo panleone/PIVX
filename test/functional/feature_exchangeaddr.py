@@ -17,6 +17,8 @@ from decimal import Decimal
 
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.script import CScript, OP_NOP, OP_CHECKSIG
+from test_framework.messages import CTransaction, CTxIn, CTxOut, COutPoint, ToHex
 
 FEATURE_PRE_SPLIT_KEYPOOL = 169900
 
@@ -27,8 +29,28 @@ class ExchangeAddrTest(PivxTestFramework):
         self.setup_clean_chain = True
 
     def run_test(self):
+        # Mine and test Pre v5.6 bad OP_EXCHANGEADDR
+        self.nodes[0].generate(900)
+        address = self.nodes[0].getnewaddress()
+        self.nodes[0].sendtoaddress(address, 10)
+        self.nodes[0].generate(6)
+        utxo = self.nodes[0].listunspent()[0]
+        # Create a raw transaction that attempts to spend the UTXO with a custom opcode
+        tx = CTransaction()
+        tx.vin.append(CTxIn(COutPoint(int(utxo["txid"], 16), utxo["vout"]), b""))
+        tx.vout.append(CTxOut(int(utxo["amount"] * 100000000) - 10000, CScript([OP_NOP, OP_CHECKSIG])))
+        tx.vin[0].scriptSig = CScript([b'\xe0', b'\x51'])  # OP_EXCHANGEADDR (0xe0) followed by OP_1 (0x51)
+        
+        # Sign the transaction
+        signed_tx = self.nodes[0].signrawtransaction(ToHex(tx))
+
+        # Send the raw transaction
+        # Before the upgrade, this should fail if OP_EXCHANGEADDR is disallowed
+        error_code = -26
+        error_message = "scriptpubkey"
+        assert_raises_rpc_error(error_code, error_message, self.nodes[0].sendrawtransaction, signed_tx["hex"])
         # Mine and activate exchange addresses
-        self.nodes[0].generate(1000)
+        self.nodes[0].generate(94)
         assert_equal(self.nodes[0].getblockcount(), 1000)
         self.nodes[0].generate(1)
 
