@@ -293,7 +293,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 2927000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 3014000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 3715200;
-        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 9999999;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 4281680;  // Estimate Feb 29th 12:00 UTC
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
@@ -453,7 +453,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 262525;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 332300;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 925056;
-        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = INT_MAX;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 1624280; // Estimate Feb 23 Midnight UTC
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
