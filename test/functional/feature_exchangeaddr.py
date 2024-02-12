@@ -30,7 +30,7 @@ class ExchangeAddrTest(PivxTestFramework):
 
     def run_test(self):
         # Mine and test Pre v5.6 bad OP_EXCHANGEADDR
-        self.nodes[0].generate(900)
+        self.nodes[0].generate(800)
         address = self.nodes[0].getnewaddress()
         self.nodes[0].sendtoaddress(address, 10)
         self.nodes[0].generate(6)
@@ -49,28 +49,44 @@ class ExchangeAddrTest(PivxTestFramework):
         error_code = -26
         error_message = "scriptpubkey"
         assert_raises_rpc_error(error_code, error_message, self.nodes[0].sendrawtransaction, signed_tx["hex"])
-        # Mine and activate exchange addresses
-        self.nodes[0].generate(94)
-        assert_equal(self.nodes[0].getblockcount(), 1000)
-        self.nodes[0].generate(1)
 
-        # Get addresses for testing
+        # Test that proper Exchange Address is not allowed before upgrade
         ex_addr = self.nodes[1].getnewexchangeaddress()
-        t_addr = self.nodes[0].getnewaddress()
 
         # Attempt to send funds from transparent address to exchange address
         ex_addr_validation_result = self.nodes[0].validateaddress(ex_addr)
         assert_equal(ex_addr_validation_result['isvalid'], True)
-        self.nodes[0].sendtoaddress(ex_addr, 2.0)
+        # This should fail to be sent
+        error_code = -4
+        error_message = "bad-exchange-address-not-started"
+        assert_raises_rpc_error(
+            error_code,
+            error_message,
+            self.nodes[0].sendtoaddress,
+            ex_addr, 1.0
+        )
+
+        # Mine and activate exchange addresses
+        self.nodes[0].generate(194)
+        assert_equal(self.nodes[0].getblockcount(), 1000)
+        self.nodes[0].generate(1)
+
+        # Get addresses for testing
+        ex_addr_2 = self.nodes[1].getnewexchangeaddress()
+        t_addr_2 = self.nodes[0].getnewaddress()
+
+        # Attempt to send funds from transparent address to exchange address pre-upgrade activation
+        self.nodes[0].sendtoaddress(ex_addr_2, 2.0)
         self.nodes[0].generate(6)
         self.sync_all()
+
 
         # Verify balance
         node_bal = self.nodes[1].getbalance()
         assert_equal(node_bal, 2)
 
         # Attempt to send funds from exchange address back to transparent address
-        tx2 = self.nodes[0].sendtoaddress(t_addr, 1.0)
+        tx2 = self.nodes[0].sendtoaddress(t_addr_2, 1.0)
         self.nodes[0].generate(6)
         self.sync_all()
         ex_result = self.nodes[0].gettransaction(tx2)
