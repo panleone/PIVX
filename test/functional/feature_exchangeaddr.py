@@ -40,7 +40,7 @@ class ExchangeAddrTest(PivxTestFramework):
         tx.vin.append(CTxIn(COutPoint(int(utxo["txid"], 16), utxo["vout"]), b""))
         tx.vout.append(CTxOut(int(utxo["amount"] * 100000000) - 10000, CScript([OP_NOP, OP_CHECKSIG])))
         tx.vin[0].scriptSig = CScript([b'\xe0', b'\x51'])  # OP_EXCHANGEADDR (0xe0) followed by OP_1 (0x51)
-        
+
         # Sign the transaction
         signed_tx = self.nodes[0].signrawtransaction(ToHex(tx))
 
