@@ -143,6 +143,11 @@ bool CTransaction::IsCoinStake() const
     return (vout.size() >= 2 && vout[0].IsEmpty());
 }
 
+bool CTransaction::HasExchangeAddr() const
+{
+    return std::any_of(vout.begin(), vout.end(), [](const auto& txout) { return txout.scriptPubKey.IsPayToExchangeAddress(); });
+}
+
 bool CTransaction::HasP2CSOutputs() const
 {
     for(const CTxOut& txout : vout) {

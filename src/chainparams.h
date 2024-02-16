@@ -51,6 +51,7 @@ public:
         EXT_SECRET_KEY, // BIP32
         EXT_COIN_TYPE,  // BIP44
         STAKING_ADDRESS,
+        EXCHANGE_ADDRESS,
 
         MAX_BASE58_TYPES
     };

@@ -333,6 +333,11 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                 case OP_NOP:
                     break;
 
+                case OP_EXCHANGEADDR:
+                    if (!script.IsPayToExchangeAddress())
+                        return set_error(serror, SCRIPT_ERR_EXCHANGEADDRVERIFY);
+                    break;
+
                 case OP_CHECKLOCKTIMEVERIFY:
                 {
                     if (!(flags & SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY)) {

@@ -20,10 +20,12 @@ namespace AddressBook {
         extern const std::string COLD_STAKING_SEND;
         extern const std::string SHIELDED_RECEIVE;
         extern const std::string SHIELDED_SEND;
+        extern const std::string EXCHANGE_ADDRESS;
     }
 
     bool IsColdStakingPurpose(const std::string& purpose);
     bool IsShieldedPurpose(const std::string& purpose);
+    bool IsExchangePurpose(const std::string& purpose);
 
 /** Address book data */
     class CAddressBookData {

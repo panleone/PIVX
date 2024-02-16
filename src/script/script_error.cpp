@@ -18,6 +18,8 @@ const char* ScriptErrorString(const ScriptError serror)
             return "Script failed an OP_VERIFY operation";
         case SCRIPT_ERR_EQUALVERIFY:
             return "Script failed an OP_EQUALVERIFY operation";
+        case SCRIPT_ERR_EXCHANGEADDRVERIFY:
+            return "Script failed OP_EXCHANGEADDR operation";
         case SCRIPT_ERR_CHECKCOLDSTAKEVERIFY:
             return "Script failed an OP_CHECKCOLDSTAKEVERIFY operation";
         case SCRIPT_ERR_CHECKMULTISIGVERIFY:

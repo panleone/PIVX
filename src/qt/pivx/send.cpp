@@ -906,10 +906,10 @@ void SendWidget::onContactMultiClicked()
             return;
         }
 
-        bool isStakingAddr = false;
-        auto pivAdd = Standard::DecodeDestination(address.toStdString(), isStakingAddr);
+        bool isStaking, isExchange, isShielded = false;
+        auto pivAdd = Standard::DecodeDestination(address.toStdString(), isStaking, isExchange, isShielded);
 
-        if (!Standard::IsValidDestination(pivAdd) || isStakingAddr) {
+        if (!Standard::IsValidDestination(pivAdd) || isStaking) {
             inform(tr("Invalid address"));
             return;
         }

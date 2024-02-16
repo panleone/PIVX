@@ -308,7 +308,7 @@ UniValue getaddressesbylabel(const JSONRPCRequest& request)
         auto addrBook = it.GetValue();
         if (addrBook.name == label) {
             if (!addrBook.isShielded()) {
-                ret.pushKV(EncodeDestination(*it.GetCTxDestKey(), AddressBook::IsColdStakingPurpose(addrBook.purpose)), AddressBookDataToJSON(addrBook, false));
+                ret.pushKV(EncodeDestination(*it.GetCTxDestKey(), AddressBook::IsColdStakingPurpose(addrBook.purpose), AddressBook::IsExchangePurpose(addrBook.purpose)), AddressBookDataToJSON(addrBook, false));
             } else {
                 ret.pushKV(Standard::EncodeDestination(*it.GetShieldedDestKey()), AddressBookDataToJSON(addrBook, false));
             }
@@ -526,6 +526,34 @@ UniValue getnewaddress(const JSONRPCRequest& request)
             HelpExampleCli("getnewaddress", "") + HelpExampleRpc("getnewaddress", ""));
 
     return EncodeDestination(GetNewAddressFromLabel(pwallet, AddressBook::AddressBookPurpose::RECEIVE, request.params));
+}
+
+UniValue getnewexchangeaddress(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            "getnewexchangeaddress ( \"label\" )\n"
+            "\nReturns a new PIVX exchange address for receiving transparent funds only.\n"
+
+            "\nArguments:\n"
+            "1. \"label\"        (string, optional) The label name for the address to be linked to. if not provided, the default label \"\" is used. It can also be set to the empty string \"\" to represent the default label. The label does not need to exist, it will be created if there is no label by the given name.\n"
+
+
+            "\nResult:\n"
+            "\"pivxaddress\"    (string) The new pivx exchange address\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("getnewexchangeaddress", "") + HelpExampleRpc("getnewexchangeaddress", ""));
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    return EncodeDestination(GetNewAddressFromLabel(pwallet, "exchange", request.params, CChainParams::EXCHANGE_ADDRESS), CChainParams::EXCHANGE_ADDRESS);
 }
 
 UniValue getnewstakingaddress(const JSONRPCRequest& request)
@@ -753,10 +781,10 @@ UniValue delegatoradd(const JSONRPCRequest& request)
             HelpExampleRpc("delegatoradd", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\"") +
             HelpExampleRpc("delegatoradd", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\" \"myPaperWallet\""));
 
-
-    bool isStakingAddress = false;
-    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStakingAddress);
-    if (!IsValidDestination(dest) || isStakingAddress)
+    bool isStaking = false;
+    bool isExchange = false;
+    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStaking, isExchange);
+    if (!IsValidDestination(dest) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
 
     const std::string strLabel = (request.params.size() > 1 ? request.params[1].get_str() : "");
@@ -791,9 +819,10 @@ UniValue delegatorremove(const JSONRPCRequest& request)
             HelpExampleCli("delegatorremove", "DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6") +
             HelpExampleRpc("delegatorremove", "\"DMJRSsuU9zfyrvxVaAEFQqK4MxZg6vgeS6\""));
 
-    bool isStakingAddress = false;
-    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStakingAddress);
-    if (!IsValidDestination(dest) || isStakingAddress)
+    bool isStaking = false;
+    bool isExchange = false;
+    CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStaking, isExchange);
+    if (!IsValidDestination(dest) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
 
     const CKeyID* keyID = boost::get<CKeyID>(&dest);
@@ -814,10 +843,14 @@ UniValue delegatorremove(const JSONRPCRequest& request)
 
 static UniValue ListaddressesForPurpose(CWallet* const pwallet, const std::string strPurpose)
 {
-    const CChainParams::Base58Type addrType = (
-            AddressBook::IsColdStakingPurpose(strPurpose) ?
-                    CChainParams::STAKING_ADDRESS :
-                    CChainParams::PUBKEY_ADDRESS);
+    CChainParams::Base58Type addrType;
+    if (AddressBook::IsColdStakingPurpose(strPurpose)) {
+        addrType = CChainParams::STAKING_ADDRESS;
+    } else if (AddressBook::IsExchangePurpose(strPurpose)) {
+        addrType = CChainParams::EXCHANGE_ADDRESS;
+    } else {
+        addrType = CChainParams::PUBKEY_ADDRESS;
+    }
     UniValue ret(UniValue::VARR);
     {
         LOCK(pwallet->cs_wallet);
@@ -1004,7 +1037,8 @@ UniValue setlabel(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str());
+    bool isStaking = false, isExchange = false, isShielded = false;
+    const CWDestination& dest = Standard::DecodeDestination(request.params[0].get_str(), isStaking, isExchange, isShielded);
     // Make sure the destination is valid
     if (!Standard::IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
@@ -1147,9 +1181,9 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    bool isStaking = false, isShielded = false;
+    bool isStaking = false, isExchange = false, isShielded = false;
     const std::string addrStr = request.params[0].get_str();
-    const CWDestination& destination = Standard::DecodeDestination(addrStr, isStaking, isShielded);
+    const CWDestination& destination = Standard::DecodeDestination(addrStr, isStaking, isExchange, isShielded);
     if (!Standard::IsValidDestination(destination) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
     const std::string commentStr = (request.params.size() > 2 && !request.params[2].isNull()) ?
@@ -1203,9 +1237,9 @@ static UniValue CreateColdStakeDelegation(CWallet* const pwallet, const UniValue
     }
 
     // Get Staking Address
-    bool isStaking = false;
-    CTxDestination stakeAddr = DecodeDestination(params[0].get_str(), isStaking);
-    if (!IsValidDestination(stakeAddr) || !isStaking)
+    bool isStaking{false};
+    CTxDestination stakeAddr = DecodeDestination(params[0].get_str());
+    if (!IsValidDestination(stakeAddr) || isStaking)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX staking address");
 
     CKeyID* stakeKey = boost::get<CKeyID>(&stakeAddr);
@@ -1233,11 +1267,12 @@ static UniValue CreateColdStakeDelegation(CWallet* const pwallet, const UniValue
     // Get Owner Address
     std::string ownerAddressStr;
     CKeyID ownerKey;
+    bool isStakingAddress = false;
+    bool isExchange = false;
     if (params.size() > 2 && !params[2].isNull() && !params[2].get_str().empty()) {
         // Address provided
-        bool isStaking = false;
-        CTxDestination dest = DecodeDestination(params[2].get_str(), isStaking);
-        if (!IsValidDestination(dest) || isStaking)
+        CTxDestination dest = DecodeDestination(params[2].get_str(), isStakingAddress, isExchange);
+        if (!IsValidDestination(dest) || isStakingAddress)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX spending address");
         ownerKey = *boost::get<CKeyID>(&dest);
         // Check that the owner address belongs to this wallet, or fForceExternalAddr is true
@@ -1293,7 +1328,7 @@ static UniValue CreateColdStakeDelegation(CWallet* const pwallet, const UniValue
 
     UniValue result(UniValue::VOBJ);
     result.pushKV("owner_address", ownerAddressStr);
-    result.pushKV("staker_address", EncodeDestination(stakeAddr, true));
+    result.pushKV("staker_address", EncodeDestination(stakeAddr, true, false));
     return result;
 }
 
@@ -2325,7 +2360,8 @@ static UniValue legacy_sendmany(CWallet* const pwallet, const UniValue& sendTo, 
     std::vector<std::string> keys = sendTo.getKeys();
     for (const std::string& name_ : keys) {
         bool isStaking = false;
-        CTxDestination dest = DecodeDestination(name_,isStaking);
+        bool isExchange = false;
+        CTxDestination dest = DecodeDestination(name_, isStaking, isExchange);
         if (!IsValidDestination(dest) || isStaking)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid PIVX address: ")+name_);
 
@@ -2458,8 +2494,8 @@ UniValue sendmany(const JSONRPCRequest& request)
     // Check  if any recipient address is shield
     bool fShieldSend = false;
     for (const std::string& key : sendTo.getKeys()) {
-        bool isStaking = false, isShielded = false;
-        Standard::DecodeDestination(key, isStaking, isShielded);
+        bool isStaking = false, isExchange = false, isShielded = false;
+        Standard::DecodeDestination(key, isStaking, isExchange, isShielded);
         if (isShielded) {
             fShieldSend = true;
             break;
@@ -2646,7 +2682,7 @@ static UniValue ListReceived(CWallet* const pwallet, const UniValue& params, boo
             UniValue obj(UniValue::VOBJ);
             if (fIsWatchonly)
                 obj.pushKV("involvesWatchonly", true);
-            obj.pushKV("address", EncodeDestination(address, AddressBook::IsColdStakingPurpose(label)));
+            obj.pushKV("address", EncodeDestination(address, AddressBook::IsColdStakingPurpose(label), AddressBook::IsExchangePurpose(label)));
             obj.pushKV("amount", ValueFromAmount(nAmount));
             if (nConf == std::numeric_limits<int>::max()) nConf = 0;
             obj.pushKV("confirmations", nConf);
@@ -4749,6 +4785,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "upgradewallet",            &upgradewallet,            true,  {} },
     { "wallet",             "sethdseed",                &sethdseed,                true,  {"newkeypool","seed"} },
     { "wallet",             "getnewaddress",            &getnewaddress,            true,  {"label"} },
+    { "wallet",             "getnewexchangeaddress",    &getnewexchangeaddress,    true,  {"label"} },
     { "wallet",             "getnewstakingaddress",     &getnewstakingaddress,     true,  {"label"}  },
     { "wallet",             "getrawchangeaddress",      &getrawchangeaddress,      true,  {} },
     { "wallet",             "getreceivedbyaddress",     &getreceivedbyaddress,     false, {"address","minconf"} },
