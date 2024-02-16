@@ -115,10 +115,10 @@ jobs:
           fi
           if [[ ${{ matrix.config.os }} = macos* ]]; then
             brew install "$APT_BASE" ${{ matrix.config.packages }}
-            # GA's macOS 11 image has recently started leaking the pre-installed boost libraries
-            # despite us setting an explicit path. Temp workaround is to unlink the pre-installed version
+            # GA's macOS 11 image is inconsistent as to if it includes a pre-installed version of boost. Force linking
+            # to the specified version (1.76), which will overwrite the symlinks to a pre-existing version if it exists.
             if [ "${{ matrix.config.os }}" = "macos-11" ]; then
-              brew unlink boost && brew link --overwrite -f boost@1.76
+              brew link --overwrite -f boost@1.76
             fi
           fi
 
