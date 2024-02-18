@@ -184,7 +184,7 @@ void AddressesWidget::onStoreContactClicked()
         QString label = ui->lineEditName->text();
         QString address = ui->lineEditAddress->text();
 
-        bool isStaking, isExchange, isShield = false;
+        bool isStaking = false, isExchange = false, isShield = false;
         auto pivAdd = Standard::DecodeDestination(address.toUtf8().constData(), isStaking, isExchange, isShield);
 
         if (!Standard::IsValidDestination(pivAdd)) {
