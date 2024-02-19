@@ -33,8 +33,8 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state, CAmount& 
 
     // From here, all of the checks are done in v3+ transactions.
 
-    // if the tx has shielded data, cannot be a coinstake, coinbase, zcspend and zcmint or exchange address
-    if (tx.IsCoinStake() || tx.IsCoinBase() || tx.HasZerocoinSpendInputs() || tx.HasZerocoinMintOutputs() || tx.HasExchangeAddr())
+    // if the tx has shielded data, cannot be a coinstake, coinbase, zcspend and zcmint
+    if (tx.IsCoinStake() || tx.IsCoinBase() || tx.HasZerocoinSpendInputs() || tx.HasZerocoinMintOutputs())
         return state.DoS(100, error("%s: Sapling version with invalid data", __func__),
                          REJECT_INVALID, "bad-txns-invalid-sapling");
 
@@ -160,6 +160,12 @@ bool ContextualCheckTransaction(
 
     if (hasShieldedData) {
         uint256 dataToBeSigned;
+
+        if (tx.HasExchangeAddr() && Params().GetConsensus().NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V5_6)) {
+            return state.DoS(100, error("%s: Sapling version with invalid data", __func__),
+                REJECT_INVALID, "bad-txns-exchange-addr-has-sapling");
+        }
+
         // Empty output script.
         CScript scriptCode;
         try {
