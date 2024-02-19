@@ -73,7 +73,7 @@ void SendChangeAddressDialog::accept()
         QDialog::accept();
     } else {
         // validate address
-        bool isStaking, isExchange, isShielded = false;
+        bool isStaking = false, isExchange = false, isShielded = false;
         dest = Standard::DecodeDestination(ui->lineEditAddress->text().toStdString(), isStaking, isExchange, isShielded);
 
         if (!Standard::IsValidDestination(dest)) {
