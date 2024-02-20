@@ -44,7 +44,6 @@ class ExchangeAddrTest(PivxTestFramework):
         # Sign the transaction
         signed_tx = self.nodes[0].signrawtransaction(ToHex(tx))
 
-        # Send the raw transaction
         # Before the upgrade, this should fail if OP_EXCHANGEADDR is disallowed
         error_code = -26
         error_message = "scriptpubkey"
@@ -56,18 +55,22 @@ class ExchangeAddrTest(PivxTestFramework):
         # Attempt to send funds from transparent address to exchange address
         ex_addr_validation_result = self.nodes[0].validateaddress(ex_addr)
         assert_equal(ex_addr_validation_result['isvalid'], True)
-        # This should fail to be sent
-        error_code = -4
-        error_message = "bad-exchange-address-not-started"
-        assert_raises_rpc_error(
-            error_code,
-            error_message,
-            self.nodes[0].sendtoaddress,
-            ex_addr, 1.0
-        )
+        # This should succeed even before the upgrade
+        self.nodes[0].sendtoaddress(ex_addr, 1.0)
 
+        # Check wallet version
+        wallet_info = self.nodes[0].getwalletinfo()
+        if wallet_info['walletversion'] >= FEATURE_PRE_SPLIT_KEYPOOL:
+            sapling_addr = self.nodes[0].getnewshieldaddress()
+            self.nodes[0].sendtoaddress(sapling_addr, 2.0)
+            self.nodes[0].generate(1)
+            sap_to_ex = [{"address": ex_addr, "amount": Decimal('1')}]
+            # Shield data should be allowed before activation
+            self.nodes[0].shieldsendmany(sapling_addr, sap_to_ex)
+        else:
+            self.nodes[0].generate(1)
         # Mine and activate exchange addresses
-        self.nodes[0].generate(194)
+        self.nodes[0].generate(193)
         assert_equal(self.nodes[0].getblockcount(), 1000)
         self.nodes[0].generate(1)
 
@@ -83,8 +86,10 @@ class ExchangeAddrTest(PivxTestFramework):
 
         # Verify balance
         node_bal = self.nodes[1].getbalance()
-        assert_equal(node_bal, 2)
-
+        if wallet_info['walletversion'] >= FEATURE_PRE_SPLIT_KEYPOOL:
+            assert_equal(node_bal, 4)
+        else:
+            assert_equal(node_bal, 3)
         # Attempt to send funds from exchange address back to transparent address
         tx2 = self.nodes[0].sendtoaddress(t_addr_2, 1.0)
         self.nodes[0].generate(6)
@@ -96,7 +101,6 @@ class ExchangeAddrTest(PivxTestFramework):
 
         # Transparent to Shield to Exchange should fail
         # Check wallet version
-        wallet_info = self.nodes[0].getwalletinfo()
         if wallet_info['walletversion'] < FEATURE_PRE_SPLIT_KEYPOOL:
             self.log.info("Pre-HD wallet version detected. Skipping Shield tests.")
             return
@@ -107,7 +111,7 @@ class ExchangeAddrTest(PivxTestFramework):
 
         # Expect shieldsendmany to fail with bad-txns-invalid-sapling
         expected_error_code = -4
-        expected_error_message = "Failed to accept tx in the memory pool (reason: bad-txns-invalid-sapling)"
+        expected_error_message = "Failed to accept tx in the memory pool (reason: bad-txns-exchange-addr-has-sapling)"
         assert_raises_rpc_error(
             expected_error_code,
             expected_error_message,

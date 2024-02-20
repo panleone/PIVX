@@ -569,12 +569,15 @@ static bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState &state, 
         }
 
         bool fCLTVIsActivated = consensus.NetworkUpgradeActive(chainHeight, Consensus::UPGRADE_BIP65);
-
+        bool exchangeAddrActivated = consensus.NetworkUpgradeActive(chainHeight, Consensus::UPGRADE_V5_6);
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
         int flags = STANDARD_SCRIPT_VERIFY_FLAGS;
         if (fCLTVIsActivated)
             flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+        if (exchangeAddrActivated)
+            flags |= SCRIPT_VERIFY_EXCHANGEADDR;
+
 
         PrecomputedTransactionData precomTxData(tx);
         if (!CheckInputs(tx, state, view, true, flags, true, precomTxData)) {
@@ -593,6 +596,8 @@ static bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState &state, 
         flags = MANDATORY_SCRIPT_VERIFY_FLAGS;
         if (fCLTVIsActivated)
             flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+        if (exchangeAddrActivated)
+            flags |= SCRIPT_VERIFY_EXCHANGEADDR;
         if (!CheckInputs(tx, state, view, true, flags, true, precomTxData)) {
             return error("%s: BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s, %s",
                     __func__, hash.ToString(), FormatStateMessage(state));
@@ -1496,8 +1501,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
     // If scripts won't be checked anyways, don't bother seeing if CLTV is activated
     bool fCLTVIsActivated = false;
+    bool exchangeAddrActivated = false;
     if (fScriptChecks && pindex->pprev) {
         fCLTVIsActivated = consensus.NetworkUpgradeActive(pindex->pprev->nHeight, Consensus::UPGRADE_BIP65);
+        exchangeAddrActivated = consensus.NetworkUpgradeActive(pindex->pprev->nHeight, Consensus::UPGRADE_V5_6);
     }
 
     CCheckQueueControl<CScriptCheck> control(fScriptChecks && nScriptCheckThreads ? &scriptcheckqueue : nullptr);
@@ -1575,6 +1582,8 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
             unsigned int flags = SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_DERSIG;
             if (fCLTVIsActivated)
                 flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+            if (exchangeAddrActivated)
+                flags |= SCRIPT_VERIFY_EXCHANGEADDR;
 
             bool fCacheResults = fJustCheck; /* Don't cache results if we're actually connecting blocks (still consult the cache, though) */
             if (!CheckInputs(tx, state, view, fScriptChecks, flags, fCacheResults, precomTxData[i], nScriptCheckThreads ? &vChecks : nullptr))

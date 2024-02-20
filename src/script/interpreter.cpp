@@ -334,6 +334,10 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     break;
 
                 case OP_EXCHANGEADDR:
+                    // Not enabled, treat as OP_UNKNOWN
+                    if (!(flags & SCRIPT_VERIFY_EXCHANGEADDR)) {
+                        return set_error(serror, SCRIPT_ERR_BAD_OPCODE);
+                    }
                     if (!script.IsPayToExchangeAddress())
                         return set_error(serror, SCRIPT_ERR_EXCHANGEADDRVERIFY);
                     break;

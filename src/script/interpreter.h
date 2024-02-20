@@ -80,7 +80,11 @@ enum
     // Verify CHECKLOCKTIMEVERIFY
     //
     // See BIP65 for details.
-    SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY = (1U << 9)
+    SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY = (1U << 9),
+
+    // Verify OP_EXCHANGEADDR.
+    // Treat as UNKNOWN before 5.6 activation
+    SCRIPT_VERIFY_EXCHANGEADDR = (1U << 10),
 };
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError* serror);
