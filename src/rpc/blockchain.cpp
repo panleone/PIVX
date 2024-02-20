@@ -1216,7 +1216,7 @@ UniValue invalidateblock(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "invalidateblock \"blockhash\"\n"
-            "\nPermanently marks a block as invalid, as if it violated a consensus rule. Note: it might take up to some minutes and after calling it's reccomended to run recover transactions. \n"
+            "\nPermanently marks a block as invalid, as if it violated a consensus rule. Note: it might take up to some minutes and after calling it's recommended to run recover transactions. \n"
 
             "\nArguments:\n"
             "1. blockhash   (string, required) the hash of the block to mark as invalid\n"
