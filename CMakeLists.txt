@@ -38,7 +38,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(ENV{target} "Mac")
     add_definitions("-DMAC_OSX")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D'NS_FORMAT_ARGUMENT\(A\)='")
-    list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5 /opt/homebrew/opt/qt5)
+    list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5 /usr/local/opt/qt@5 /opt/homebrew/opt/qt5 /opt/homebrew/opt/qt@5)
     list(APPEND CMAKE_PREFIX_PATH /usr/local/Cellar/berkeley-db@4 /opt/homebrew/Cellar/berkeley-db@4)
     # Homebrew default path for apple silicon CPUs is different than for intel CPUs
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm")
