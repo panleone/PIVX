@@ -202,7 +202,6 @@ class TestNode():
 
         Returns True if the node has stopped. False otherwise.
         This method is responsible for freeing resources (self.process)."""
-        time.sleep(20)
         if not self.running:
             return True
         return_code = self.process.poll()
