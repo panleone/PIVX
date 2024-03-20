@@ -131,7 +131,6 @@ class TestNode():
         """Sets up an RPC connection to the pivxd process. Returns False if unable to connect."""
         # Poll at a rate of four times per second
         poll_per_s = 4
-        time.sleep(5)
         for _ in range(poll_per_s * self.rpc_timeout):
             assert self.process.poll() is None, "pivxd exited with status %i during initialization" % self.process.returncode
             try:
