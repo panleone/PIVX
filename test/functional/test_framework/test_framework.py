@@ -166,7 +166,6 @@ class PivxTestFramework():
                 raise SkipTest("--usecli specified but test does not support using CLI")
             self.setup_chain()
             self.setup_network()
-            time.sleep(5)
             self.run_test()
             success = TestStatus.PASSED
         except JSONRPCException:
@@ -298,8 +297,6 @@ class PivxTestFramework():
         node.start(*args, **kwargs)
         node.wait_for_rpc_connection()
 
-        time.sleep(10)
-
         if self.options.coveragedir is not None:
             coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
 
@@ -319,8 +316,6 @@ class PivxTestFramework():
             self.stop_nodes()
             raise
 
-        time.sleep(10)
-
         if self.options.coveragedir is not None:
             for node in self.nodes:
                 coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
@@ -338,7 +333,6 @@ class PivxTestFramework():
 
         for node in self.nodes:
             # Wait for nodes to stop
-            time.sleep(5)
             node.wait_until_stopped()
 
     def restart_node(self, i, extra_args=None):
