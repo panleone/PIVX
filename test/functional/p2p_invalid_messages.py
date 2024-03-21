@@ -17,6 +17,7 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     hex_str_to_bytes,
+    wait_until,
 )
 from random import getrandbits
 
@@ -54,6 +55,10 @@ class InvReceiver(P2PInterface):
             if inv.type == 15: # MNPING
                 self.send_message(self.vec_mnp[inv.hash])
                 self.getdata_count+=1
+
+    def wait_for_p2p_messages(self, n_messages):
+        wait_until(lambda: self.getdata_count == n_messages, timeout=60)
+
 
 class InvalidMessagesTest(PivxTestFramework):
     def set_test_params(self):
@@ -217,18 +222,14 @@ class InvalidMessagesTest(PivxTestFramework):
         assert_equal(len(invs), 50000)
         msg = messages.msg_inv(invs)
         conn.send_message(msg)
-
-        time.sleep(30)  # wait a bit
-        assert_equal(conn.getdata_count, 50000)
+        conn.wait_for_p2p_messages(50000)
 
         # Prior #2611 the node was blocking any follow-up request.
         mnp = msg_mnping(CTxIn(COutPoint(getrandbits(256))), getrandbits(256), int(time.time()))
         conn.vec_mnp[mnp.get_hash()] = mnp
         msg = messages.msg_inv([messages.CInv(15, mnp.get_hash())])
         conn.send_and_ping(msg)
-        time.sleep(3)
-
-        assert_equal(conn.getdata_count, 50001)
+        conn.wait_for_p2p_messages(50001)
         self.nodes[0].disconnect_p2ps()
 
     def test_resource_exhaustion(self):
