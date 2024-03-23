@@ -108,7 +108,6 @@ static bool CheckCollateralOut(const CTxOut& out, const ProRegPL& pl, CValidatio
 // Provider Register Payload
 static bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, const CCoinsViewCache* view, CValidationState& state)
 {
-    assert(tx.nType == CTransaction::TxType::PROREG);
 
     ProRegPL pl;
     if (!GetValidatedTxPayload(tx, pl, state)) {
@@ -191,7 +190,6 @@ static bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev,
 // Provider Update Service Payload
 static bool CheckProUpServTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValidationState& state)
 {
-    assert(tx.nType == CTransaction::TxType::PROUPSERV);
 
     ProUpServPL pl;
     if (!GetValidatedTxPayload(tx, pl, state)) {
@@ -245,7 +243,6 @@ static bool CheckProUpServTx(const CTransaction& tx, const CBlockIndex* pindexPr
 // Provider Update Registrar Payload
 static bool CheckProUpRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, const CCoinsViewCache* view, CValidationState& state)
 {
-    assert(tx.nType == CTransaction::TxType::PROUPREG);
 
     ProUpRegPL pl;
     if (!GetValidatedTxPayload(tx, pl, state)) {
@@ -324,7 +321,6 @@ static bool CheckProUpRegTx(const CTransaction& tx, const CBlockIndex* pindexPre
 // Provider Update Revoke Payload
 static bool CheckProUpRevTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValidationState& state)
 {
-    assert(tx.nType == CTransaction::TxType::PROUPREV);
 
     ProUpRevPL pl;
     if (!GetValidatedTxPayload(tx, pl, state)) {
@@ -593,6 +589,9 @@ uint256 CalcTxInputsHash(const CTransaction& tx)
 template <typename T>
 bool GetValidatedTxPayload(const CTransaction& tx, T& obj, CValidationState& state)
 {
+    if (tx.nType != T::SPECIALTX_TYPE) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-type");
+    }
     if (!GetTxPayload(tx, obj)) {
         return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
     }
