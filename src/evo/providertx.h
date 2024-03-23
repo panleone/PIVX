@@ -20,6 +20,7 @@ class ProRegPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROREG;
 
 public:
     uint16_t nVersion{CURRENT_VERSION};                         // message version
@@ -72,6 +73,7 @@ class ProUpServPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPSERV;
 
 public:
     uint16_t nVersion{CURRENT_VERSION}; // message version
@@ -101,6 +103,7 @@ class ProUpRegPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPREG;
 
 public:
     uint16_t nVersion{CURRENT_VERSION}; // message version
@@ -132,6 +135,7 @@ class ProUpRevPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPREV;
 
     // these are just informational and do not have any effect on the revocation
     enum RevocationReason {
