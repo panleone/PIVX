@@ -6,10 +6,13 @@
 #define PIVX_PROVIDERTX_H
 
 #include "bls/bls_wrapper.h"
-#include "primitives/transaction.h"
 #include "netaddress.h"
+#include "primitives/transaction.h"
+#include <consensus/validation.h>
 
 #include <univalue.h>
+
+class CValidationState;
 
 // Provider-Register tx payload
 
@@ -60,6 +63,7 @@ public:
 
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Service tx payload
@@ -89,6 +93,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Registrar tx payload
@@ -119,6 +124,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Revoke tx payload
@@ -155,6 +161,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 
