@@ -111,43 +111,9 @@ static bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev,
     assert(tx.nType == CTransaction::TxType::PROREG);
 
     ProRegPL pl;
-    if (!GetTxPayload(tx, pl)) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
-    }
-
-    if (pl.nVersion == 0 || pl.nVersion > ProRegPL::CURRENT_VERSION) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
-    }
-    if (pl.nType != 0) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-type");
-    }
-    if (pl.nMode != 0) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-mode");
-    }
-
-    if (pl.keyIDOwner.IsNull() || pl.keyIDVoting.IsNull()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-key-null");
-    }
-    if (!pl.pubKeyOperator.IsValid()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-key-invalid");
-    }
-    // we may support other kinds of scripts later, but restrict it for now
-    if (!pl.scriptPayout.IsPayToPublicKeyHash()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
-    }
-    if (!pl.scriptOperatorPayout.empty() && !pl.scriptOperatorPayout.IsPayToPublicKeyHash()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-payee");
-    }
-
-    CTxDestination payoutDest;
-    if (!ExtractDestination(pl.scriptPayout, payoutDest)) {
-        // should not happen as we checked script types before
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee-dest");
-    }
-    // don't allow reuse of payout key for other keys (don't allow people to put the payee key onto an online server)
-    if (payoutDest == CTxDestination(pl.keyIDOwner) ||
-            payoutDest == CTxDestination(pl.keyIDVoting)) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee-reuse");
+    if (!GetValidatedTxPayload(tx, pl, state)) {
+        // pass the state returned by the function above
+        return false;
     }
 
     // It's allowed to set addr to 0, which will put the MN into PoSe-banned state and require a ProUpServTx to be issues later
@@ -155,10 +121,6 @@ static bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev,
     if (pl.addr != CService() && !CheckService(pl.addr, state)) {
         // pass the state returned by the function above
         return false;
-    }
-
-    if (pl.nOperatorReward > 10000) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-reward");
     }
 
     if (pl.collateralOutpoint.hash.IsNull()) {
@@ -232,12 +194,9 @@ static bool CheckProUpServTx(const CTransaction& tx, const CBlockIndex* pindexPr
     assert(tx.nType == CTransaction::TxType::PROUPSERV);
 
     ProUpServPL pl;
-    if (!GetTxPayload(tx, pl)) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
-    }
-
-    if (pl.nVersion == 0 || pl.nVersion > ProUpServPL::CURRENT_VERSION) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
+    if (!GetValidatedTxPayload(tx, pl, state)) {
+        // pass the state returned by the function above
+        return false;
     }
 
     if (!CheckService(pl.addr, state)) {
@@ -289,26 +248,9 @@ static bool CheckProUpRegTx(const CTransaction& tx, const CBlockIndex* pindexPre
     assert(tx.nType == CTransaction::TxType::PROUPREG);
 
     ProUpRegPL pl;
-    if (!GetTxPayload(tx, pl)) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
-    }
-
-    if (pl.nVersion == 0 || pl.nVersion > ProUpRegPL::CURRENT_VERSION) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
-    }
-    if (pl.nMode != 0) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-mode");
-    }
-
-    if (!pl.pubKeyOperator.IsValid()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-key-invalid");
-    }
-    if (pl.keyIDVoting.IsNull()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-voting-key-null");
-    }
-    // !TODO: enable other scripts
-    if (!pl.scriptPayout.IsPayToPublicKeyHash()) {
-        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
+    if (!GetValidatedTxPayload(tx, pl, state)) {
+        // pass the state returned by the function above
+        return false;
     }
 
     CTxDestination payoutDest;
@@ -385,18 +327,9 @@ static bool CheckProUpRevTx(const CTransaction& tx, const CBlockIndex* pindexPre
     assert(tx.nType == CTransaction::TxType::PROUPREV);
 
     ProUpRevPL pl;
-    if (!GetTxPayload(tx, pl)) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
-    }
-
-    if (pl.nVersion == 0 || pl.nVersion > ProUpRevPL::CURRENT_VERSION) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
-    }
-
-    // pl.nReason < ProUpRevPL::REASON_NOT_SPECIFIED is always `false` since
-    // pl.nReason is unsigned and ProUpRevPL::REASON_NOT_SPECIFIED == 0
-    if (pl.nReason > ProUpRevPL::REASON_LAST) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-protx-reason");
+    if (!GetValidatedTxPayload(tx, pl, state)) {
+        // pass the state returned by the function above
+        return false;
     }
 
     if (!CheckInputsHash(tx, pl, state)) {
@@ -655,4 +588,13 @@ uint256 CalcTxInputsHash(const CTransaction& tx)
         }
     }
     return hw.GetHash();
+}
+
+template <typename T>
+bool GetValidatedTxPayload(const CTransaction& tx, T& obj, CValidationState& state)
+{
+    if (!GetTxPayload(tx, obj)) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-payload");
+    }
+    return obj.IsTriviallyValid(state);
 }

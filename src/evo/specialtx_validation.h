@@ -38,4 +38,7 @@ bool VerifyLLMQCommitment(const llmq::CFinalCommitment& qfc, const CBlockIndex* 
 
 uint256 CalcTxInputsHash(const CTransaction& tx);
 
+template <typename T>
+bool GetValidatedTxPayload(const CTransaction& tx, T& obj, CValidationState& state);
+
 #endif // PIVX_SPECIALTX_H
