@@ -4,6 +4,7 @@
 
 #include "test/test_pivx.h"
 
+#include "test/data/specialtx_invalid.json.h"
 #include "test/data/specialtx_valid.json.h"
 
 #include "consensus/validation.h"
@@ -134,12 +135,65 @@ static bool EqualCommitments(const llmq::CFinalCommitment& a, const llmq::CFinal
 }
 
 template <typename T>
-static void TrivialCheckSpecialTx(const CMutableTransaction& mtx)
+static void TrivialCheckSpecialTx(const CMutableTransaction& mtx, const bool shouldFail, const std::string& rejectReason)
 {
     T pl;
     CValidationState state;
     GetTxPayload(mtx, pl);
-    BOOST_CHECK(pl.IsTriviallyValid(state));
+    BOOST_CHECK(pl.IsTriviallyValid(state) == !shouldFail);
+    if (shouldFail) {
+        BOOST_CHECK(state.GetRejectReason() == rejectReason);
+    }
+}
+
+static void SpecialTxTrivialValidator(const UniValue& tests)
+{
+    for (size_t i = 1; i < tests.size(); i++) {
+        const auto& test = tests[i];
+
+        uint256 txHash;
+        std::string txType;
+        CMutableTransaction mtx;
+        std::string rejectReason = "";
+        try {
+            txHash = uint256S(test[0].get_str());
+
+            txType = test[1].get_str();
+            CDataStream stream(ParseHex(test[2].get_str()), SER_NETWORK, PROTOCOL_VERSION);
+            stream >> mtx;
+
+            bool shouldFail = test.size() > 3;
+            if (shouldFail) {
+                rejectReason = test[3].get_str();
+            }
+            BOOST_CHECK(mtx.GetHash() == txHash);
+
+            switch (mtx.nType) {
+            case CTransaction::TxType::PROREG:
+                BOOST_CHECK(txType == "proreg");
+                TrivialCheckSpecialTx<ProRegPL>(mtx, shouldFail, rejectReason);
+                break;
+            case CTransaction::TxType::PROUPSERV:
+                BOOST_CHECK(txType == "proupserv");
+                TrivialCheckSpecialTx<ProUpServPL>(mtx, shouldFail, rejectReason);
+                break;
+            case CTransaction::TxType::PROUPREG:
+                BOOST_CHECK(txType == "proupreg");
+                TrivialCheckSpecialTx<ProUpRegPL>(mtx, shouldFail, rejectReason);
+                break;
+            case CTransaction::TxType::PROUPREV:
+                BOOST_CHECK(txType == "prouprev");
+                TrivialCheckSpecialTx<ProUpRevPL>(mtx, shouldFail, rejectReason);
+                break;
+            default:
+                BOOST_CHECK(false);
+            }
+        } catch (...) {
+            std::string strTest = test.write();
+            BOOST_ERROR("Bad test, couldn't deserialize data: " << strTest);
+            continue;
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(protx_validation_test)
@@ -291,50 +345,16 @@ BOOST_AUTO_TEST_CASE(llmqcomm_setpayload_test)
     BOOST_CHECK(EqualCommitments(pl.commitment, pl2.commitment));
 }
 
-BOOST_AUTO_TEST_CASE(specialtx_trivial_validation)
+BOOST_AUTO_TEST_CASE(specialtx_trivial_valid)
 {
     UniValue tests = read_json(std::string(json_tests::specialtx_valid, json_tests::specialtx_valid + sizeof(json_tests::specialtx_valid)));
-    for (size_t i = 1; i < tests.size(); i++) {
-        const auto& test = tests[i];
+    SpecialTxTrivialValidator(tests);
+}
 
-        uint256 txHash;
-        std::string txType;
-        CMutableTransaction mtx;
-        try {
-            txHash = uint256S(test[0].get_str());
-
-            txType = test[1].get_str();
-            CDataStream stream(ParseHex(test[2].get_str()), SER_NETWORK, PROTOCOL_VERSION);
-            stream >> mtx;
-
-            BOOST_CHECK(mtx.GetHash() == txHash);
-
-            switch (mtx.nType) {
-            case CTransaction::TxType::PROREG:
-                BOOST_CHECK(txType == "proreg");
-                TrivialCheckSpecialTx<ProRegPL>(mtx);
-                break;
-            case CTransaction::TxType::PROUPSERV:
-                BOOST_CHECK(txType == "proupserv");
-                TrivialCheckSpecialTx<ProUpServPL>(mtx);
-                break;
-            case CTransaction::TxType::PROUPREG:
-                BOOST_CHECK(txType == "proupreg");
-                TrivialCheckSpecialTx<ProUpRegPL>(mtx);
-                break;
-            case CTransaction::TxType::PROUPREV:
-                BOOST_CHECK(txType == "prouprev");
-                TrivialCheckSpecialTx<ProUpRevPL>(mtx);
-                break;
-            default:
-                BOOST_CHECK(false);
-            }
-        } catch (...) {
-            std::string strTest = test.write();
-            BOOST_ERROR("Bad test, couldn't deserialize data: " << strTest);
-            continue;
-        }
-    }
+BOOST_AUTO_TEST_CASE(specialtx_trivial_invalid)
+{
+    UniValue tests = read_json(std::string(json_tests::specialtx_invalid, json_tests::specialtx_invalid + sizeof(json_tests::specialtx_invalid)));
+    SpecialTxTrivialValidator(tests);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
