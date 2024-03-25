@@ -21,7 +21,7 @@
 namespace llmq
 {
 
-CSigningManager* quorumSigningManager;
+std::unique_ptr<CSigningManager> quorumSigningManager{nullptr};
 
 CRecoveredSigsDb::CRecoveredSigsDb(bool fMemory) : db(fMemory ? "" : (GetDataDir() / "llmq"), 1 << 20, fMemory, false, CLIENT_VERSION | ADDRV2_FORMAT)
 {

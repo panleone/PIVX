@@ -156,7 +156,7 @@ public:
     bool VerifyRecoveredSig(Consensus::LLMQType llmqType, int signedAtHeight, const uint256& id, const uint256& msgHash, const CBLSSignature& sig);
 };
 
-extern CSigningManager* quorumSigningManager;
+extern std::unique_ptr<CSigningManager> quorumSigningManager;
 
 } // namespace llmq
 
