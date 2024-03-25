@@ -64,6 +64,8 @@ private:
 public:
     CChainLocksHandler(CScheduler* _scheduler);
     ~CChainLocksHandler();
+    void Start();
+    void Stop();
 
 public:
     bool AlreadyHave(const CInv& inv);
