@@ -20,7 +20,7 @@ namespace llmq
 
 static const std::string CLSIG_REQUESTID_PREFIX = "clsig";
 
-CChainLocksHandler* chainLocksHandler;
+std::unique_ptr<CChainLocksHandler> chainLocksHandler{nullptr};
 
 std::string CChainLockSig::ToString() const
 {

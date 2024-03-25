@@ -90,9 +90,7 @@ private:
     void Cleanup();
 };
 
-extern CChainLocksHandler* chainLocksHandler;
-
-
+extern std::unique_ptr<CChainLocksHandler> chainLocksHandler;
 }
 
 #endif //PIVX_QUORUMS_CHAINLOCKS_H

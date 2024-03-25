@@ -29,13 +29,12 @@ void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
     quorumManager.reset(new CQuorumManager(evoDb, *blsWorker, *quorumDKGSessionManager));
     quorumSigSharesManager.reset(new CSigSharesManager());
     quorumSigningManager.reset(new CSigningManager(unitTests));
-    chainLocksHandler = new CChainLocksHandler(scheduler);
+    chainLocksHandler.reset(new CChainLocksHandler(scheduler));
 }
 
 void DestroyLLMQSystem()
 {
-    delete chainLocksHandler;
-    chainLocksHandler = nullptr;
+    chainLocksHandler.reset();
     quorumSigningManager.reset();
     quorumSigSharesManager.reset();
     quorumDKGSessionManager.reset();
