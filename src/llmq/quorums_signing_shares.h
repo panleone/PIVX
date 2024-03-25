@@ -259,7 +259,7 @@ private:
     void WorkThreadMain();
 };
 
-extern CSigSharesManager* quorumSigSharesManager;
+extern std::unique_ptr<CSigSharesManager> quorumSigSharesManager;
 
 } // namespace llmq
 

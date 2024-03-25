@@ -27,7 +27,7 @@ void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
     quorumBlockProcessor.reset(new CQuorumBlockProcessor(evoDb));
     quorumDKGSessionManager.reset(new CDKGSessionManager(evoDb, *blsWorker));
     quorumManager.reset(new CQuorumManager(evoDb, *blsWorker, *quorumDKGSessionManager));
-    quorumSigSharesManager = new CSigSharesManager();
+    quorumSigSharesManager.reset(new CSigSharesManager());
     quorumSigningManager = new CSigningManager(unitTests);
     chainLocksHandler = new CChainLocksHandler(scheduler);
 }
@@ -38,8 +38,7 @@ void DestroyLLMQSystem()
     chainLocksHandler = nullptr;
     delete quorumSigningManager;
     quorumSigningManager = nullptr;
-    delete quorumSigSharesManager;
-    quorumSigSharesManager = nullptr;
+    quorumSigSharesManager.reset();
     quorumDKGSessionManager.reset();
     quorumBlockProcessor.reset();
     quorumDKGDebugManager.reset();

@@ -22,7 +22,7 @@
 namespace llmq
 {
 
-CSigSharesManager* quorumSigSharesManager = nullptr;
+std::unique_ptr<CSigSharesManager> quorumSigSharesManager{nullptr};
 
 template <typename M>
 static std::pair<typename M::const_iterator, typename M::const_iterator> FindBySignHash(const M& m, const uint256& signHash)
