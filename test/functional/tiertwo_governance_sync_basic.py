@@ -375,6 +375,7 @@ class MasternodeGovernanceBasicTest(PivxTier2TestFramework):
         self.ownerTwo.setmocktime(self.mocktime)
         self.connect_to_all(self.ownerTwoPos)
         self.stake(2, [self.remoteOne, self.remoteTwo])
+        time.sleep(5) # wait a little bit
 
         self.log.info("syncing node..")
         self.wait_until_mnsync_finished()
