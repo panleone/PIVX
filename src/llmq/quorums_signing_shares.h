@@ -199,7 +199,7 @@ private:
     RecursiveMutex cs;
 
     std::thread workThread;
-    std::atomic<bool> stopWorkThread{false};
+    CThreadInterrupt interruptSigningShare;
 
     std::map<SigShareKey, CSigShare> sigShares;
     std::map<uint256, int64_t> firstSeenForSessions;
@@ -221,6 +221,7 @@ public:
 
     void StartWorkerThread();
     void StopWorkerThread();
+    void Interrupt();
 
 public:
     void ProcessMessage(CNode* pnode, const std::string& strCommand, CDataStream& vRecv, CConnman& connman);
