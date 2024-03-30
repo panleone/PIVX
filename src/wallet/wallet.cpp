@@ -1319,7 +1319,7 @@ void CWallet::TransactionRemovedFromMempool(const CTransactionRef &ptx, MemPoolR
 void CWallet::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex *pindex)
 {
     {
-        LOCK(cs_wallet);
+        LOCK2(cs_main, cs_wallet);
 
         m_last_block_processed = pindex->GetBlockHash();
         m_last_block_processed_time = pindex->GetBlockTime();
