@@ -6,10 +6,13 @@
 #define PIVX_PROVIDERTX_H
 
 #include "bls/bls_wrapper.h"
-#include "primitives/transaction.h"
 #include "netaddress.h"
+#include "primitives/transaction.h"
+#include <consensus/validation.h>
 
 #include <univalue.h>
+
+class CValidationState;
 
 // Provider-Register tx payload
 
@@ -17,6 +20,7 @@ class ProRegPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROREG;
 
 public:
     uint16_t nVersion{CURRENT_VERSION};                         // message version
@@ -60,6 +64,7 @@ public:
 
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Service tx payload
@@ -68,6 +73,7 @@ class ProUpServPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPSERV;
 
 public:
     uint16_t nVersion{CURRENT_VERSION}; // message version
@@ -89,6 +95,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Registrar tx payload
@@ -96,6 +103,7 @@ class ProUpRegPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPREG;
 
 public:
     uint16_t nVersion{CURRENT_VERSION}; // message version
@@ -119,6 +127,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 // Provider-Update-Revoke tx payload
@@ -126,6 +135,7 @@ class ProUpRevPL
 {
 public:
     static const uint16_t CURRENT_VERSION = 1;
+    static constexpr int16_t SPECIALTX_TYPE = CTransaction::TxType::PROUPREV;
 
     // these are just informational and do not have any effect on the revocation
     enum RevocationReason {
@@ -155,6 +165,7 @@ public:
 public:
     std::string ToString() const;
     void ToJson(UniValue& obj) const;
+    bool IsTriviallyValid(CValidationState& state) const;
 };
 
 

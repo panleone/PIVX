@@ -14,6 +14,8 @@ set(JSON_TEST_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/data/tx_invalid.json
         ${CMAKE_CURRENT_SOURCE_DIR}/data/tx_valid.json
         ${CMAKE_CURRENT_SOURCE_DIR}/data/sighash.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/specialtx_valid.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/specialtx_invalid.json
         ${CMAKE_CURRENT_SOURCE_DIR}/data/merkle_roots_sapling.json
         ${CMAKE_CURRENT_SOURCE_DIR}/data/merkle_serialization_sapling.json
         ${CMAKE_CURRENT_SOURCE_DIR}/data/merkle_witness_serialization_sapling.json

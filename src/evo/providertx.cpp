@@ -56,6 +56,49 @@ void ProRegPL::ToJson(UniValue& obj) const
     obj.pushKV("inputsHash", inputsHash.ToString());
 }
 
+bool ProRegPL::IsTriviallyValid(CValidationState& state) const
+{
+    if (nVersion == 0 || nVersion > ProRegPL::CURRENT_VERSION) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
+    }
+    if (nType != 0) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-type");
+    }
+    if (nMode != 0) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-mode");
+    }
+
+    if (keyIDOwner.IsNull() || keyIDVoting.IsNull()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-key-null");
+    }
+    if (!pubKeyOperator.IsValid()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-key-invalid");
+    }
+    // we may support other kinds of scripts later, but restrict it for now
+    if (!scriptPayout.IsPayToPublicKeyHash()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
+    }
+    if (!scriptOperatorPayout.empty() && !scriptOperatorPayout.IsPayToPublicKeyHash()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-payee");
+    }
+
+    CTxDestination payoutDest;
+    if (!ExtractDestination(scriptPayout, payoutDest)) {
+        // should not happen as we checked script types before
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee-dest");
+    }
+    // don't allow reuse of payout key for other keys (don't allow people to put the payee key onto an online server)
+    if (payoutDest == CTxDestination(keyIDOwner) ||
+        payoutDest == CTxDestination(keyIDVoting)) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee-reuse");
+    }
+
+    if (nOperatorReward > 10000) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-reward");
+    }
+    return true;
+}
+
 std::string ProUpServPL::ToString() const
 {
     CTxDestination dest;
@@ -77,6 +120,14 @@ void ProUpServPL::ToJson(UniValue& obj) const
         obj.pushKV("operatorPayoutAddress", EncodeDestination(dest));
     }
     obj.pushKV("inputsHash", inputsHash.ToString());
+}
+
+bool ProUpServPL::IsTriviallyValid(CValidationState& state) const
+{
+    if (nVersion == 0 || nVersion > ProUpServPL::CURRENT_VERSION) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
+    }
+    return true;
 }
 
 std::string ProUpRegPL::ToString() const
@@ -103,6 +154,29 @@ void ProUpRegPL::ToJson(UniValue& obj) const
     obj.pushKV("inputsHash", inputsHash.ToString());
 }
 
+bool ProUpRegPL::IsTriviallyValid(CValidationState& state) const
+{
+    if (nVersion == 0 || nVersion > ProUpRegPL::CURRENT_VERSION) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
+    }
+    if (nMode != 0) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-mode");
+    }
+
+    if (!pubKeyOperator.IsValid()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-key-invalid");
+    }
+    if (keyIDVoting.IsNull()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-voting-key-null");
+    }
+    // !TODO: enable other scripts
+    if (!scriptPayout.IsPayToPublicKeyHash()) {
+        return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
+    }
+
+    return true;
+}
+
 std::string ProUpRevPL::ToString() const
 {
     return strprintf("ProUpRevPL(nVersion=%d, proTxHash=%s, nReason=%d)",
@@ -117,6 +191,20 @@ void ProUpRevPL::ToJson(UniValue& obj) const
     obj.pushKV("proTxHash", proTxHash.ToString());
     obj.pushKV("reason", (int)nReason);
     obj.pushKV("inputsHash", inputsHash.ToString());
+}
+
+bool ProUpRevPL::IsTriviallyValid(CValidationState& state) const
+{
+    if (nVersion == 0 || nVersion > ProUpRevPL::CURRENT_VERSION) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-version");
+    }
+
+    // pl.nReason < ProUpRevPL::REASON_NOT_SPECIFIED is always `false` since
+    // pl.nReason is unsigned and ProUpRevPL::REASON_NOT_SPECIFIED == 0
+    if (nReason > ProUpRevPL::REASON_LAST) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-protx-reason");
+    }
+    return true;
 }
 
 bool GetProRegCollateral(const CTransactionRef& tx, COutPoint& outRet)
