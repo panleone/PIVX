@@ -27,19 +27,16 @@ void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
     quorumBlockProcessor.reset(new CQuorumBlockProcessor(evoDb));
     quorumDKGSessionManager.reset(new CDKGSessionManager(evoDb, *blsWorker));
     quorumManager.reset(new CQuorumManager(evoDb, *blsWorker, *quorumDKGSessionManager));
-    quorumSigSharesManager = new CSigSharesManager();
-    quorumSigningManager = new CSigningManager(unitTests);
-    chainLocksHandler = new CChainLocksHandler(scheduler);
+    quorumSigSharesManager.reset(new CSigSharesManager());
+    quorumSigningManager.reset(new CSigningManager(unitTests));
+    chainLocksHandler.reset(new CChainLocksHandler(scheduler));
 }
 
 void DestroyLLMQSystem()
 {
-    delete chainLocksHandler;
-    chainLocksHandler = nullptr;
-    delete quorumSigningManager;
-    quorumSigningManager = nullptr;
-    delete quorumSigSharesManager;
-    quorumSigSharesManager = nullptr;
+    chainLocksHandler.reset();
+    quorumSigningManager.reset();
+    quorumSigSharesManager.reset();
     quorumDKGSessionManager.reset();
     quorumBlockProcessor.reset();
     quorumDKGDebugManager.reset();
@@ -59,18 +56,31 @@ void StartLLMQSystem()
     if (quorumSigSharesManager) {
         quorumSigSharesManager->StartWorkerThread();
     }
+    if (chainLocksHandler) {
+        chainLocksHandler->Start();
+    }
 }
 
 void StopLLMQSystem()
 {
-    if (quorumDKGSessionManager) {
-        quorumDKGSessionManager->StopThreads();
+    if (chainLocksHandler) {
+        chainLocksHandler->Stop();
     }
     if (quorumSigSharesManager) {
         quorumSigSharesManager->StopWorkerThread();
     }
+    if (quorumDKGSessionManager) {
+        quorumDKGSessionManager->StopThreads();
+    }
     if (blsWorker) {
         blsWorker->Stop();
+    }
+}
+
+void InterruptLLMQSystem()
+{
+    if (quorumSigSharesManager) {
+        quorumSigSharesManager->Interrupt();
     }
 }
 

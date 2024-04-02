@@ -64,6 +64,8 @@ private:
 public:
     CChainLocksHandler(CScheduler* _scheduler);
     ~CChainLocksHandler();
+    void Start();
+    void Stop();
 
 public:
     bool AlreadyHave(const CInv& inv);
@@ -90,9 +92,7 @@ private:
     void Cleanup();
 };
 
-extern CChainLocksHandler* chainLocksHandler;
-
-
+extern std::unique_ptr<CChainLocksHandler> chainLocksHandler;
 }
 
 #endif //PIVX_QUORUMS_CHAINLOCKS_H

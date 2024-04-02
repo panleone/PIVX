@@ -20,7 +20,7 @@ namespace llmq
 
 static const std::string CLSIG_REQUESTID_PREFIX = "clsig";
 
-CChainLocksHandler* chainLocksHandler;
+std::unique_ptr<CChainLocksHandler> chainLocksHandler{nullptr};
 
 std::string CChainLockSig::ToString() const
 {
@@ -30,10 +30,18 @@ std::string CChainLockSig::ToString() const
 CChainLocksHandler::CChainLocksHandler(CScheduler* _scheduler) :
     scheduler(_scheduler)
 {
-    quorumSigningManager->RegisterRecoveredSigsListener(this);
 }
 
 CChainLocksHandler::~CChainLocksHandler()
+{
+}
+
+void CChainLocksHandler::Start()
+{
+    quorumSigningManager->RegisterRecoveredSigsListener(this);
+}
+
+void CChainLocksHandler::Stop()
 {
     quorumSigningManager->UnregisterRecoveredSigsListener(this);
 }

@@ -191,6 +191,7 @@ void Interrupt()
     InterruptREST();
     InterruptTorControl();
     InterruptMapPort();
+    InterruptTierTwo();
     if (g_connman)
         g_connman->Interrupt();
 }
