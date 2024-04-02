@@ -1054,14 +1054,12 @@ class PivxTestFramework():
                 node.mnping()["sent"]
             except:
                 pass
-            time.sleep(1)
 
 
     def stake_and_sync(self, node_id, num_blocks):
         for i in range(num_blocks):
             self.mocktime = self.generate_pos(node_id, self.mocktime)
         self.sync_blocks()
-        time.sleep(1)
 
 
     def stake_and_ping(self, node_id, num_blocks, with_ping_mns=None):
