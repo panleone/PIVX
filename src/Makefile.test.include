@@ -189,7 +189,7 @@ SAPLING_TESTS +=\
 endif
 
 test_test_pivx_SOURCES = $(BITCOIN_TEST_SUITE) $(BITCOIN_TESTS) $(SAPLING_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
-test_test_pivx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_FLAGS)
+test_test_pivx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_CFLAGS)
 test_test_pivx_LDADD =
 
 if ENABLE_WALLET

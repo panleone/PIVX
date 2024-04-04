@@ -88,19 +88,19 @@ jobs:
             cxx: g++
 
           - name: macOS
-            os: macos-11
-            packages: llvm@12 python@3.8 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config libevent qrencode gmp libsodium rust
+            os: macos-12
+            packages: llvm@13 python@3.8 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config libevent qrencode gmp libsodium rust
             no_qt: true
-            boost_root: true
-            cc: $(brew --prefix llvm@12)/bin/clang
-            cxx: $(brew --prefix llvm@12)/bin/clang++
-
-          - name: macOS-latest
-            os: macos-latest
-            packages: llvm@13 python@3.8 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust
             boost_root: true
             cc: $(brew --prefix llvm@13)/bin/clang
             cxx: $(brew --prefix llvm@13)/bin/clang++
+
+          - name: macOS-latest
+            os: macos-14
+            packages: llvm@14 python@3.8 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust
+            boost_root: true
+            cc: $(brew --prefix llvm@14)/bin/clang
+            cxx: $(brew --prefix llvm@14)/bin/clang++
 
     steps:
       - name: Get Source
@@ -115,11 +115,6 @@ jobs:
           fi
           if [[ ${{ matrix.config.os }} = macos* ]]; then
             brew install "$APT_BASE" ${{ matrix.config.packages }}
-            # GA's macOS 11 image is inconsistent as to if it includes a pre-installed version of boost. Force linking
-            # to the specified version (1.76), which will overwrite the symlinks to a pre-existing version if it exists.
-            if [ "${{ matrix.config.os }}" = "macos-11" ]; then
-              brew link --overwrite -f boost@1.76
-            fi
           fi
 
       - name: ccache cache files
@@ -139,8 +134,13 @@ jobs:
             fi
             if [ "${{ matrix.config.boost_root }}" = "true" ]; then
               export CI_BOOST=1
-              export CPPFLAGS="-I/usr/local/opt/boost@1.76/include"
-              export LDFLAGS="-L/usr/local/opt/boost@1.76/lib"
+              if [ "${{ matrix.config.os }}" = "macos-14" ]; then
+                export LDFLAGS="-L/opt/homebrew/opt/boost@1.76/lib"
+                export CPPFLAGS="-I/opt/homebrew/opt/boost@1.76/include"
+              else
+                export CPPFLAGS="-I/usr/local/opt/boost@1.76/include"
+                export LDFLAGS="-L/usr/local/opt/boost@1.76/lib"
+              fi
             fi
           fi
           export CC
@@ -188,7 +188,7 @@ jobs:
 
           - name: x64-macOS
             id: macOS-nodepends
-            os: macos-11
+            os: macos-12
             brew_install: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config python@3.8 libevent qrencode gmp libsodium rust librsvg
             unit_tests: true
             functional_tests: true
@@ -198,14 +198,14 @@ jobs:
 
           - name: x64-macOS-latest
             id: macOS-nodepends-latest
-            os: macos-latest
+            os: macos-14
             brew_install: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config python@3.8 qt@5 zmq libevent qrencode gmp libsodium rust librsvg
             unit_tests: true
             functional_tests: true
             goal: deploy
             cc: clang
             cxx: clang++
-            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/usr/local/opt/boost@1.76"
+            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/opt/homebrew/opt/boost@1.76"
 
     steps:
       - name: Get Source
