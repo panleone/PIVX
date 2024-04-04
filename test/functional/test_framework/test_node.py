@@ -169,7 +169,9 @@ class TestNode():
                 if e.errno != errno.ECONNREFUSED:  # Port not yet open?
                     raise  # unknown IO error
             except JSONRPCException as e:  # Initialization phase
-                if e.error['code'] != -28:  # RPC in warmup?
+                # -28 RPC in warmup
+                # -342 Service unavailable, RPC server started but is shutting down due to error
+                if e.error['code'] != -28 and e.error['code'] != -342:
                     raise  # unknown JSON RPC exception
             except ValueError as e:  # cookie file not found and no rpcuser or rpcassword. pivxd still starting
                 if "No RPC credentials" not in str(e):
@@ -186,13 +188,13 @@ class TestNode():
             wallet_path = "wallet/%s" % wallet_name
             return self.rpc / wallet_path
 
-    def stop_node(self):
+    def stop_node(self, wait=0):
         """Stop the node."""
         if not self.running:
             return
         self.log.debug("Stopping node")
         try:
-            self.stop()
+            self.stop(wait=wait)
         except http.client.CannotSendRequest:
             self.log.exception("Unable to stop node.")
         del self.p2ps[:]

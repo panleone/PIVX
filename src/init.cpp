@@ -363,7 +363,8 @@ void OnRPCStarted()
 void OnRPCStopped()
 {
     uiInterface.NotifyBlockTip.disconnect(RPCNotifyBlockChange);
-    //RPCNotifyBlockChange(0);
+    // TODO: remove unused parameter fInitialDownload
+    RPCNotifyBlockChange(false, nullptr);
     g_best_block_cv.notify_all();
     LogPrint(BCLog::RPC, "RPC stopped.\n");
 }

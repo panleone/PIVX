@@ -144,6 +144,7 @@ BASE_SCRIPTS= [
     'p2p_mempool.py',                           # ~ 46 sec
     'rpc_named_arguments.py',                   # ~ 45 sec
     'feature_help.py',                          # ~ 30 sec
+    'feature_shutdown.py',
 
     # Don't append tests at the end to avoid merge conflicts
     # Put them in a random line within the section that fits their approximate run-time

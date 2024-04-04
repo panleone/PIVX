@@ -174,6 +174,7 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     { "spork", 1, "value" },
     { "startmasternode", 1, "lock_wallet" },
     { "startmasternode", 3, "reload_conf" },
+    { "stop", 0, "wait" },
     { "submitbudget", 2, "npayments" },
     { "submitbudget", 3, "start" },
     { "submitbudget", 5, "montly_payment" },
