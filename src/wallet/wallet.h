@@ -628,6 +628,7 @@ private:
 
     int64_t nNextResend;
     int64_t nLastResend;
+    int64_t nTimeBestReceived = 0; // Used only to inform the wallet of when we last received a block
 
     /**
      * Used to keep track of spent outpoints, and
@@ -1042,6 +1043,7 @@ public:
     void TransactionRemovedFromMempool(const CTransactionRef &ptx, MemPoolRemovalReason reason) override;
     void ReacceptWalletTransactions(bool fFirstLoad = false);
     void ResendWalletTransactions(CConnman* connman) override;
+    void UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload) override;
 
     struct Balance {
         CAmount m_mine_trusted{0};               //!< Trusted, at depth=GetBalance.min_depth or more

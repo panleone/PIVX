@@ -34,7 +34,6 @@
 
 using namespace std::chrono_literals;
 
-int64_t nTimeBestReceived = 0;  // Used only to inform the wallet of when we last received a block
 
 static const uint64_t RANDOMIZER_ID_ADDRESS_RELAY = 0x3cac0035b5866b90ULL; // SHA256("main address relay")[0:8]
 
@@ -757,8 +756,6 @@ void PeerLogicValidation::UpdatedBlockTip(const CBlockIndex* pindexNew, const CB
             }
         });
     }
-
-    nTimeBestReceived = GetTime();
 }
 
 void PeerLogicValidation::BlockChecked(const CBlock& block, const CValidationState& state)

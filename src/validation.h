@@ -129,7 +129,6 @@ extern BlockMap mapBlockIndex;
 extern PrevBlockMap mapPrevBlockIndex;
 extern uint64_t nLastBlockTx;
 extern uint64_t nLastBlockSize;
-extern int64_t nTimeBestReceived;
 
 // Best block section
 extern Mutex g_best_block_mutex;
