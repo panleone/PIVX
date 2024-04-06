@@ -98,11 +98,11 @@ void CheckBlockZcRejection(std::shared_ptr<CBlock>& pblock, int nHeight, CMutabl
 {
     pblock->vtx.emplace_back(MakeTransactionRef(mtx));
     BOOST_CHECK(SolveBlock(pblock, nHeight));
-    BlockStateCatcher stateCatcher(pblock->GetHash());
+    BlockStateCatcherWrapper stateCatcher(pblock->GetHash());
     stateCatcher.registerEvent();
     BOOST_CHECK(!ProcessNewBlock(pblock, nullptr));
-    BOOST_CHECK(stateCatcher.found && !stateCatcher.state.IsValid());
-    BOOST_CHECK_EQUAL(stateCatcher.state.GetRejectReason(), expected_msg);
+    BOOST_CHECK(stateCatcher.get().found && !stateCatcher.get().state.IsValid());
+    BOOST_CHECK_EQUAL(stateCatcher.get().state.GetRejectReason(), expected_msg);
     BOOST_CHECK(WITH_LOCK(cs_main, return chainActive.Tip()->GetBlockHash(); ) != pblock->GetHash());
 }
 

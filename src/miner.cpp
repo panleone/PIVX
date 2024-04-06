@@ -78,10 +78,10 @@ bool ProcessBlockFound(const std::shared_ptr<const CBlock>& pblock, CWallet& wal
         reservekey->KeepKey();
 
     // Process this block the same as if we had received it from another node
-    BlockStateCatcher sc(pblock->GetHash());
+    BlockStateCatcherWrapper sc(pblock->GetHash());
     sc.registerEvent();
     bool res = ProcessNewBlock(pblock, nullptr);
-    if (!res || sc.stateErrorFound()) {
+    if (!res || sc.get().stateErrorFound()) {
         return error("PIVXMiner : ProcessNewBlock, block not accepted");
     }
 

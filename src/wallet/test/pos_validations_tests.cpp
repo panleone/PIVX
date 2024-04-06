@@ -305,12 +305,12 @@ BOOST_FIXTURE_TEST_CASE(created_on_fork_tests, TestPoSChainSetup)
     pindexPrev = mapBlockIndex.at(pblockE2->GetHash());
     std::shared_ptr<CBlock> pblock5Forked = CreateBlockInternal(pwalletMain.get(), {F2_tx1},
                                                                 pindexPrev, {pblockD1, pblockE2});
-    BlockStateCatcher stateCatcher(pblock5Forked->GetHash());
+    BlockStateCatcherWrapper stateCatcher(pblock5Forked->GetHash());
     stateCatcher.registerEvent();
     BOOST_CHECK(!ProcessNewBlock(pblock5Forked, nullptr));
-    BOOST_CHECK(stateCatcher.found);
-    BOOST_CHECK(!stateCatcher.state.IsValid());
-    BOOST_CHECK_EQUAL(stateCatcher.state.GetRejectReason(), "bad-txns-inputs-spent-fork-post-split");
+    BOOST_CHECK(stateCatcher.get().found);
+    BOOST_CHECK(!stateCatcher.get().state.IsValid());
+    BOOST_CHECK_EQUAL(stateCatcher.get().state.GetRejectReason(), "bad-txns-inputs-spent-fork-post-split");
 
     // #############################################
     // ### 4) coins created in D and spent in E3 ###
@@ -329,12 +329,12 @@ BOOST_FIXTURE_TEST_CASE(created_on_fork_tests, TestPoSChainSetup)
 
     pindexPrev = mapBlockIndex.at(pblockD3->GetHash());
     std::shared_ptr<CBlock> pblockE3 = CreateBlockInternal(pwalletMain.get(), {E3_tx1}, pindexPrev, {pblockD3});
-    stateCatcher.clear();
-    stateCatcher.setBlockHash(pblockE3->GetHash());
+    stateCatcher.get().clear();
+    stateCatcher.get().setBlockHash(pblockE3->GetHash());
     BOOST_CHECK(!ProcessNewBlock(pblockE3, nullptr));
-    BOOST_CHECK(stateCatcher.found);
-    BOOST_CHECK(!stateCatcher.state.IsValid());
-    BOOST_CHECK_EQUAL(stateCatcher.state.GetRejectReason(), "bad-txns-inputs-created-post-split");
+    BOOST_CHECK(stateCatcher.get().found);
+    BOOST_CHECK(!stateCatcher.get().state.IsValid());
+    BOOST_CHECK_EQUAL(stateCatcher.get().state.GetRejectReason(), "bad-txns-inputs-created-post-split");
 
     // ####################################################################
     // ### 5) coins create in D, spent in F and then double spent in F3 ###

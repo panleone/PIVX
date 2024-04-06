@@ -17,11 +17,7 @@ public:
     uint256 hash;
     bool found;
     CValidationState state;
-    bool isRegistered{false};
-
     BlockStateCatcher(const uint256& hashIn) : hash(hashIn), found(false), state(){};
-    ~BlockStateCatcher() { if (isRegistered) UnregisterValidationInterface(this); }
-    void registerEvent() { RegisterValidationInterface(this); isRegistered = true; }
     void setBlockHash(const uint256& _hash) { clear(); hash = _hash; }
     void clear() { hash.SetNull(); found = false; state = CValidationState(); }
     bool stateErrorFound() { return found && state.IsError(); }
@@ -32,6 +28,32 @@ protected:
         found = true;
         state = stateIn;
     };
+};
+
+class BlockStateCatcherWrapper
+{
+private:
+    std::shared_ptr<BlockStateCatcher> stateCatcher = nullptr;
+    bool isRegistered = false;
+
+public:
+    explicit BlockStateCatcherWrapper(const uint256& hashIn)
+    {
+        stateCatcher = std::make_shared<BlockStateCatcher>(hashIn);
+    }
+    ~BlockStateCatcherWrapper()
+    {
+        if (isRegistered) UnregisterSharedValidationInterface(stateCatcher);
+    }
+    void registerEvent()
+    {
+        RegisterSharedValidationInterface(stateCatcher);
+        isRegistered = true;
+    }
+    BlockStateCatcher& get() const
+    {
+        return *stateCatcher;
+    }
 };
 
 #endif //PIVX_BLOCKSTATECATCHER_H
