@@ -245,11 +245,11 @@ BOOST_FIXTURE_TEST_CASE(mnwinner_test, TestChain100Setup)
     {
         auto pBadBlock = std::make_shared<CBlock>(badBlock);
         SolveBlock(pBadBlock, nextBlockHeight);
-        BlockStateCatcher sc(pBadBlock->GetHash());
+        BlockStateCatcherWrapper sc(pBadBlock->GetHash());
         sc.registerEvent();
         ProcessNewBlock(pBadBlock, nullptr);
-        BOOST_CHECK(sc.found && !sc.state.IsValid());
-        BOOST_CHECK_EQUAL(sc.state.GetRejectReason(), "bad-cb-payee");
+        BOOST_CHECK(sc.get().found && !sc.get().state.IsValid());
+        BOOST_CHECK_EQUAL(sc.get().state.GetRejectReason(), "bad-cb-payee");
     }
     BOOST_CHECK(WITH_LOCK(cs_main, return chainActive.Tip()->GetBlockHash();) != badBlock.GetHash());
 

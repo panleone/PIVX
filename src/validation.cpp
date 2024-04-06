@@ -3964,7 +3964,7 @@ bool LoadExternalBlockFile(FILE* fileIn, FlatFilePos* dbp)
     int64_t nStart = GetTimeMillis();
 
     // Block checked event listener
-    BlockStateCatcher stateCatcher(UINT256_ZERO);
+    BlockStateCatcherWrapper stateCatcher(UINT256_ZERO);
     stateCatcher.registerEvent();
 
     int nLoaded = 0;
@@ -4025,11 +4025,11 @@ bool LoadExternalBlockFile(FILE* fileIn, FlatFilePos* dbp)
                 // process in case the block isn't known yet
                 if (!pindex || (pindex->nStatus & BLOCK_HAVE_DATA) == 0) {
                     std::shared_ptr<const CBlock> block_ptr = std::make_shared<const CBlock>(block);
-                    stateCatcher.setBlockHash(block_ptr->GetHash());
+                    stateCatcher.get().setBlockHash(block_ptr->GetHash());
                     if (ProcessNewBlock(block_ptr, dbp)) {
                         nLoaded++;
                     }
-                    if (stateCatcher.stateErrorFound()) {
+                    if (stateCatcher.get().stateErrorFound()) {
                         break;
                     }
                 } else if (hash != Params().GetConsensus().hashGenesisBlock && pindex->nHeight % 1000 == 0) {

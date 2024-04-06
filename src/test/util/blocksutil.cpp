@@ -14,11 +14,11 @@ void ProcessBlockAndCheckRejectionReason(std::shared_ptr<CBlock>& pblock,
                                          const std::string& blockRejectionReason,
                                          int expectedChainHeight)
 {
-    BlockStateCatcher stateCatcher(pblock->GetHash());
+    BlockStateCatcherWrapper stateCatcher(pblock->GetHash());
     stateCatcher.registerEvent();
     ProcessNewBlock(pblock, nullptr);
-    BOOST_CHECK(stateCatcher.found);
-    CValidationState state = stateCatcher.state;
+    BOOST_CHECK(stateCatcher.get().found);
+    CValidationState state = stateCatcher.get().state;
     BOOST_CHECK_EQUAL(WITH_LOCK(cs_main, return chainActive.Height();), expectedChainHeight);
     BOOST_CHECK(!state.IsValid());
     BOOST_CHECK_EQUAL(state.GetRejectReason(), blockRejectionReason);

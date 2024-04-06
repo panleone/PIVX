@@ -199,11 +199,11 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
             txFirst.emplace_back(pblock->vtx[0]);
         pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
         pblock->nNonce = blockinfo[i].nonce;
-        BlockStateCatcher stateCatcher(pblock->GetHash());
+        BlockStateCatcherWrapper stateCatcher(pblock->GetHash());
         stateCatcher.registerEvent();
         BOOST_CHECK(ProcessNewBlock(pblock, nullptr));
         SyncWithValidationInterfaceQueue();
-        BOOST_CHECK(stateCatcher.found && stateCatcher.state.IsValid());
+        BOOST_CHECK(stateCatcher.get().found && stateCatcher.get().state.IsValid());
         pblock->hashPrevBlock = pblock->GetHash();
     }
 
