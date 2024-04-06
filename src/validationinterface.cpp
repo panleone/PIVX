@@ -93,10 +93,11 @@ CMainSignals& GetMainSignals()
 {
     return g_signals;
 }
-
-void RegisterValidationInterface(CValidationInterface* pwalletIn)
+void RegisterSharedValidationInterface(std::shared_ptr<CValidationInterface> pwalletIn)
 {
-    ValidationInterfaceConnections& conns = g_signals.m_internals->m_connMainSignals[pwalletIn];
+    // Each connection captures pwalletIn to ensure that each callback is
+    // executed before pwalletIn is destroyed. For more details see bitcoin #18338
+    ValidationInterfaceConnections& conns = g_signals.m_internals->m_connMainSignals[pwalletIn.get()];
     conns.AcceptedBlockHeader = g_signals.m_internals->AcceptedBlockHeader.connect(std::bind(&CValidationInterface::AcceptedBlockHeader, pwalletIn, std::placeholders::_1));
     conns.UpdatedBlockTip = g_signals.m_internals->UpdatedBlockTip.connect(std::bind(&CValidationInterface::UpdatedBlockTip, pwalletIn, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     conns.TransactionAddedToMempool = g_signals.m_internals->TransactionAddedToMempool.connect(std::bind(&CValidationInterface::TransactionAddedToMempool, pwalletIn, std::placeholders::_1));
@@ -108,12 +109,23 @@ void RegisterValidationInterface(CValidationInterface* pwalletIn)
     conns.BlockChecked = g_signals.m_internals->BlockChecked.connect(std::bind(&CValidationInterface::BlockChecked, pwalletIn, std::placeholders::_1, std::placeholders::_2));
     conns.NotifyMasternodeListChanged = g_signals.m_internals->NotifyMasternodeListChanged.connect(std::bind(&CValidationInterface::NotifyMasternodeListChanged, pwalletIn, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
+void RegisterValidationInterface(CValidationInterface* pwalletIn)
+{
+    // Create a shared_ptr with a no-op deleter - CValidationInterface lifecycle
+    // is managed by the caller.
+    RegisterSharedValidationInterface({pwalletIn, [](CValidationInterface*) {}});
+}
 
 void UnregisterValidationInterface(CValidationInterface* pwalletIn)
 {
     if (g_signals.m_internals) {
         g_signals.m_internals->m_connMainSignals.erase(pwalletIn);
     }
+}
+
+void UnregisterSharedValidationInterface(std::shared_ptr<CValidationInterface> pwalletIn)
+{
+    UnregisterValidationInterface(pwalletIn.get());
 }
 
 void UnregisterAllValidationInterfaces()
