@@ -13,6 +13,7 @@
 # Wildcard for all gui tests, should be replaced with non-wildcard suppressions
 called_from_lib:src/qt/test/*
 called_from_lib:src/test/*
+called_from_lib:libQt5Test.so
 
 # External libraries
 deadlock:libdb
