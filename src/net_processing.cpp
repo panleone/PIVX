@@ -2492,7 +2492,6 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
         std::vector<CInv> vInv;
         std::vector<CInv> vInvWait;
         {
-            LogPrintf("Sending inventory");
             LOCK2(mempool.cs, pto->cs_inventory);
             vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size() + pto->vInventoryTierTwoToSend.size(), INVENTORY_BROADCAST_MAX));
 
@@ -2518,6 +2517,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
 
             // Check whether periodic send should happen
             bool fSendTrickle = pto->fWhitelisted;
+            LogPrintf("Sending inventory %d and size \n", fSendTrickle, pto->setInventoryTxToSend.size());
             if (pto->nNextInvSend < current_time) {
                 fSendTrickle = true;
                 // Use half the delay for outbound peers, as there is less privacy concern for them.
@@ -2527,11 +2527,15 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
             // Time to send but the peer has requested we not relay transactions.
             if (fSendTrickle) {
                 LOCK(pto->cs_filter);
-                if (!pto->fRelayTxes) pto->setInventoryTxToSend.clear();
+                if (!pto->fRelayTxes) {
+                    LogPrintf("Peer requested to not relay txs \n");
+                    pto->setInventoryTxToSend.clear();
+                }
             }
 
             // Respond to BIP35 mempool requests
             if (fSendTrickle && pto->fSendMempool) {
+                LogPrintf("Trying to send the mempool bip35 \n");
                 auto vtxinfo = mempool.infoAll();
                 pto->fSendMempool = false;
                 // future: back port fee filter rate
@@ -2539,15 +2543,18 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
 
                 for (const auto& txinfo : vtxinfo) {
                     const uint256& hash = txinfo.tx->GetHash();
+                    LogPrintf("Trying to send the mempool hash bip35  %s \n", hash.ToString());
                     CInv inv(MSG_TX, hash);
                     pto->setInventoryTxToSend.erase(hash);
                     // future: add fee filter check here..
                     if (pto->pfilter) {
+                        LogPrintf("fee filtered bip35  %s \n", hash.ToString());
                         if (!pto->pfilter->IsRelevantAndUpdate(*txinfo.tx)) continue;
                     }
                     pto->filterInventoryKnown.insert(hash);
                     vInv.emplace_back(inv);
                     if (vInv.size() == MAX_INV_SZ) {
+                        LogPrintf("Sending hash bip35  %s \n", hash.ToString());
                         connman->PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
                         vInv.clear();
                     }
@@ -2577,23 +2584,30 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
                     std::set<uint256>::iterator it = vInvTx.back();
                     vInvTx.pop_back();
                     uint256 hash = *it;
+                    LogPrintf("Trying to send the hash  %s \n", hash.ToString());
                     // Remove it from the to-be-sent set
                     pto->setInventoryTxToSend.erase(it);
                     // Check if not in the filter already
                     if (pto->filterInventoryKnown.contains(hash)) {
+                        LogPrintf("Failed filtered  %s \n", hash.ToString());
                         continue;
                     }
                     // Not in the mempool anymore? don't bother sending it.
                     auto txinfo = mempool.info(hash);
                     if (!txinfo.tx) {
+                        LogPrintf("Failed out of mempool  %s \n", hash.ToString());
                         continue;
                     }
                     // todo: back port feerate filter.
-                    if (pto->pfilter && !pto->pfilter->IsRelevantAndUpdate(*txinfo.tx)) continue;
+                    if (pto->pfilter && !pto->pfilter->IsRelevantAndUpdate(*txinfo.tx)) {
+                        LogPrintf("Failed not relevant %s \n", hash.ToString());
+                        continue;
+                    }
                     // Send
                     vInv.emplace_back(CInv(MSG_TX, hash));
                     nRelayedTransactions++;
                     if (vInv.size() == MAX_INV_SZ) {
+                        LogPrintf("Sending hash %s \n", hash.ToString());
                         connman->PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
                         vInv.clear();
                     }
@@ -2601,9 +2615,10 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
                 }
             }
         }
-        if (!vInv.empty())
+        if (!vInv.empty()) {
+            LogPrintf("Sending hash2  %s,  %s \n", vInv.at(vInv.size() - 1).type, vInv.at(vInv.size() - 1).hash.ToString());
             connman->PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
-
+        }
         // Detect whether we're stalling
         current_time = GetTime<std::chrono::microseconds>();
         nNow = GetTimeMicros();
