@@ -175,7 +175,7 @@ jobs:
             unit_tests: true
             functional_tests: true
             goal: install
-            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER'"
+            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER' --with-sanitizer=thread"
 
           - name: x64-Linux-latest
             id: Linux-x86_64-nodepends-latest
@@ -184,7 +184,7 @@ jobs:
             unit_tests: true
             functional_tests: true
             goal: install
-            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER'"
+            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER' --with-sanitizer=thread"
 
           - name: x64-macOS
             id: macOS-nodepends
@@ -194,7 +194,7 @@ jobs:
             functional_tests: true
             cc: clang
             cxx: clang++
-            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/usr/local/opt/boost@1.76"
+            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/usr/local/opt/boost@1.76 --with-sanitizer=thread"
 
           - name: x64-macOS-latest
             id: macOS-nodepends-latest
@@ -205,7 +205,7 @@ jobs:
             goal: deploy
             cc: clang
             cxx: clang++
-            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/opt/homebrew/opt/boost@1.76"
+            BITCOIN_CONFIG: "--enable-zmq --enable-gui --enable-reduce-exports --enable-werror --enable-debug --with-boost=/opt/homebrew/opt/boost@1.76 --with-sanitizer=thread"
 
     steps:
       - name: Get Source
@@ -235,6 +235,7 @@ jobs:
       - name: Build Syslib Wallet
         run: |
           export LC_ALL=C.UTF-8
+          export TSAN_OPTIONS="suppressions=test/sanitizer_suppressions/tsan"
 
           echo $CCACHE_DIR
           echo $PARAMS_DIR
@@ -449,7 +450,7 @@ jobs:
             functional_tests: true
             goal: install
             test_runner_extra: "--coverage --all  --exclude feature_dbcrash"
-            BITCOIN_CONFIG: "--enable-zmq --with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++"
+            BITCOIN_CONFIG: "--enable-zmq --with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++ --with-sanitizer=thread"
 
           - name: x86_64 Linux [GOAL:install] [no GUI, no unit tests, only functional tests on legacy pre-HD wallets]
             id: Linux-x86_64-nogui
@@ -460,7 +461,7 @@ jobs:
             functional_tests: true
             goal: install
             test_runner_extra: "--legacywallet"
-            BITCOIN_CONFIG: "--enable-zmq --with-gui=no --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++"
+            BITCOIN_CONFIG: "--enable-zmq --with-gui=no --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust LDFLAGS=-static-libstdc++ --with-sanitizer=thread"
 
           - name: macOS 10.12 [GOAL:deploy] [no unit or functional tests]
             id: macOS10.12
@@ -514,6 +515,7 @@ jobs:
       - name: Build Wallet
         run: |
           export LC_ALL=C.UTF-8
+          export TSAN_OPTIONS="suppressions=test/sanitizer_suppressions/tsan"
 
           echo $CCACHE_DIR
           echo $PARAMS_DIR
