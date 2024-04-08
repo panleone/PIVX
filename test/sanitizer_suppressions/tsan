@@ -11,8 +11,8 @@
 #race:InterruptRPC
 
 # Wildcard for all gui tests, should be replaced with non-wildcard suppressions
-#race:src/qt/test/*
-#deadlock:src/qt/test/*
+called_from_lib:src/qt/test/*
+called_from_lib:src/test/*
 
 # External libraries
 deadlock:libdb
