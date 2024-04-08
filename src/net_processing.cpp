@@ -2517,7 +2517,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
 
             // Check whether periodic send should happen
             bool fSendTrickle = pto->fWhitelisted;
-            LogPrintf("Sending inventory %d and size \n", fSendTrickle, pto->setInventoryTxToSend.size());
+            LogPrintf("Sending inventory %d and size %d \n", fSendTrickle, pto->setInventoryTxToSend.size());
             if (pto->nNextInvSend < current_time) {
                 fSendTrickle = true;
                 // Use half the delay for outbound peers, as there is less privacy concern for them.
