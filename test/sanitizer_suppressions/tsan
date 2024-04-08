@@ -1,0 +1,27 @@
+# ThreadSanitizer suppressions
+# ============================
+
+# WalletBatch (unidentified deadlock)
+#deadlock:WalletBatch
+
+# Intentional deadlock in tests
+#deadlock:TestPotentialDeadLockDetected
+
+# fRPCRunning race
+#race:InterruptRPC
+
+# Wildcard for all gui tests, should be replaced with non-wildcard suppressions
+#race:src/qt/test/*
+#deadlock:src/qt/test/*
+
+# External libraries
+deadlock:libdb
+race:libzmq
+
+# External rust libraries
+race:bellman
+race:rayon_core
+race:rayon
+race:alloc::sync::Arc
+race:crossbeam_deque::deque::Injector
+race:crossbeam_channel::flavors
