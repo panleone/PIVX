@@ -2492,7 +2492,7 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
         std::vector<CInv> vInv;
         std::vector<CInv> vInvWait;
         {
-            LOCK(pto->cs_inventory);
+            LOCK2(mempool.cs, pto->cs_inventory);
             vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size() + pto->vInventoryTierTwoToSend.size(), INVENTORY_BROADCAST_MAX));
 
             // Add blocks
