@@ -235,7 +235,7 @@ jobs:
       - name: Build Syslib Wallet
         run: |
           export LC_ALL=C.UTF-8
-          export TSAN_OPTIONS="suppressions=test/sanitizer_suppressions/tsan"
+          export TSAN_OPTIONS="suppressions=/home/runner/work/PIVX/PIVX/src/test/test/sanitizer_suppressions/tsan"
 
           echo $CCACHE_DIR
           echo $PARAMS_DIR
@@ -515,7 +515,7 @@ jobs:
       - name: Build Wallet
         run: |
           export LC_ALL=C.UTF-8
-          export TSAN_OPTIONS="suppressions=test/sanitizer_suppressions/tsan"
+          export TSAN_OPTIONS="suppressions=/home/runner/work/PIVX/PIVX/src/test/test/sanitizer_suppressions/tsan"
 
           echo $CCACHE_DIR
           echo $PARAMS_DIR
