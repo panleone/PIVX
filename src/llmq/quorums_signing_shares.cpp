@@ -526,6 +526,7 @@ void CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
 // It's ensured that no duplicates are passed to this method
 void CSigSharesManager::ProcessPendingSigSharesFromNode(NodeId nodeId, const std::vector<CSigShare>& sigShares, const std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& quorums, CConnman& connman)
 {
+    LOCK(cs);
     auto& nodeState = nodeStates[nodeId];
 
     cxxtimer::Timer t(true);
