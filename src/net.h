@@ -330,7 +330,6 @@ public:
     bool RemoveAddedNode(const std::string& node);
     std::vector<AddedNodeInfo> GetAddedNodeInfo();
 
-    std::vector<CNode*> GetvNodes();
     size_t GetNodeCount(NumConnections num);
     size_t GetMaxOutboundNodeCount();
     void GetNodeStats(std::vector<CNodeStats>& vstats);
