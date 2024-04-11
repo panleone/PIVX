@@ -180,11 +180,11 @@ jobs:
           - name: x64-Linux-latest
             id: Linux-x86_64-nodepends-latest
             os: ubuntu-latest
-            apt_get: python3-zmq qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
+            apt_get: python3-zmq llvm libc++abi-dev libc++-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
             unit_tests: true
             functional_tests: true
             goal: install
-            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER' --with-sanitizers=thread"
+            BITCOIN_CONFIG: "--enable-zmq --enable-debug --with-incompatible-bdb --with-gui=qt5 CPPFLAGS='-DARENA_DEBUG -DDEBUG_LOCKORDER' --with-sanitizers=thread CC=clang CXX='clang++ -stdlib=libc++'"
 
           - name: x64-macOS
             id: macOS-nodepends
@@ -239,11 +239,6 @@ jobs:
 
           echo $CCACHE_DIR
           echo $PARAMS_DIR
-
-          PATH=$(echo $PATH | tr ':' "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s|::|:|g")
-          # Add llvm-symbolizer directory to PATH. Needed to get symbolized stack traces from the sanitizers.
-          PATH=$PATH:/usr/lib/llvm-6.0/bin/
-          export PATH
 
           if [[ ${{ matrix.config.os }} = macos* ]]; then
             CC=${{ matrix.config.cc }}
