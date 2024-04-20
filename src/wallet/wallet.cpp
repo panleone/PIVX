@@ -2088,6 +2088,11 @@ void CWallet::ResendWalletTransactions(CConnman* connman)
     }
 }
 
+void CWallet::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload)
+{
+    nTimeBestReceived = GetTime();
+}
+
 /** @} */ // end of mapWallet
 
 
