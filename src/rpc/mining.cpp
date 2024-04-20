@@ -36,7 +36,7 @@ UniValue generateBlocks(const Consensus::Params& consensus,
 {
     UniValue blockHashes(UniValue::VARR);
 
-    BlockStateCatcher sc(UINT256_ZERO);
+    BlockStateCatcherWrapper sc(UINT256_ZERO);
     sc.registerEvent();
     while (nHeight < nHeightEnd && !ShutdownRequested()) {
 
@@ -57,9 +57,9 @@ UniValue generateBlocks(const Consensus::Params& consensus,
             if (!SolveBlock(pblock, nHeight + 1)) continue;
         }
 
-        sc.setBlockHash(pblock->GetHash());
+        sc.get().setBlockHash(pblock->GetHash());
         bool res = ProcessNewBlock(pblock, nullptr);
-        if (!res || sc.stateErrorFound())
+        if (!res || sc.get().stateErrorFound())
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
 
         ++nHeight;
@@ -772,19 +772,19 @@ UniValue submitblock(const JSONRPCRequest& request)
         }
     }
 
-    BlockStateCatcher sc(block.GetHash());
+    BlockStateCatcherWrapper sc(block.GetHash());
     sc.registerEvent();
     bool fAccepted = ProcessNewBlock(blockptr, nullptr);
     if (fBlockPresent) {
-        if (fAccepted && !sc.found)
+        if (fAccepted && !sc.get().found)
             return "duplicate-inconclusive";
         return "duplicate";
     }
     if (fAccepted) {
-        if (!sc.found)
+        if (!sc.get().found)
             return "inconclusive";
     }
-    return BIP22ValidationResult(sc.state);
+    return BIP22ValidationResult(sc.get().state);
 }
 
 UniValue estimatefee(const JSONRPCRequest& request)

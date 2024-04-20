@@ -137,18 +137,18 @@ BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering)
                 ProcessNewBlock(block, nullptr);
             }
 
-            BlockStateCatcher sc(UINT256_ZERO);
+            BlockStateCatcherWrapper sc(UINT256_ZERO);
             sc.registerEvent();
             // to make sure that eventually we process the full chain - do it here
             for (const auto& block : blocks) {
                 if (block->vtx.size() == 1) {
-                    sc.setBlockHash(block->GetHash());
+                    sc.get().setBlockHash(block->GetHash());
                     bool processed = ProcessNewBlock(block, nullptr);
                     // Future to do: "prevblk-not-found" here is the only valid reason to not check processed flag.
-                    std::string stateReason = sc.state.GetRejectReason();
-                    if (sc.found && (stateReason == "duplicate" || stateReason == "prevblk-not-found" ||
-                        stateReason == "bad-prevblk" || stateReason == "blk-out-of-order")) continue;
-                    ASSERT_WITH_MSG(processed,  ("Error: " + sc.state.GetRejectReason()).c_str());
+                    std::string stateReason = sc.get().state.GetRejectReason();
+                    if (sc.get().found && (stateReason == "duplicate" || stateReason == "prevblk-not-found" ||
+                                              stateReason == "bad-prevblk" || stateReason == "blk-out-of-order")) continue;
+                    ASSERT_WITH_MSG(processed, ("Error: " + sc.get().state.GetRejectReason()).c_str());
                 }
             }
         });
