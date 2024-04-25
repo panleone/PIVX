@@ -2463,11 +2463,6 @@ size_t CConnman::GetMaxOutboundNodeCount()
     return nMaxOutbound;
 }
 
-std::vector<CNode*> CConnman::GetvNodes()
-{
-    return vNodes;
-};
-
 size_t CConnman::GetNodeCount(NumConnections flags)
 {
     LOCK(cs_vNodes);

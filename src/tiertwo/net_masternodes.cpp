@@ -7,7 +7,6 @@
 
 #include "chainparams.h"
 #include "evo/deterministicmns.h"
-#include "llmq/quorums.h"
 #include "netmessagemaker.h"
 #include "scheduler.h"
 #include "tiertwo/masternode_meta_manager.h" // for g_mmetaman
@@ -42,27 +41,21 @@ std::set<uint256> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType)
 
 std::set<NodeId> TierTwoConnMan::getQuorumNodes(Consensus::LLMQType llmqType, uint256 quorumHash)
 {
+    LOCK(cs_vPendingMasternodes);
     std::set<NodeId> result;
-    auto it = WITH_LOCK(cs_vPendingMasternodes, return masternodeQuorumRelayMembers.find(std::make_pair(llmqType, quorumHash)));
-    if (WITH_LOCK(cs_vPendingMasternodes, return it == masternodeQuorumRelayMembers.end())) {
+    auto it = masternodeQuorumRelayMembers.find(std::make_pair(llmqType, quorumHash));
+    if (it == masternodeQuorumRelayMembers.end()) {
         return {};
     }
-    for (const auto pnode : connman->GetvNodes()) {
+    connman->ForEachNode([&](CNode* pnode) {
         if (pnode->fDisconnect) {
-            continue;
+            return;
         }
         if (!it->second.count(pnode->verifiedProRegTxHash)) {
-            continue;
-        }
-        // is it a valid member?
-        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)) {
-            continue;
-        }
-        if (!llmq::quorumManager->GetQuorum(llmqType, quorumHash)->IsValidMember(pnode->verifiedProRegTxHash)) {
-            continue;
+            return;
         }
         result.emplace(pnode->GetId());
-    }
+    });
     return result;
 }
 
@@ -80,12 +73,10 @@ void TierTwoConnMan::removeQuorumNodes(Consensus::LLMQType llmqType, const uint2
 
 void TierTwoConnMan::setMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::set<uint256>& proTxHashes)
 {
-    {
-        LOCK(cs_vPendingMasternodes);
-        auto it = masternodeQuorumRelayMembers.emplace(std::make_pair(llmqType, quorumHash), proTxHashes);
-        if (!it.second) {
-            it.first->second = proTxHashes;
-        }
+    LOCK(cs_vPendingMasternodes);
+    auto it = masternodeQuorumRelayMembers.emplace(std::make_pair(llmqType, quorumHash), proTxHashes);
+    if (!it.second) {
+        it.first->second = proTxHashes;
     }
 
     // Update existing connections
