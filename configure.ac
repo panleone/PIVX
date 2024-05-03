@@ -259,27 +259,27 @@ AC_ARG_ENABLE(man,
     enable_man=yes)
 AM_CONDITIONAL(ENABLE_MAN, test "$enable_man" != no)
 
-# Enable debug
+dnl Enable debug
 AC_ARG_ENABLE([debug],
     [AS_HELP_STRING([--enable-debug],
                     [use debug compiler flags and macros (default is no)])],
     [enable_debug=$enableval],
     [enable_debug=no])
 
-# Enable different -fsanitize options
+dnl Enable different -fsanitize options
 AC_ARG_WITH([sanitizers],
     [AS_HELP_STRING([--with-sanitizers],
                     [comma separated list of extra sanitizers to build with (default is none enabled)])],
     [use_sanitizers=$withval])
 
-# Enable gprof profiling
+dnl Enable gprof profiling
 AC_ARG_ENABLE([gprof],
     [AS_HELP_STRING([--enable-gprof],
                     [use gprof profiling compiler flags (default is no)])],
     [enable_gprof=$enableval],
     [enable_gprof=no])
 
-# Turn warnings into errors
+dnl Turn warnings into errors
 AC_ARG_ENABLE([werror],
     [AS_HELP_STRING([--enable-werror],
                     [Treat certain compiler warnings as errors (default is no)])],
@@ -290,18 +290,18 @@ AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-Werror],[CXXFLAG_WERROR="-Werror"],[CXXFLAG_WERROR=""])
 
 if test "x$enable_debug" = xyes; then
-  # Clear default -g -O2 flags
+  dnl Clear default -g -O2 flags
   if test "x$CXXFLAGS_overridden" = xno; then
 	CXXFLAGS=""
   fi
-  # Prefer -Og, fall back to -O0 if that is unavailable.
+  dnl Prefer -Og, fall back to -O0 if that is unavailable.
   AX_CHECK_COMPILE_FLAG(
     [-Og],
     [[DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -Og"]],
     [AX_CHECK_COMPILE_FLAG([-O0],[[DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -O0"]],,[[$CXXFLAG_WERROR]])],
     [[$CXXFLAG_WERROR]])
 
-  # Prefer -g3, fall back to -g if that is unavailable.
+  dnl Prefer -g3, fall back to -g if that is unavailable.
   AX_CHECK_COMPILE_FLAG(
     [-g3],
     [[DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -g3"]],
@@ -314,19 +314,19 @@ if test "x$enable_debug" = xyes; then
 fi
 
 if test x$use_sanitizers != x; then
-  # First check if the compiler accepts flags. If an incompatible pair like
-  # -fsanitize=address,thread is used here, this check will fail. This will also
-  # fail if a bad argument is passed, e.g. -fsanitize=undfeined
+  dnl First check if the compiler accepts flags. If an incompatible pair like
+  dnl -fsanitize=address,thread is used here, this check will fail. This will also
+  dnl fail if a bad argument is passed, e.g. -fsanitize=undfeined
   AX_CHECK_COMPILE_FLAG(
     [[-fsanitize=$use_sanitizers]],
     [[SANITIZER_CXXFLAGS=-fsanitize=$use_sanitizers]],
     [AC_MSG_ERROR([compiler did not accept requested flags])])
 
-  # Some compilers (e.g. GCC) require additional libraries like libasan,
-  # libtsan, libubsan, etc. Make sure linking still works with the sanitize
-  # flag. This is a separate check so we can give a better error message when
-  # the sanitize flags are supported by the compiler but the actual sanitizer
-  # libs are missing.
+  dnl Some compilers (e.g. GCC) require additional libraries like libasan,
+  dnl libtsan, libubsan, etc. Make sure linking still works with the sanitize
+  dnl flag. This is a separate check so we can give a better error message when
+  dnl the sanitize flags are supported by the compiler but the actual sanitizer
+  dnl libs are missing.
   AX_CHECK_LINK_FLAG(
     [[-fsanitize=$use_sanitizers]],
     [[SANITIZER_LDFLAGS=-fsanitize=$use_sanitizers]],
@@ -359,9 +359,9 @@ if test "x$CXXFLAGS_overridden" = "xno"; then
   AX_CHECK_COMPILE_FLAG([-Wrange-loop-analysis],[WARN_CXXFLAGS="$WARN_CXXFLAGS -Wrange-loop-analysis"],,[[$CXXFLAG_WERROR]])
   AX_CHECK_COMPILE_FLAG([-Wredundant-decls],[WARN_CXXFLAGS="$WARN_CXXFLAGS -Wredundant-decls"],,[[$CXXFLAG_WERROR]])
 
-  ## Some compilers (gcc) ignore unknown -Wno-* options, but warn about all
-  ## unknown options if any other warning is produced. Test the -Wfoo case, and
-  ## set the -Wno-foo case if it works.
+  dnl Some compilers (gcc) ignore unknown -Wno-* options, but warn about all
+  dnl unknown options if any other warning is produced. Test the -Wfoo case, and
+  dnl set the -Wno-foo case if it works.
   AX_CHECK_COMPILE_FLAG([-Wunused-parameter],[NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-unused-parameter"],,[[$CXXFLAG_WERROR]])
   AX_CHECK_COMPILE_FLAG([-Wself-assign],[NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-self-assign"],,[[$CXXFLAG_WERROR]])
   AX_CHECK_COMPILE_FLAG([-Wunused-local-typedef],[NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-unused-local-typedef"],,[[$CXXFLAG_WERROR]])
@@ -455,7 +455,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
-# ARM
+dnl ARM
 AX_CHECK_COMPILE_FLAG([-march=armv8-a+crc+crypto],[[ARM_CRC_CXXFLAGS="-march=armv8-a+crc+crypto"]],,[[$CXXFLAG_WERROR]])
 
 TEMP_CXXFLAGS="$CXXFLAGS"
@@ -499,7 +499,7 @@ use_pkgconfig=yes
 case $host in
   *mingw*)
 
-     #pkgconfig does more harm than good with MinGW
+     dnl pkgconfig does more harm than good with MinGW
      use_pkgconfig=no
 
      TARGET_OS=windows
@@ -524,8 +524,8 @@ case $host in
      AC_CHECK_LIB([crypt32],      [main],, AC_MSG_ERROR(libcrypt32 missing))
      AC_CHECK_LIB([bcrypt],     [main],,                    AC_MSG_ERROR(libbcrypt missing))
 
-     # -static is interpreted by libtool, where it has a different meaning.
-     # In libtool-speak, it's -all-static.
+     dnl -static is interpreted by libtool, where it has a different meaning.
+     dnl In libtool-speak, it's -all-static.
      AX_CHECK_LINK_FLAG([[-static]],[LIBTOOL_APP_LDFLAGS="$LIBTOOL_APP_LDFLAGS -all-static"])
 
      AC_PATH_PROG([MAKENSIS], [makensis], none)
@@ -663,11 +663,11 @@ AC_C_BIGENDIAN
 dnl Check for pthread compile/link requirements
 AX_PTHREAD
 
-# The following macro will add the necessary defines to pivx-config.h, but
-# they also need to be passed down to any subprojects. Pull the results out of
-# the cache and add them to CPPFLAGS.
+dnl The following macro will add the necessary defines to pivx-config.h, but
+dnl they also need to be passed down to any subprojects. Pull the results out of
+dnl the cache and add them to CPPFLAGS.
 AC_SYS_LARGEFILE
-# detect POSIX or GNU variant of strerror_r
+dnl detect POSIX or GNU variant of strerror_r
 AC_FUNC_STRERROR_R
 
 if test x$ac_cv_sys_file_offset_bits != x &&
@@ -713,7 +713,7 @@ if test "x$enable_gprof" = xyes; then
 fi
 
 if test x$TARGET_OS != xwindows; then
-  # All windows code is PIC, forcing it on just adds useless compile warnings
+  dnl All windows code is PIC, forcing it on just adds useless compile warnings
   AX_CHECK_COMPILE_FLAG([-fPIC],[PIC_FLAGS="-fPIC"])
 fi
 
@@ -757,7 +757,7 @@ AC_CHECK_DECLS([getifaddrs, freeifaddrs],[CHECK_SOCKET],,
 )
 AC_CHECK_DECLS([strnlen])
 
-# Check for daemon(3), unrelated to --with-daemon (although used by it)
+dnl Check for daemon(3), unrelated to --with-daemon (although used by it)
 AC_CHECK_DECLS([daemon])
 
 AC_CHECK_DECLS([le16toh, le32toh, le64toh, htole16, htole32, htole64, be16toh, be32toh, be64toh, htobe16, htobe32, htobe64],,,
@@ -883,7 +883,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ctime>]],
   ]
 )
 
-# Check for different ways of gathering OS randomness
+dnl Check for different ways of gathering OS randomness
 AC_MSG_CHECKING(for Linux getrandom syscall)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>
   #include <sys/syscall.h>
@@ -1287,7 +1287,7 @@ if test -z "$RUST_TARGET"; then
 fi
 AM_CONDITIONAL([HAVE_RUST_TARGET], [test -n "$RUST_TARGET"])
 
-# Additional Zcash flags
+dnl Additional Zcash flags
 AX_CHECK_COMPILE_FLAG([-fno-strict-aliasing],[CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"])
 AX_CHECK_COMPILE_FLAG([-Wno-builtin-declaration-mismatch],[CXXFLAGS="$CXXFLAGS -Wno-builtin-declaration-mismatch"],,[[$CXXFLAG_WERROR]])
 
