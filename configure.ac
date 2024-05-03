@@ -503,26 +503,26 @@ case $host in
      use_pkgconfig=no
 
      TARGET_OS=windows
-     AC_CHECK_LIB([mingwthrd],      [main],, AC_MSG_ERROR([libmingwthrd missing]))
-     AC_CHECK_LIB([kernel32],      [main],, AC_MSG_ERROR([libkernel32 missing]))
-     AC_CHECK_LIB([user32],      [main],, AC_MSG_ERROR([libuser32 missing]))
-     AC_CHECK_LIB([gdi32],      [main],, AC_MSG_ERROR([libgdi32 missing]))
-     AC_CHECK_LIB([comdlg32],      [main],, AC_MSG_ERROR([libcomdlg32 missing]))
-     AC_CHECK_LIB([winspool],      [main],, AC_MSG_ERROR([libwinspool missing]))
-     AC_CHECK_LIB([winmm],      [main],, AC_MSG_ERROR([libwinmm missing]))
-     AC_CHECK_LIB([shell32],      [main],, AC_MSG_ERROR([libshell32 missing]))
-     AC_CHECK_LIB([comctl32],      [main],, AC_MSG_ERROR([libcomctl32 missing]))
-     AC_CHECK_LIB([ole32],      [main],, AC_MSG_ERROR([libole32 missing]))
-     AC_CHECK_LIB([oleaut32],      [main],, AC_MSG_ERROR([liboleaut32 missing]))
-     AC_CHECK_LIB([uuid],      [main],, AC_MSG_ERROR([libuuid missing]))
-     AC_CHECK_LIB([rpcrt4],      [main],, AC_MSG_ERROR([librpcrt4 missing]))
-     AC_CHECK_LIB([advapi32],      [main],, AC_MSG_ERROR([libadvapi32 missing]))
-     AC_CHECK_LIB([ws2_32],      [main],, AC_MSG_ERROR([libws2_32 missing]))
-     AC_CHECK_LIB([mswsock],      [main],, AC_MSG_ERROR([libmswsock missing]))
-     AC_CHECK_LIB([shlwapi],      [main],, AC_MSG_ERROR([libshlwapi missing]))
-     AC_CHECK_LIB([iphlpapi],      [main],, AC_MSG_ERROR([libiphlpapi missing]))
-     AC_CHECK_LIB([crypt32],      [main],, AC_MSG_ERROR([libcrypt32 missing]))
-     AC_CHECK_LIB([bcrypt],     [main],,                    AC_MSG_ERROR([libbcrypt missing]))
+     AC_CHECK_LIB([mingwthrd],      [main], [], [AC_MSG_ERROR([libmingwthrd missing])])
+     AC_CHECK_LIB([kernel32],      [main], [], [AC_MSG_ERROR([libkernel32 missing])])
+     AC_CHECK_LIB([user32],      [main], [], [AC_MSG_ERROR([libuser32 missing])])
+     AC_CHECK_LIB([gdi32],      [main], [], [AC_MSG_ERROR([libgdi32 missing])])
+     AC_CHECK_LIB([comdlg32],      [main], [], [AC_MSG_ERROR([libcomdlg32 missing])])
+     AC_CHECK_LIB([winspool],      [main], [], [AC_MSG_ERROR([libwinspool missing])])
+     AC_CHECK_LIB([winmm],      [main], [], [AC_MSG_ERROR([libwinmm missing])])
+     AC_CHECK_LIB([shell32],      [main], [], [AC_MSG_ERROR([libshell32 missing])])
+     AC_CHECK_LIB([comctl32],      [main], [], [AC_MSG_ERROR([libcomctl32 missing])])
+     AC_CHECK_LIB([ole32],      [main], [], [AC_MSG_ERROR([libole32 missing])])
+     AC_CHECK_LIB([oleaut32],      [main], [], [AC_MSG_ERROR([liboleaut32 missing])])
+     AC_CHECK_LIB([uuid],      [main], [], [AC_MSG_ERROR([libuuid missing])])
+     AC_CHECK_LIB([rpcrt4],      [main], [], [AC_MSG_ERROR([librpcrt4 missing])])
+     AC_CHECK_LIB([advapi32],      [main], [], [AC_MSG_ERROR([libadvapi32 missing])])
+     AC_CHECK_LIB([ws2_32],      [main], [], [AC_MSG_ERROR([libws2_32 missing])])
+     AC_CHECK_LIB([mswsock],      [main], [], [AC_MSG_ERROR([libmswsock missing])])
+     AC_CHECK_LIB([shlwapi],      [main], [], [AC_MSG_ERROR([libshlwapi missing])])
+     AC_CHECK_LIB([iphlpapi],      [main], [], [AC_MSG_ERROR([libiphlpapi missing])])
+     AC_CHECK_LIB([crypt32],      [main], [], [AC_MSG_ERROR([libcrypt32 missing])])
+     AC_CHECK_LIB([bcrypt],     [main], [],                    [AC_MSG_ERROR([libbcrypt missing])])
 
      dnl -static is interpreted by libtool, where it has a different meaning.
      dnl In libtool-speak, it's -all-static.
@@ -739,7 +739,7 @@ if test x$use_hardening != xno; then
 
   case $host in
     *mingw*)
-       AC_CHECK_LIB([ssp],      [main],, AC_MSG_ERROR([libssp missing]))
+       AC_CHECK_LIB([ssp], [main], [], [AC_MSG_ERROR([libssp missing])])
     ;;
   esac
 fi
@@ -1179,12 +1179,12 @@ else
 
   if test x$build_bitcoin_utils$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
     AC_CHECK_HEADER([event2/event.h],, AC_MSG_ERROR([libevent headers missing]),)
-    AC_CHECK_LIB([event],[main],EVENT_LIBS=-levent,AC_MSG_ERROR([libevent missing]))
+    AC_CHECK_LIB([event], [main], [EVENT_LIBS=-levent], [AC_MSG_ERROR([libevent missing])])
     if test x$TARGET_OS != xwindows; then
-      AC_CHECK_LIB([event_pthreads],[main],EVENT_PTHREADS_LIBS=-levent_pthreads,AC_MSG_ERROR([libevent_pthreads missing]))
+      AC_CHECK_LIB([event_pthreads], [main], [EVENT_PTHREADS_LIBS=-levent_pthreads], [AC_MSG_ERROR([libevent_pthreads missing])])
     fi
     AC_CHECK_HEADER([sodium/core.h],, AC_MSG_ERROR([libsodium headers missing]),)
-    AC_CHECK_LIB([sodium],[main],SODIUM_LIBS=-lsodium,AC_MSG_ERROR([libsodium missing]))
+    AC_CHECK_LIB([sodium], [main], [SODIUM_LIBS=-lsodium], [AC_MSG_ERROR([libsodium missing])])
   fi
 
   if test "x$use_zmq" = "xyes"; then
@@ -1193,7 +1193,7 @@ else
        [AC_MSG_WARN([zmq.h not found, disabling zmq support])
         use_zmq=no
         AC_DEFINE([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])])
-     AC_CHECK_LIB([zmq],[zmq_ctx_shutdown],ZMQ_LIBS=-lzmq,
+     AC_CHECK_LIB([zmq], [zmq_ctx_shutdown], [ZMQ_LIBS=-lzmq],
        [AC_MSG_WARN([libzmq >= 4.0 not found, disabling zmq support])
         use_zmq=no
         AC_DEFINE([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])])
@@ -1210,10 +1210,10 @@ else
     esac
   fi
 
-  BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main],[QR_LIBS=-lqrencode], BITCOIN_QT_FAIL(libqrencode not found))])
+  BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main], [QR_LIBS=-lqrencode], [BITCOIN_QT_FAIL(libqrencode not found)])])
   BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h],, BITCOIN_QT_FAIL(libqrencode not found))])
   if test x$use_qtcharts != xno; then
-    BITCOIN_QT_CHECK([AC_CHECK_LIB([Qt5Charts], [main],[CHARTS_LIBS=-lQt5Charts], [have_qtcharts=no])])
+    BITCOIN_QT_CHECK([AC_CHECK_LIB([Qt5Charts], [main], [CHARTS_LIBS=-lQt5Charts], [have_qtcharts=no])])
     BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtCharts/qchartview.h],, have_qtcharts=no)])
   fi
 fi
@@ -1244,7 +1244,7 @@ if test x$system_univalue != xno ; then
     )
   else
     AC_CHECK_HEADER([univalue.h],[
-      AC_CHECK_LIB([univalue],  [main],[
+      AC_CHECK_LIB([univalue], [main],[
         UNIVALUE_LIBS=-lunivalue
         found_univalue=yes
       ],[true])
