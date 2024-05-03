@@ -106,7 +106,7 @@ AC_ARG_ENABLE([online-rust],
   [disable fetching Rust dependencies from crates.io (default is to use crates.io)])],
   [enable_online_rust=$enableval],
   [enable_online_rust=yes])
-AM_CONDITIONAL(ENABLE_ONLINE_RUST, test "$enable_online_rust" != no)
+AM_CONDITIONAL([ENABLE_ONLINE_RUST], [test "$enable_online_rust" != no])
 
 AC_ARG_WITH([params-dir],
   AS_HELP_STRING([--with-params-dir=PARAMS_DIR],
@@ -257,7 +257,7 @@ AC_ARG_ENABLE(man,
     [AS_HELP_STRING([--disable-man],
                     [do not install man pages (default is to install)])],,
     enable_man=yes)
-AM_CONDITIONAL(ENABLE_MAN, test "$enable_man" != no)
+AM_CONDITIONAL([ENABLE_MAN], [test "$enable_man" != no])
 
 dnl Enable debug
 AC_ARG_ENABLE([debug],
@@ -1004,7 +1004,7 @@ fi
 LEVELDB_CPPFLAGS=
 LIBLEVELDB=
 LIBMEMENV=
-AM_CONDITIONAL([EMBEDDED_LEVELDB],[true])
+AM_CONDITIONAL([EMBEDDED_LEVELDB], [true])
 AC_SUBST(LEVELDB_CPPFLAGS)
 AC_SUBST(LIBLEVELDB)
 AC_SUBST(LIBMEMENV)
@@ -1268,7 +1268,7 @@ fi
 
 fi
 
-AM_CONDITIONAL([EMBEDDED_UNIVALUE],[test x$need_bundled_univalue = xyes])
+AM_CONDITIONAL([EMBEDDED_UNIVALUE], [test x$need_bundled_univalue = xyes])
 AC_SUBST(UNIVALUE_CFLAGS)
 AC_SUBST(UNIVALUE_LIBS)
 
@@ -1472,25 +1472,25 @@ fi
 AM_CONDITIONAL([TARGET_DARWIN], [test x$TARGET_OS = xdarwin])
 AM_CONDITIONAL([BUILD_DARWIN], [test x$BUILD_OS = xdarwin])
 AM_CONDITIONAL([TARGET_WINDOWS], [test x$TARGET_OS = xwindows])
-AM_CONDITIONAL([ENABLE_WALLET],[test x$enable_wallet = xyes])
-AM_CONDITIONAL([ENABLE_MINING_RPC],[test x$enable_mining_rpc = xyes])
-AM_CONDITIONAL([ENABLE_TESTS],[test x$BUILD_TEST = xyes])
-AM_CONDITIONAL([ENABLE_FUZZ],[test x$enable_fuzz = xyes])
-AM_CONDITIONAL([ENABLE_QT],[test x$bitcoin_enable_qt = xyes])
-AM_CONDITIONAL([ENABLE_QT_TESTS],[test x$BUILD_TEST_QT = xyes])
-AM_CONDITIONAL([ENABLE_BENCH],[test x$use_bench = xyes])
+AM_CONDITIONAL([ENABLE_WALLET], [test x$enable_wallet = xyes])
+AM_CONDITIONAL([ENABLE_MINING_RPC], [test x$enable_mining_rpc = xyes])
+AM_CONDITIONAL([ENABLE_TESTS], [test x$BUILD_TEST = xyes])
+AM_CONDITIONAL([ENABLE_FUZZ], [test x$enable_fuzz = xyes])
+AM_CONDITIONAL([ENABLE_QT], [test x$bitcoin_enable_qt = xyes])
+AM_CONDITIONAL([ENABLE_QT_TESTS], [test x$BUILD_TEST_QT = xyes])
+AM_CONDITIONAL([ENABLE_BENCH], [test x$use_bench = xyes])
 AM_CONDITIONAL([USE_QTCHARTS], [test x$use_qtcharts = xyes])
-AM_CONDITIONAL([USE_CUSTOM_PARAMS],[test x$use_custom_params = xyes])
-AM_CONDITIONAL([USE_LCOV],[test x$use_lcov = xyes])
-AM_CONDITIONAL([GLIBC_BACK_COMPAT],[test x$use_glibc_compat = xyes])
-AM_CONDITIONAL([HARDEN],[test x$use_hardening = xyes])
-AM_CONDITIONAL([ENABLE_SSE42],[test x$enable_sse42 = xyes])
-AM_CONDITIONAL([ENABLE_SSE41],[test x$enable_sse41 = xyes])
-AM_CONDITIONAL([ENABLE_AVX2],[test x$enable_avx2 = xyes])
-AM_CONDITIONAL([ENABLE_SHANI],[test x$enable_shani = xyes])
-AM_CONDITIONAL([ENABLE_ARM_CRC],[test x$enable_arm_crc = xyes])
-AM_CONDITIONAL([USE_ASM],[test x$use_asm = xyes])
-AM_CONDITIONAL([WORDS_BIGENDIAN],[test x$ac_cv_c_bigendian = xyes])
+AM_CONDITIONAL([USE_CUSTOM_PARAMS], [test x$use_custom_params = xyes])
+AM_CONDITIONAL([USE_LCOV], [test x$use_lcov = xyes])
+AM_CONDITIONAL([GLIBC_BACK_COMPAT], [test x$use_glibc_compat = xyes])
+AM_CONDITIONAL([HARDEN], [test x$use_hardening = xyes])
+AM_CONDITIONAL([ENABLE_SSE42], [test x$enable_sse42 = xyes])
+AM_CONDITIONAL([ENABLE_SSE41], [test x$enable_sse41 = xyes])
+AM_CONDITIONAL([ENABLE_AVX2], [test x$enable_avx2 = xyes])
+AM_CONDITIONAL([ENABLE_SHANI], [test x$enable_shani = xyes])
+AM_CONDITIONAL([ENABLE_ARM_CRC], [test x$enable_arm_crc = xyes])
+AM_CONDITIONAL([USE_ASM], [test x$use_asm = xyes])
+AM_CONDITIONAL([WORDS_BIGENDIAN], [test x$ac_cv_c_bigendian = xyes])
 
 AC_DEFINE([CLIENT_VERSION_MAJOR], [_CLIENT_VERSION_MAJOR], [Major version])
 AC_DEFINE([CLIENT_VERSION_MINOR], [_CLIENT_VERSION_MINOR], [Minor version])
