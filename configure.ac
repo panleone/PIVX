@@ -116,7 +116,7 @@ AC_ARG_WITH([params-dir],
   then
           params_path="$withval"
   else
-          AC_MSG_ERROR(--with-params-dir expected directory name)
+          AC_MSG_ERROR([--with-params-dir expected directory name])
   fi
   ],
   [params_path=""])
@@ -343,7 +343,7 @@ fi
 ERROR_CXXFLAGS=
 if test "x$enable_werror" = "xyes"; then
   if test "x$CXXFLAG_WERROR" = "x"; then
-    AC_MSG_ERROR("enable-werror set but -Werror is not usable")
+    AC_MSG_ERROR([enable-werror set but -Werror is not usable])
   fi
   AX_CHECK_COMPILE_FLAG([-Werror=vla], [ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Werror=vla"], [], [$CXXFLAG_WERROR])
   AX_CHECK_COMPILE_FLAG([-Werror=thread-safety-analysis], [ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Werror=thread-safety-analysis"], [], [$CXXFLAG_WERROR])
@@ -403,8 +403,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     l = _mm_crc32_u64(l, 0);
     return l;
   ]])],
- [ AC_MSG_RESULT(yes); enable_sse42=yes],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); enable_sse42=yes],
+ [ AC_MSG_RESULT([no])]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
@@ -418,8 +418,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m128i l = _mm_set1_epi32(0);
     return _mm_extract_epi32(l, 3);
   ]])],
- [ AC_MSG_RESULT(yes); enable_sse41=yes; AC_DEFINE([ENABLE_SSE41], [1], [Define this symbol to build code that uses SSE4.1 intrinsics]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); enable_sse41=yes; AC_DEFINE([ENABLE_SSE41], [1], [Define this symbol to build code that uses SSE4.1 intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
@@ -433,8 +433,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m256i l = _mm256_set1_epi32(0);
     return _mm256_extract_epi32(l, 7);
   ]])],
- [ AC_MSG_RESULT(yes); enable_avx2=yes; AC_DEFINE([ENABLE_AVX2], [1], [Define this symbol to build code that uses AVX2 intrinsics]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); enable_avx2=yes; AC_DEFINE([ENABLE_AVX2], [1], [Define this symbol to build code that uses AVX2 intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
@@ -450,8 +450,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m128i k = _mm_set1_epi32(2);
     return _mm_extract_epi32(_mm_sha256rnds2_epu32(i, i, k), 0);
   ]])],
- [ AC_MSG_RESULT(yes); enable_shani=yes; AC_DEFINE([ENABLE_SHANI], [1], [Define this symbol to build code that uses SHA-NI intrinsics]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); enable_shani=yes; AC_DEFINE([ENABLE_SHANI], [1], [Define this symbol to build code that uses SHA-NI intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
@@ -468,8 +468,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __crc32cb(0, 0); __crc32ch(0, 0); __crc32cw(0, 0); __crc32cd(0, 0);
     vmull_p64(0, 0);
   ]])],
- [ AC_MSG_RESULT(yes); enable_arm_crc=yes; ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); enable_arm_crc=yes; ],
+ [ AC_MSG_RESULT([no])]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
@@ -503,26 +503,26 @@ case $host in
      use_pkgconfig=no
 
      TARGET_OS=windows
-     AC_CHECK_LIB([mingwthrd],      [main],, AC_MSG_ERROR(libmingwthrd missing))
-     AC_CHECK_LIB([kernel32],      [main],, AC_MSG_ERROR(libkernel32 missing))
-     AC_CHECK_LIB([user32],      [main],, AC_MSG_ERROR(libuser32 missing))
-     AC_CHECK_LIB([gdi32],      [main],, AC_MSG_ERROR(libgdi32 missing))
-     AC_CHECK_LIB([comdlg32],      [main],, AC_MSG_ERROR(libcomdlg32 missing))
-     AC_CHECK_LIB([winspool],      [main],, AC_MSG_ERROR(libwinspool missing))
-     AC_CHECK_LIB([winmm],      [main],, AC_MSG_ERROR(libwinmm missing))
-     AC_CHECK_LIB([shell32],      [main],, AC_MSG_ERROR(libshell32 missing))
-     AC_CHECK_LIB([comctl32],      [main],, AC_MSG_ERROR(libcomctl32 missing))
-     AC_CHECK_LIB([ole32],      [main],, AC_MSG_ERROR(libole32 missing))
-     AC_CHECK_LIB([oleaut32],      [main],, AC_MSG_ERROR(liboleaut32 missing))
-     AC_CHECK_LIB([uuid],      [main],, AC_MSG_ERROR(libuuid missing))
-     AC_CHECK_LIB([rpcrt4],      [main],, AC_MSG_ERROR(librpcrt4 missing))
-     AC_CHECK_LIB([advapi32],      [main],, AC_MSG_ERROR(libadvapi32 missing))
-     AC_CHECK_LIB([ws2_32],      [main],, AC_MSG_ERROR(libws2_32 missing))
-     AC_CHECK_LIB([mswsock],      [main],, AC_MSG_ERROR(libmswsock missing))
-     AC_CHECK_LIB([shlwapi],      [main],, AC_MSG_ERROR(libshlwapi missing))
-     AC_CHECK_LIB([iphlpapi],      [main],, AC_MSG_ERROR(libiphlpapi missing))
-     AC_CHECK_LIB([crypt32],      [main],, AC_MSG_ERROR(libcrypt32 missing))
-     AC_CHECK_LIB([bcrypt],     [main],,                    AC_MSG_ERROR(libbcrypt missing))
+     AC_CHECK_LIB([mingwthrd],      [main],, AC_MSG_ERROR([libmingwthrd missing]))
+     AC_CHECK_LIB([kernel32],      [main],, AC_MSG_ERROR([libkernel32 missing]))
+     AC_CHECK_LIB([user32],      [main],, AC_MSG_ERROR([libuser32 missing]))
+     AC_CHECK_LIB([gdi32],      [main],, AC_MSG_ERROR([libgdi32 missing]))
+     AC_CHECK_LIB([comdlg32],      [main],, AC_MSG_ERROR([libcomdlg32 missing]))
+     AC_CHECK_LIB([winspool],      [main],, AC_MSG_ERROR([libwinspool missing]))
+     AC_CHECK_LIB([winmm],      [main],, AC_MSG_ERROR([libwinmm missing]))
+     AC_CHECK_LIB([shell32],      [main],, AC_MSG_ERROR([libshell32 missing]))
+     AC_CHECK_LIB([comctl32],      [main],, AC_MSG_ERROR([libcomctl32 missing]))
+     AC_CHECK_LIB([ole32],      [main],, AC_MSG_ERROR([libole32 missing]))
+     AC_CHECK_LIB([oleaut32],      [main],, AC_MSG_ERROR([liboleaut32 missing]))
+     AC_CHECK_LIB([uuid],      [main],, AC_MSG_ERROR([libuuid missing]))
+     AC_CHECK_LIB([rpcrt4],      [main],, AC_MSG_ERROR([librpcrt4 missing]))
+     AC_CHECK_LIB([advapi32],      [main],, AC_MSG_ERROR([libadvapi32 missing]))
+     AC_CHECK_LIB([ws2_32],      [main],, AC_MSG_ERROR([libws2_32 missing]))
+     AC_CHECK_LIB([mswsock],      [main],, AC_MSG_ERROR([libmswsock missing]))
+     AC_CHECK_LIB([shlwapi],      [main],, AC_MSG_ERROR([libshlwapi missing]))
+     AC_CHECK_LIB([iphlpapi],      [main],, AC_MSG_ERROR([libiphlpapi missing]))
+     AC_CHECK_LIB([crypt32],      [main],, AC_MSG_ERROR([libcrypt32 missing]))
+     AC_CHECK_LIB([bcrypt],     [main],,                    AC_MSG_ERROR([libbcrypt missing]))
 
      dnl -static is interpreted by libtool, where it has a different meaning.
      dnl In libtool-speak, it's -all-static.
@@ -530,12 +530,12 @@ case $host in
 
      AC_PATH_PROG([MAKENSIS], [makensis], [none])
      if test x$MAKENSIS = xnone; then
-       AC_MSG_WARN("makensis not found. Cannot create installer.")
+       AC_MSG_WARN([makensis not found. Cannot create installer.])
      fi
 
      AC_PATH_TOOL([WINDRES], [windres], [none])
      if test x$WINDRES = xnone; then
-       AC_MSG_ERROR("windres not found")
+       AC_MSG_ERROR([windres not found])
      fi
 
      CPPFLAGS="$CPPFLAGS -D_MT -DWIN32 -D_WINDOWS -DBOOST_THREAD_USE_LIB"
@@ -618,11 +618,11 @@ case $host in
 esac
 
 if test x$use_pkgconfig = xyes; then
-  m4_ifndef([PKG_PROG_PKG_CONFIG], [AC_MSG_ERROR(PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.)])
+  m4_ifndef([PKG_PROG_PKG_CONFIG], [AC_MSG_ERROR([PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.])])
   m4_ifdef([PKG_PROG_PKG_CONFIG], [
   PKG_PROG_PKG_CONFIG
   if test x"$PKG_CONFIG" = "x"; then
-    AC_MSG_ERROR(pkg-config not found.)
+    AC_MSG_ERROR([pkg-config not found.])
   fi
   ])
 fi
@@ -633,22 +633,22 @@ fi
 
 if test x$use_lcov = xyes; then
   if test x$LCOV = x; then
-    AC_MSG_ERROR("lcov testing requested but lcov not found")
+    AC_MSG_ERROR([lcov testing requested but lcov not found])
   fi
   if test x$GCOV = x; then
-    AC_MSG_ERROR("lcov testing requested but gcov not found")
+    AC_MSG_ERROR([lcov testing requested but gcov not found])
   fi
   if test x$PYTHON = x; then
-    AC_MSG_ERROR("lcov testing requested but python not found")
+    AC_MSG_ERROR([lcov testing requested but python not found])
   fi
   if test x$GENHTML = x; then
-    AC_MSG_ERROR("lcov testing requested but genhtml not found")
+    AC_MSG_ERROR([lcov testing requested but genhtml not found])
   fi
   LCOV="$LCOV --gcov-tool=$GCOV"
   AX_CHECK_LINK_FLAG([--coverage], [LDFLAGS="$LDFLAGS --coverage"],
-    [AC_MSG_ERROR("lcov testing requested but --coverage linker flag does not work")])
+    [AC_MSG_ERROR([lcov testing requested but --coverage linker flag does not work])])
   AX_CHECK_COMPILE_FLAG([--coverage], [CXXFLAGS="$CXXFLAGS --coverage"],
-    [AC_MSG_ERROR("lcov testing requested but --coverage flag does not work")])
+    [AC_MSG_ERROR([lcov testing requested but --coverage flag does not work])])
   AC_DEFINE([USE_COVERAGE], [1], [Define this symbol if coverage is enabled])
   CXXFLAGS="$CXXFLAGS -Og"
 fi
@@ -701,15 +701,15 @@ if test "x$enable_gprof" = xyes; then
     dnl -pie by default, in which case it needs to be turned off with -no-pie.
 
     if test x$use_hardening = xyes; then
-        AC_MSG_ERROR(gprof profiling is not compatible with hardening. Reconfigure with --disable-hardening or --disable-gprof)
+        AC_MSG_ERROR([gprof profiling is not compatible with hardening. Reconfigure with --disable-hardening or --disable-gprof])
     fi
     use_hardening=no
     AX_CHECK_COMPILE_FLAG([-pg], [GPROF_CXXFLAGS="-pg"],
-        [AC_MSG_ERROR(gprof profiling requested but not available)], [$CXXFLAG_WERROR])
+        [AC_MSG_ERROR([gprof profiling requested but not available])], [$CXXFLAG_WERROR])
 
     AX_CHECK_LINK_FLAG([-no-pie], [GPROF_LDFLAGS="-no-pie"])
     AX_CHECK_LINK_FLAG([-pg], [GPROF_LDFLAGS="$GPROF_LDFLAGS -pg"],
-        [AC_MSG_ERROR(gprof profiling requested but not available)], [$GPROF_LDFLAGS])
+        [AC_MSG_ERROR([gprof profiling requested but not available])], [$GPROF_LDFLAGS])
 fi
 
 if test x$TARGET_OS != xwindows; then
@@ -739,7 +739,7 @@ if test x$use_hardening != xno; then
 
   case $host in
     *mingw*)
-       AC_CHECK_LIB([ssp],      [main],, AC_MSG_ERROR(libssp missing))
+       AC_CHECK_LIB([ssp],      [main],, AC_MSG_ERROR([libssp missing]))
     ;;
   esac
 fi
@@ -778,32 +778,32 @@ dnl Check for MSG_NOSIGNAL
 AC_MSG_CHECKING([for MSG_NOSIGNAL])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/socket.h>]],
  [[ int f = MSG_NOSIGNAL; ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Define this symbol if you have MSG_NOSIGNAL]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Define this symbol if you have MSG_NOSIGNAL]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 dnl Check for MSG_DONTWAIT
 AC_MSG_CHECKING([for MSG_DONTWAIT])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/socket.h>]],
  [[ int f = MSG_DONTWAIT; ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MSG_DONTWAIT], [1], [Define this symbol if you have MSG_DONTWAIT]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_MSG_DONTWAIT], [1], [Define this symbol if you have MSG_DONTWAIT]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 dnl Check for malloc_info (for memory statistics information in getmemoryinfo)
 AC_MSG_CHECKING([for getmemoryinfo])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <malloc.h>]],
  [[ int f = malloc_info(0, NULL); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MALLOC_INFO], [1], [Define this symbol if you have malloc_info]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_MALLOC_INFO], [1], [Define this symbol if you have malloc_info]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 dnl Check for mallopt(M_ARENA_MAX) (to set glibc arenas)
 AC_MSG_CHECKING([for mallopt M_ARENA_MAX])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <malloc.h>]],
  [[ mallopt(M_ARENA_MAX, 1); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MALLOPT_ARENA_MAX], [1], [Define this symbol if you have mallopt with M_ARENA_MAX]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_MALLOPT_ARENA_MAX], [1], [Define this symbol if you have mallopt with M_ARENA_MAX]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 AC_MSG_CHECKING([for visibility attribute])
@@ -813,10 +813,10 @@ AC_LINK_IFELSE([AC_LANG_SOURCE([
   ])],
   [
     AC_DEFINE([HAVE_VISIBILITY_ATTRIBUTE], [1], [Define if the visibility attribute is supported.])
-    AC_MSG_RESULT(yes)
+    AC_MSG_RESULT([yes])
   ],
   [
-    AC_MSG_RESULT(no)
+    AC_MSG_RESULT([no])
     if test x$use_reduce_exports = xyes; then
       AC_MSG_ERROR([Cannot find a working visibility attribute. Use --disable-reduce-exports.])
     fi
@@ -842,26 +842,26 @@ if test "x$use_thread_local" = xyes || { test "x$use_thread_local" = xauto && te
           dnl mingw32's implementation of thread_local has also been shown to behave
           dnl erroneously under concurrent usage; see:
           dnl https://gist.github.com/jamesob/fe9a872051a88b2025b1aa37bfa98605
-          AC_MSG_RESULT(no)
+          AC_MSG_RESULT([no])
           ;;
         *darwin*)
           dnl TODO enable thread_local on later versions of Darwin where it is
           dnl supported (per https://stackoverflow.com/a/29929949)
-          AC_MSG_RESULT(no)
+          AC_MSG_RESULT([no])
           ;;
         *freebsd*)
           dnl FreeBSD's implementation of thread_local is also buggy (per
           dnl https://groups.google.com/d/msg/bsdmailinglist/22ncTZAbDp4/Dii_pII5AwAJ)
-          AC_MSG_RESULT(no)
+          AC_MSG_RESULT([no])
           ;;
         *)
           AC_DEFINE([HAVE_THREAD_LOCAL], [1], [Define if thread_local is supported.])
-          AC_MSG_RESULT(yes)
+          AC_MSG_RESULT([yes])
           ;;
       esac
     ],
     [
-      AC_MSG_RESULT(no)
+      AC_MSG_RESULT([no])
     ]
   )
   LDFLAGS="$TEMP_LDFLAGS"
@@ -872,13 +872,13 @@ dnl fail if neither are available.
 AC_MSG_CHECKING([for gmtime_r])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ctime>]],
   [[ gmtime_r((const time_t *) nullptr, (struct tm *) nullptr); ]])],
-  [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GMTIME_R], [1], [Define this symbol if gmtime_r is available]) ],
-  [ AC_MSG_RESULT(no);
+  [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GMTIME_R], [1], [Define this symbol if gmtime_r is available]) ],
+  [ AC_MSG_RESULT([no]);
     AC_MSG_CHECKING([for gmtime_s]);
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ctime>]],
        [[ gmtime_s((struct tm *) nullptr, (const time_t *) nullptr); ]])],
-       [ AC_MSG_RESULT(yes)],
-       [ AC_MSG_RESULT(no); AC_MSG_ERROR(Both gmtime_r and gmtime_s are unavailable) ]
+       [ AC_MSG_RESULT([yes])],
+       [ AC_MSG_RESULT([no]); AC_MSG_ERROR([Both gmtime_r and gmtime_s are unavailable]) ]
     )
   ]
 )
@@ -889,23 +889,23 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>
   #include <sys/syscall.h>
   #include <linux/random.h>]],
  [[ syscall(SYS_getrandom, nullptr, 32, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYS_GETRANDOM], [1], [Define this symbol if the Linux getrandom system call is available]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_SYS_GETRANDOM], [1], [Define this symbol if the Linux getrandom system call is available]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 AC_MSG_CHECKING([for getentropy])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>]],
  [[ getentropy(nullptr, 32) ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GETENTROPY], [1], [Define this symbol if the BSD getentropy system call is available]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETENTROPY], [1], [Define this symbol if the BSD getentropy system call is available]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 AC_MSG_CHECKING([for getentropy via random.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>
  #include <sys/random.h>]],
  [[ getentropy(nullptr, 32) ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GETENTROPY_RAND], [1], [Define this symbol if the BSD getentropy system call is available with sys/random.h]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETENTROPY_RAND], [1], [Define this symbol if the BSD getentropy system call is available with sys/random.h]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 AC_MSG_CHECKING([for sysctl])
@@ -916,8 +916,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
     #error "Don't use sysctl on Linux, it's deprecated even when it works"
     #endif
     sysctl(name, 2, nullptr, nullptr, nullptr, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYSCTL], [1], [Define this symbol if the BSD sysctl() is available]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_SYSCTL], [1], [Define this symbol if the BSD sysctl() is available]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 AC_MSG_CHECKING([for sysctl KERN_ARND])
@@ -925,30 +925,30 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
   #include <sys/sysctl.h>]],
  [[ static const int name[2] = {CTL_KERN, KERN_ARND};
     sysctl(name, 2, nullptr, nullptr, nullptr, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYSCTL_ARND], [1], [Define this symbol if the BSD sysctl(KERN_ARND) is available]) ],
- [ AC_MSG_RESULT(no)]
+ [ AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_SYSCTL_ARND], [1], [Define this symbol if the BSD sysctl(KERN_ARND) is available]) ],
+ [ AC_MSG_RESULT([no])]
 )
 
 dnl LevelDB platform checks
 AC_MSG_CHECKING([for fdatasync])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>]],
  [[ fdatasync(0); ]])],
- [ AC_MSG_RESULT(yes); HAVE_FDATASYNC=1 ],
- [ AC_MSG_RESULT(no); HAVE_FDATASYNC=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_FDATASYNC=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_FDATASYNC=0 ]
 )
 
 AC_MSG_CHECKING([for F_FULLFSYNC])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <fcntl.h>]],
  [[ fcntl(0, F_FULLFSYNC, 0); ]])],
- [ AC_MSG_RESULT(yes); HAVE_FULLFSYNC=1 ],
- [ AC_MSG_RESULT(no); HAVE_FULLFSYNC=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_FULLFSYNC=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_FULLFSYNC=0 ]
 )
 
 AC_MSG_CHECKING([for O_CLOEXEC])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <fcntl.h>]],
  [[ open("", O_CLOEXEC); ]])],
- [ AC_MSG_RESULT(yes); HAVE_O_CLOEXEC=1 ],
- [ AC_MSG_RESULT(no); HAVE_O_CLOEXEC=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_O_CLOEXEC=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_O_CLOEXEC=0 ]
 )
 
 dnl crc32c platform checks
@@ -958,8 +958,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[
   const char* address = &data;
   __builtin_prefetch(address, 0, 0);
   ]])],
- [ AC_MSG_RESULT(yes); HAVE_BUILTIN_PREFETCH=1 ],
- [ AC_MSG_RESULT(no); HAVE_BUILTIN_PREFETCH=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_BUILTIN_PREFETCH=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_BUILTIN_PREFETCH=0 ]
 )
 
 AC_MSG_CHECKING([for _mm_prefetch])
@@ -968,8 +968,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <xmmintrin.h>]], [[
   const char* address = &data;
   _mm_prefetch(address, _MM_HINT_NTA);
   ]])],
- [ AC_MSG_RESULT(yes); HAVE_MM_PREFETCH=1 ],
- [ AC_MSG_RESULT(no); HAVE_MM_PREFETCH=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_MM_PREFETCH=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_MM_PREFETCH=0 ]
 )
 
 AC_MSG_CHECKING([for strong getauxval support in the system headers])
@@ -980,8 +980,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   ]], [[
     getauxval(AT_HWCAP);
   ]])],
- [ AC_MSG_RESULT(yes); HAVE_STRONG_GETAUXVAL=1 ],
- [ AC_MSG_RESULT(no); HAVE_STRONG_GETAUXVAL=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_STRONG_GETAUXVAL=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_STRONG_GETAUXVAL=0 ]
 )
 
 AC_MSG_CHECKING([for weak getauxval support in the compiler])
@@ -991,8 +991,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   ]], [[
     getauxval(AT_HWCAP);
   ]])],
- [ AC_MSG_RESULT(yes); HAVE_WEAK_GETAUXVAL=1 ],
- [ AC_MSG_RESULT(no); HAVE_WEAK_GETAUXVAL=0 ]
+ [ AC_MSG_RESULT([yes]); HAVE_WEAK_GETAUXVAL=1 ],
+ [ AC_MSG_RESULT([no]); HAVE_WEAK_GETAUXVAL=0 ]
 )
 
 dnl Check for reduced exports
@@ -1011,7 +1011,7 @@ AC_SUBST(LIBMEMENV)
 
 dnl enable-fuzz should disable all other targets
 if test "x$enable_fuzz" = "xyes"; then
-  AC_MSG_WARN(enable-fuzz will disable other targets)
+  AC_MSG_WARN([enable-fuzz will disable other targets])
   build_bitcoin_utils=no
   build_bitcoin_cli=no
   build_bitcoin_tx=no
@@ -1057,9 +1057,9 @@ if test x$have_miniupnpc != xno; then
       #  error miniUPnPc API version is too old
       #endif
     ]])],[
-      AC_MSG_RESULT(yes)
+      AC_MSG_RESULT([yes])
     ],[
-    AC_MSG_RESULT(no)
+    AC_MSG_RESULT([no])
     AC_MSG_WARN([miniUPnPc API version < 10 is unsupported, disabling UPnP support.])
     have_miniupnpc=no
   ])
@@ -1087,7 +1087,7 @@ define(MINIMUM_REQUIRED_BOOST, 1.57.0)
 dnl Check for boost libs
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
 if test x$want_boost = xno; then
-    AC_MSG_ERROR([[only libbitcoinconsensus can be built without boost]])
+    AC_MSG_ERROR([only libbitcoinconsensus can be built without boost])
 fi
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
@@ -1108,7 +1108,7 @@ fi
 if test x$use_tests = xyes; then
 
   if test x$HEXDUMP = x; then
-    AC_MSG_ERROR(hexdump is required for tests)
+    AC_MSG_ERROR([hexdump is required for tests])
   fi
 
   use_custom_params=no
@@ -1133,9 +1133,9 @@ if test x$use_tests = xyes; then
         #include <boost/test/unit_test.hpp>
 
        ])],
-    [AC_MSG_RESULT(yes)]
+    [AC_MSG_RESULT([yes])]
     [TESTDEFS="$TESTDEFS -DBOOST_TEST_DYN_LINK"],
-    [AC_MSG_RESULT(no)])
+    [AC_MSG_RESULT([no])])
   LIBS="$TEMP_LIBS"
   CPPFLAGS="$TEMP_CPPFLAGS"
 
@@ -1157,11 +1157,11 @@ if test x$use_pkgconfig = xyes; then
       fi
 
       if test x$build_bitcoin_utils$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
-        PKG_CHECK_MODULES([EVENT], [libevent],, [AC_MSG_ERROR(libevent not found.)])
+        PKG_CHECK_MODULES([EVENT], [libevent],, [AC_MSG_ERROR([libevent not found.])])
         if test x$TARGET_OS != xwindows; then
-          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads],, [AC_MSG_ERROR(libevent_pthreads not found.)])
+          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads],, [AC_MSG_ERROR([libevent_pthreads not found.])])
         fi
-        PKG_CHECK_MODULES([SODIUM], [libsodium],, [AC_MSG_ERROR(libsodium not found.)])
+        PKG_CHECK_MODULES([SODIUM], [libsodium],, [AC_MSG_ERROR([libsodium not found.])])
       fi
 
       if test "x$use_zmq" = "xyes"; then
@@ -1178,13 +1178,13 @@ if test x$use_pkgconfig = xyes; then
 else
 
   if test x$build_bitcoin_utils$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
-    AC_CHECK_HEADER([event2/event.h],, AC_MSG_ERROR(libevent headers missing),)
-    AC_CHECK_LIB([event],[main],EVENT_LIBS=-levent,AC_MSG_ERROR(libevent missing))
+    AC_CHECK_HEADER([event2/event.h],, AC_MSG_ERROR([libevent headers missing]),)
+    AC_CHECK_LIB([event],[main],EVENT_LIBS=-levent,AC_MSG_ERROR([libevent missing]))
     if test x$TARGET_OS != xwindows; then
-      AC_CHECK_LIB([event_pthreads],[main],EVENT_PTHREADS_LIBS=-levent_pthreads,AC_MSG_ERROR(libevent_pthreads missing))
+      AC_CHECK_LIB([event_pthreads],[main],EVENT_PTHREADS_LIBS=-levent_pthreads,AC_MSG_ERROR([libevent_pthreads missing]))
     fi
-    AC_CHECK_HEADER([sodium/core.h],, AC_MSG_ERROR(libsodium headers missing),)
-    AC_CHECK_LIB([sodium],[main],SODIUM_LIBS=-lsodium,AC_MSG_ERROR(libsodium missing))
+    AC_CHECK_HEADER([sodium/core.h],, AC_MSG_ERROR([libsodium headers missing]),)
+    AC_CHECK_LIB([sodium],[main],SODIUM_LIBS=-lsodium,AC_MSG_ERROR([libsodium missing]))
   fi
 
   if test "x$use_zmq" = "xyes"; then
@@ -1295,11 +1295,11 @@ LIBZCASH_LIBS="$BOOST_SYSTEM_LIB $SODIUM_LIBS $RUST_LIBS"
 
 AC_MSG_CHECKING([whether to build pivxd])
 AM_CONDITIONAL([BUILD_BITCOIND], [test x$build_bitcoind = xyes])
-AC_MSG_RESULT($build_bitcoind)
+AC_MSG_RESULT([$build_bitcoind])
 
 AC_MSG_CHECKING([whether to build utils (pivx-cli pivx-tx)])
 AM_CONDITIONAL([BUILD_BITCOIN_UTILS], [test x$build_bitcoin_utils = xyes])
-AC_MSG_RESULT($build_bitcoin_utils)
+AC_MSG_RESULT([$build_bitcoin_utils])
 
 AC_MSG_CHECKING([whether to build libraries])
 AM_CONDITIONAL([BUILD_BITCOIN_LIBS], [test x$build_bitcoin_libs = xyes])
@@ -1307,7 +1307,7 @@ if test x$build_bitcoin_libs = xyes; then
   AC_DEFINE([HAVE_CONSENSUS_LIB], [1], [Define this symbol if the consensus lib has been built])
   AC_CONFIG_FILES([libbitcoinconsensus.pc:libbitcoinconsensus.pc.in])
 fi
-AC_MSG_RESULT($build_bitcoin_libs)
+AC_MSG_RESULT([$build_bitcoin_libs])
 
 AC_LANG_POP
 
@@ -1324,7 +1324,7 @@ if test "x$use_ccache" != "xno"; then
     CC="$ac_cv_path_CCACHE $CC"
     CXX="$ac_cv_path_CCACHE $CXX"
   fi
-  AC_MSG_RESULT($use_ccache)
+  AC_MSG_RESULT([$use_ccache])
 fi
 if test "x$use_ccache" = "xyes"; then
     AX_CHECK_PREPROC_FLAG([-Qunused-arguments], [CPPFLAGS="-Qunused-arguments $CPPFLAGS"])
@@ -1333,34 +1333,34 @@ fi
 dnl enable wallet
 AC_MSG_CHECKING([if wallet should be enabled])
 if test x$enable_wallet != xno; then
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT([yes])
   AC_DEFINE_UNQUOTED([ENABLE_WALLET], [1], [Define to 1 to enable wallet functions])
 
 else
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT([no])
 fi
 
 dnl enable mining RPC
 AC_MSG_CHECKING([if mining RPC commands should be enabled])
 if test x$enable_mining_rpc != xno; then
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT([yes])
   AC_DEFINE_UNQUOTED([ENABLE_MINING_RPC], [1], [Define to 1 to enable mining rpc commands])
 
 else
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT([no])
 fi
 
 dnl enable upnp support
 AC_MSG_CHECKING([whether to build with support for UPnP])
 if test x$have_miniupnpc = xno; then
   if test x$use_upnp = xyes; then
-     AC_MSG_ERROR("UPnP requested but cannot be built. Use --without-miniupnpc.")
+     AC_MSG_ERROR([UPnP requested but cannot be built. Use --without-miniupnpc.])
   fi
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT([no])
   use_upnp=no
 else
   if test x$use_upnp != xno; then
-    AC_MSG_RESULT(yes)
+    AC_MSG_RESULT([yes])
     AC_MSG_CHECKING([whether to build with UPnP enabled by default])
     use_upnp=yes
     upnp_setting=0
@@ -1368,13 +1368,13 @@ else
       use_upnp_default=yes
       upnp_setting=1
     fi
-    AC_MSG_RESULT($use_upnp_default)
+    AC_MSG_RESULT([$use_upnp_default])
     AC_DEFINE_UNQUOTED([USE_UPNP], [$upnp_setting], [UPnP support not compiled if undefined, otherwise value (0 or 1) determines default state])
     if test x$TARGET_OS = xwindows; then
       MINIUPNPC_CPPFLAGS="-DSTATICLIB -DMINIUPNP_STATICLIB"
     fi
   else
-    AC_MSG_RESULT(no)
+    AC_MSG_RESULT([no])
   fi
 fi
 
@@ -1396,7 +1396,7 @@ else
       use_natpmp_default=yes
       natpmp_setting=1
     fi
-    AC_MSG_RESULT($use_natpmp_default)
+    AC_MSG_RESULT([$use_natpmp_default])
     AC_DEFINE_UNQUOTED([USE_NATPMP], [$natpmp_setting], [NAT-PMP support not compiled if undefined, otherwise value (0 or 1) determines default state])
     if test x$TARGET_OS = xwindows; then
       NATPMP_CPPFLAGS="-DSTATICLIB -DNATPMP_STATICLIB"
@@ -1414,28 +1414,28 @@ if test x$bitcoin_enable_qt != xno; then
   if test x$bitcoin_enable_qt_dbus != xno; then
     AC_DEFINE([USE_DBUS], [1], [Define if dbus support should be compiled in])
   fi
-  AC_MSG_RESULT($bitcoin_enable_qt_dbus)
+  AC_MSG_RESULT([$bitcoin_enable_qt_dbus])
 
   dnl enable qtcharts support
   AC_MSG_CHECKING([whether to build GUI with support for qtcharts])
   if test x$have_qtcharts = xno; then
     if test x$use_qtcharts = xyes; then
-     AC_MSG_ERROR("QTCharts support requested but cannot be built. use --without-qtcharts")
+     AC_MSG_ERROR([QTCharts support requested but cannot be built. use --without-qtcharts])
     fi
     use_qtcharts=no
-    AC_MSG_RESULT(no)
+    AC_MSG_RESULT([no])
   else
     if test x$use_qtcharts != xno; then
-      AC_MSG_RESULT(yes)
+      AC_MSG_RESULT([yes])
       AC_DEFINE([USE_QTCHARTS], [1], [Define if QTCHARTS support should be compiled in])
       use_qtcharts=yes
     else
-      AC_MSG_RESULT(no)
+      AC_MSG_RESULT([no])
     fi
   fi
 
   if test x$XGETTEXT = x; then
-    AC_MSG_WARN("xgettext is required to update qt translations")
+    AC_MSG_WARN([xgettext is required to update qt translations])
   fi
 
   AC_MSG_CHECKING([whether to build test_pivx-qt])
