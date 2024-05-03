@@ -692,7 +692,7 @@ if test x$use_glibc_compat != xno; then
   AX_CHECK_LINK_FLAG([-Wl,--wrap=__divmoddi4], [COMPAT_LDFLAGS="$COMPAT_LDFLAGS -Wl,--wrap=__divmoddi4"])
   AX_CHECK_LINK_FLAG([-Wl,--wrap=log2f], [COMPAT_LDFLAGS="$COMPAT_LDFLAGS -Wl,--wrap=log2f"])
 else
-  AC_SEARCH_LIBS([clock_gettime],[rt])
+  AC_SEARCH_LIBS([clock_gettime], [rt])
 fi
 
 if test "x$enable_gprof" = xyes; then
