@@ -238,7 +238,7 @@ AC_ARG_ENABLE([asm],
   [use_asm=yes])
 
 if test "x$use_asm" = xyes; then
-  AC_DEFINE(USE_ASM, 1, [Define this symbol to build in assembly routines])
+  AC_DEFINE([USE_ASM], [1], [Define this symbol to build in assembly routines])
 fi
 
 AC_ARG_WITH([system-univalue],
@@ -418,7 +418,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m128i l = _mm_set1_epi32(0);
     return _mm_extract_epi32(l, 3);
   ]])],
- [ AC_MSG_RESULT(yes); enable_sse41=yes; AC_DEFINE(ENABLE_SSE41, 1, [Define this symbol to build code that uses SSE4.1 intrinsics]) ],
+ [ AC_MSG_RESULT(yes); enable_sse41=yes; AC_DEFINE([ENABLE_SSE41], [1], [Define this symbol to build code that uses SSE4.1 intrinsics]) ],
  [ AC_MSG_RESULT(no)]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
@@ -433,7 +433,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m256i l = _mm256_set1_epi32(0);
     return _mm256_extract_epi32(l, 7);
   ]])],
- [ AC_MSG_RESULT(yes); enable_avx2=yes; AC_DEFINE(ENABLE_AVX2, 1, [Define this symbol to build code that uses AVX2 intrinsics]) ],
+ [ AC_MSG_RESULT(yes); enable_avx2=yes; AC_DEFINE([ENABLE_AVX2], [1], [Define this symbol to build code that uses AVX2 intrinsics]) ],
  [ AC_MSG_RESULT(no)]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
@@ -450,7 +450,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     __m128i k = _mm_set1_epi32(2);
     return _mm_extract_epi32(_mm_sha256rnds2_epu32(i, i, k), 0);
   ]])],
- [ AC_MSG_RESULT(yes); enable_shani=yes; AC_DEFINE(ENABLE_SHANI, 1, [Define this symbol to build code that uses SHA-NI intrinsics]) ],
+ [ AC_MSG_RESULT(yes); enable_shani=yes; AC_DEFINE([ENABLE_SHANI], [1], [Define this symbol to build code that uses SHA-NI intrinsics]) ],
  [ AC_MSG_RESULT(no)]
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
@@ -649,7 +649,7 @@ if test x$use_lcov = xyes; then
     [AC_MSG_ERROR("lcov testing requested but --coverage linker flag does not work")])
   AX_CHECK_COMPILE_FLAG([--coverage], [CXXFLAGS="$CXXFLAGS --coverage"],
     [AC_MSG_ERROR("lcov testing requested but --coverage flag does not work")])
-  AC_DEFINE(USE_COVERAGE, 1, [Define this symbol if coverage is enabled])
+  AC_DEFINE([USE_COVERAGE], [1], [Define this symbol if coverage is enabled])
   CXXFLAGS="$CXXFLAGS -Og"
 fi
 
@@ -778,7 +778,7 @@ dnl Check for MSG_NOSIGNAL
 AC_MSG_CHECKING([for MSG_NOSIGNAL])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/socket.h>]],
  [[ int f = MSG_NOSIGNAL; ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_MSG_NOSIGNAL, 1,[Define this symbol if you have MSG_NOSIGNAL]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Define this symbol if you have MSG_NOSIGNAL]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -786,7 +786,7 @@ dnl Check for MSG_DONTWAIT
 AC_MSG_CHECKING([for MSG_DONTWAIT])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/socket.h>]],
  [[ int f = MSG_DONTWAIT; ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_MSG_DONTWAIT, 1,[Define this symbol if you have MSG_DONTWAIT]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MSG_DONTWAIT], [1], [Define this symbol if you have MSG_DONTWAIT]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -794,7 +794,7 @@ dnl Check for malloc_info (for memory statistics information in getmemoryinfo)
 AC_MSG_CHECKING([for getmemoryinfo])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <malloc.h>]],
  [[ int f = malloc_info(0, NULL); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_MALLOC_INFO, 1,[Define this symbol if you have malloc_info]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MALLOC_INFO], [1], [Define this symbol if you have malloc_info]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -802,7 +802,7 @@ dnl Check for mallopt(M_ARENA_MAX) (to set glibc arenas)
 AC_MSG_CHECKING([for mallopt M_ARENA_MAX])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <malloc.h>]],
  [[ mallopt(M_ARENA_MAX, 1); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_MALLOPT_ARENA_MAX, 1,[Define this symbol if you have mallopt with M_ARENA_MAX]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_MALLOPT_ARENA_MAX], [1], [Define this symbol if you have mallopt with M_ARENA_MAX]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -812,7 +812,7 @@ AC_LINK_IFELSE([AC_LANG_SOURCE([
   int main(){}
   ])],
   [
-    AC_DEFINE(HAVE_VISIBILITY_ATTRIBUTE,1,[Define if the visibility attribute is supported.])
+    AC_DEFINE([HAVE_VISIBILITY_ATTRIBUTE], [1], [Define if the visibility attribute is supported.])
     AC_MSG_RESULT(yes)
   ],
   [
@@ -855,7 +855,7 @@ if test "x$use_thread_local" = xyes || { test "x$use_thread_local" = xauto && te
           AC_MSG_RESULT(no)
           ;;
         *)
-          AC_DEFINE(HAVE_THREAD_LOCAL,1,[Define if thread_local is supported.])
+          AC_DEFINE([HAVE_THREAD_LOCAL], [1], [Define if thread_local is supported.])
           AC_MSG_RESULT(yes)
           ;;
       esac
@@ -872,7 +872,7 @@ dnl fail if neither are available.
 AC_MSG_CHECKING([for gmtime_r])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ctime>]],
   [[ gmtime_r((const time_t *) nullptr, (struct tm *) nullptr); ]])],
-  [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_GMTIME_R, 1, [Define this symbol if gmtime_r is available]) ],
+  [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GMTIME_R], [1], [Define this symbol if gmtime_r is available]) ],
   [ AC_MSG_RESULT(no);
     AC_MSG_CHECKING([for gmtime_s]);
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ctime>]],
@@ -889,14 +889,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>
   #include <sys/syscall.h>
   #include <linux/random.h>]],
  [[ syscall(SYS_getrandom, nullptr, 32, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYS_GETRANDOM, 1,[Define this symbol if the Linux getrandom system call is available]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYS_GETRANDOM], [1], [Define this symbol if the Linux getrandom system call is available]) ],
  [ AC_MSG_RESULT(no)]
 )
 
 AC_MSG_CHECKING([for getentropy])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>]],
  [[ getentropy(nullptr, 32) ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_GETENTROPY, 1,[Define this symbol if the BSD getentropy system call is available]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GETENTROPY], [1], [Define this symbol if the BSD getentropy system call is available]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -904,7 +904,7 @@ AC_MSG_CHECKING([for getentropy via random.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <unistd.h>
  #include <sys/random.h>]],
  [[ getentropy(nullptr, 32) ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_GETENTROPY_RAND, 1,[Define this symbol if the BSD getentropy system call is available with sys/random.h]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_GETENTROPY_RAND], [1], [Define this symbol if the BSD getentropy system call is available with sys/random.h]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -916,7 +916,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
     #error "Don't use sysctl on Linux, it's deprecated even when it works"
     #endif
     sysctl(name, 2, nullptr, nullptr, nullptr, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCTL, 1,[Define this symbol if the BSD sysctl() is available]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYSCTL], [1], [Define this symbol if the BSD sysctl() is available]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -925,7 +925,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
   #include <sys/sysctl.h>]],
  [[ static const int name[2] = {CTL_KERN, KERN_ARND};
     sysctl(name, 2, nullptr, nullptr, nullptr, 0); ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCTL_ARND, 1,[Define this symbol if the BSD sysctl(KERN_ARND) is available]) ],
+ [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_SYSCTL_ARND], [1], [Define this symbol if the BSD sysctl(KERN_ARND) is available]) ],
  [ AC_MSG_RESULT(no)]
 )
 
@@ -1113,7 +1113,7 @@ if test x$use_tests = xyes; then
 
   use_custom_params=no
   if test x$params_path != x; then
-    AC_DEFINE([USE_CUSTOM_PARAMS],[1],[Define if using a custom zk params path])
+    AC_DEFINE([USE_CUSTOM_PARAMS], [1], [Define if using a custom zk params path])
     use_custom_params=yes
   fi
 
@@ -1166,12 +1166,12 @@ if test x$use_pkgconfig = xyes; then
 
       if test "x$use_zmq" = "xyes"; then
         PKG_CHECK_MODULES([ZMQ],[libzmq >= 4],
-          [AC_DEFINE([ENABLE_ZMQ],[1],[Define to 1 to enable ZMQ functions])],
-          [AC_DEFINE([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])
+          [AC_DEFINE([ENABLE_ZMQ], [1], [Define to 1 to enable ZMQ functions])],
+          [AC_DEFINE([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])
            AC_MSG_WARN([libzmq version 4.x or greater not found, disabling])
            use_zmq=no])
       else
-          AC_DEFINE_UNQUOTED([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])
+          AC_DEFINE_UNQUOTED([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])
       fi
     ]
   )
@@ -1189,16 +1189,16 @@ else
 
   if test "x$use_zmq" = "xyes"; then
      AC_CHECK_HEADER([zmq.h],
-       [AC_DEFINE([ENABLE_ZMQ],[1],[Define to 1 to enable ZMQ functions])],
+       [AC_DEFINE([ENABLE_ZMQ], [1], [Define to 1 to enable ZMQ functions])],
        [AC_MSG_WARN([zmq.h not found, disabling zmq support])
         use_zmq=no
-        AC_DEFINE([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])])
+        AC_DEFINE([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])])
      AC_CHECK_LIB([zmq],[zmq_ctx_shutdown],ZMQ_LIBS=-lzmq,
        [AC_MSG_WARN([libzmq >= 4.0 not found, disabling zmq support])
         use_zmq=no
-        AC_DEFINE([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])])
+        AC_DEFINE([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])])
   else
-    AC_DEFINE_UNQUOTED([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])
+    AC_DEFINE_UNQUOTED([ENABLE_ZMQ], [0], [Define to 1 to enable ZMQ functions])
   fi
 
   if test "x$use_zmq" = "xyes"; then
@@ -1304,7 +1304,7 @@ AC_MSG_RESULT($build_bitcoin_utils)
 AC_MSG_CHECKING([whether to build libraries])
 AM_CONDITIONAL([BUILD_BITCOIN_LIBS], [test x$build_bitcoin_libs = xyes])
 if test x$build_bitcoin_libs = xyes; then
-  AC_DEFINE(HAVE_CONSENSUS_LIB, 1, [Define this symbol if the consensus lib has been built])
+  AC_DEFINE([HAVE_CONSENSUS_LIB], [1], [Define this symbol if the consensus lib has been built])
   AC_CONFIG_FILES([libbitcoinconsensus.pc:libbitcoinconsensus.pc.in])
 fi
 AC_MSG_RESULT($build_bitcoin_libs)
@@ -1334,7 +1334,7 @@ dnl enable wallet
 AC_MSG_CHECKING([if wallet should be enabled])
 if test x$enable_wallet != xno; then
   AC_MSG_RESULT(yes)
-  AC_DEFINE_UNQUOTED([ENABLE_WALLET],[1],[Define to 1 to enable wallet functions])
+  AC_DEFINE_UNQUOTED([ENABLE_WALLET], [1], [Define to 1 to enable wallet functions])
 
 else
   AC_MSG_RESULT(no)
@@ -1344,7 +1344,7 @@ dnl enable mining RPC
 AC_MSG_CHECKING([if mining RPC commands should be enabled])
 if test x$enable_mining_rpc != xno; then
   AC_MSG_RESULT(yes)
-  AC_DEFINE_UNQUOTED([ENABLE_MINING_RPC],[1],[Define to 1 to enable mining rpc commands])
+  AC_DEFINE_UNQUOTED([ENABLE_MINING_RPC], [1], [Define to 1 to enable mining rpc commands])
 
 else
   AC_MSG_RESULT(no)
@@ -1369,7 +1369,7 @@ else
       upnp_setting=1
     fi
     AC_MSG_RESULT($use_upnp_default)
-    AC_DEFINE_UNQUOTED([USE_UPNP],[$upnp_setting],[UPnP support not compiled if undefined, otherwise value (0 or 1) determines default state])
+    AC_DEFINE_UNQUOTED([USE_UPNP], [$upnp_setting], [UPnP support not compiled if undefined, otherwise value (0 or 1) determines default state])
     if test x$TARGET_OS = xwindows; then
       MINIUPNPC_CPPFLAGS="-DSTATICLIB -DMINIUPNP_STATICLIB"
     fi
@@ -1412,7 +1412,7 @@ if test x$bitcoin_enable_qt != xno; then
   dnl enable dbus support
   AC_MSG_CHECKING([whether to build GUI with support for D-Bus])
   if test x$bitcoin_enable_qt_dbus != xno; then
-    AC_DEFINE([USE_DBUS],[1],[Define if dbus support should be compiled in])
+    AC_DEFINE([USE_DBUS], [1], [Define if dbus support should be compiled in])
   fi
   AC_MSG_RESULT($bitcoin_enable_qt_dbus)
 
@@ -1427,7 +1427,7 @@ if test x$bitcoin_enable_qt != xno; then
   else
     if test x$use_qtcharts != xno; then
       AC_MSG_RESULT(yes)
-      AC_DEFINE([USE_QTCHARTS],[1],[Define if QTCHARTS support should be compiled in])
+      AC_DEFINE([USE_QTCHARTS], [1], [Define if QTCHARTS support should be compiled in])
       use_qtcharts=yes
     else
       AC_MSG_RESULT(no)
@@ -1492,13 +1492,13 @@ AM_CONDITIONAL([ENABLE_ARM_CRC],[test x$enable_arm_crc = xyes])
 AM_CONDITIONAL([USE_ASM],[test x$use_asm = xyes])
 AM_CONDITIONAL([WORDS_BIGENDIAN],[test x$ac_cv_c_bigendian = xyes])
 
-AC_DEFINE(CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MAJOR, [Major version])
-AC_DEFINE(CLIENT_VERSION_MINOR, _CLIENT_VERSION_MINOR, [Minor version])
-AC_DEFINE(CLIENT_VERSION_REVISION, _CLIENT_VERSION_REVISION, [Build revision])
-AC_DEFINE(CLIENT_VERSION_BUILD, _CLIENT_VERSION_BUILD, [Version Build])
-AC_DEFINE(CLIENT_VERSION_IS_RELEASE, _CLIENT_VERSION_IS_RELEASE, [Version is release])
-AC_DEFINE(COPYRIGHT_YEAR, _COPYRIGHT_YEAR, [Version is release])
-AC_DEFINE_UNQUOTED(PARAMS_DIR, ["$params_path"], [Path to the zk params dir during unit tests on windows])
+AC_DEFINE([CLIENT_VERSION_MAJOR], [_CLIENT_VERSION_MAJOR], [Major version])
+AC_DEFINE([CLIENT_VERSION_MINOR], [_CLIENT_VERSION_MINOR], [Minor version])
+AC_DEFINE([CLIENT_VERSION_REVISION], [_CLIENT_VERSION_REVISION], [Build revision])
+AC_DEFINE([CLIENT_VERSION_BUILD], [_CLIENT_VERSION_BUILD], [Version Build])
+AC_DEFINE([CLIENT_VERSION_IS_RELEASE], [_CLIENT_VERSION_IS_RELEASE], [Version is release])
+AC_DEFINE([COPYRIGHT_YEAR], [_COPYRIGHT_YEAR], [Version is release])
+AC_DEFINE_UNQUOTED([PARAMS_DIR], ["$params_path"], [Path to the zk params dir during unit tests on windows])
 AC_SUBST(CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MAJOR)
 AC_SUBST(CLIENT_VERSION_MINOR, _CLIENT_VERSION_MINOR)
 AC_SUBST(CLIENT_VERSION_REVISION, _CLIENT_VERSION_REVISION)
