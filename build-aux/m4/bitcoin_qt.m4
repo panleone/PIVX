@@ -445,10 +445,10 @@ AC_DEFUN([_BITCOIN_QT_FIND_LIBS_WITHOUT_PKGCONFIG],[
     fi
   ])
 
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtPlugin],,BITCOIN_QT_FAIL([QtCore headers missing]))])
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QApplication],, BITCOIN_QT_FAIL([QtGui headers missing]))])
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QLocalSocket],, BITCOIN_QT_FAIL([QtNetwork headers missing]))])
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtConcurrent],, BITCOIN_QT_FAIL([QtConcurrent headers missing]))])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtPlugin], [], [BITCOIN_QT_FAIL([QtCore headers missing])])])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QApplication], [], [BITCOIN_QT_FAIL([QtGui headers missing])])])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QLocalSocket], [], [BITCOIN_QT_FAIL([QtNetwork headers missing])])])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtConcurrent], [], [BITCOIN_QT_FAIL([QtConcurrent headers missing])])])
 
   BITCOIN_QT_CHECK([
     if test "x$bitcoin_qt_want_version" = xauto; then
@@ -493,7 +493,7 @@ AC_DEFUN([_BITCOIN_QT_FIND_LIBS_WITHOUT_PKGCONFIG],[
       LIBS="-L$qt_lib_path"
     fi
     AC_CHECK_LIB([${QT_LIB_PREFIX}Svg], [main], [], [BITCOIN_QT_FAIL(lib${QT_LIB_PREFIX}Svg not found)])
-    AC_CHECK_HEADER([QtSvg],, BITCOIN_QT_FAIL(lib${QT_LIB_PREFIX}Svg not found))
+    AC_CHECK_HEADER([QtSvg], [], [BITCOIN_QT_FAIL(lib${QT_LIB_PREFIX}Svg not found)])
     QT_LIBS="$QT_LIBS $LIBS"
     QT_SVG_LIBS="$LIBS"
     LIBS=
@@ -501,7 +501,7 @@ AC_DEFUN([_BITCOIN_QT_FIND_LIBS_WITHOUT_PKGCONFIG],[
       LIBS="-L$qt_lib_path"
     fi
     AC_CHECK_LIB([${QT_LIB_PREFIX}Test], [main], [], [have_qt_test=no])
-    AC_CHECK_HEADER([QTest],, have_qt_test=no)
+    AC_CHECK_HEADER([QTest], [], [have_qt_test=no])
     QT_TEST_LIBS="$LIBS"
     if test "x$use_dbus" != xno; then
       LIBS=
@@ -509,7 +509,7 @@ AC_DEFUN([_BITCOIN_QT_FIND_LIBS_WITHOUT_PKGCONFIG],[
         LIBS="-L$qt_lib_path"
       fi
       AC_CHECK_LIB([${QT_LIB_PREFIX}DBus], [main], [], [have_qt_dbus=no])
-      AC_CHECK_HEADER([QtDBus],, have_qt_dbus=no)
+      AC_CHECK_HEADER([QtDBus], [], [have_qt_dbus=no])
       QT_DBUS_LIBS="$LIBS"
     fi
   ])

@@ -1178,12 +1178,12 @@ if test x$use_pkgconfig = xyes; then
 else
 
   if test x$build_bitcoin_utils$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
-    AC_CHECK_HEADER([event2/event.h],, AC_MSG_ERROR([libevent headers missing]),)
+    AC_CHECK_HEADER([event2/event.h], [], [AC_MSG_ERROR([libevent headers missing])])
     AC_CHECK_LIB([event], [main], [EVENT_LIBS=-levent], [AC_MSG_ERROR([libevent missing])])
     if test x$TARGET_OS != xwindows; then
       AC_CHECK_LIB([event_pthreads], [main], [EVENT_PTHREADS_LIBS=-levent_pthreads], [AC_MSG_ERROR([libevent_pthreads missing])])
     fi
-    AC_CHECK_HEADER([sodium/core.h],, AC_MSG_ERROR([libsodium headers missing]),)
+    AC_CHECK_HEADER([sodium/core.h], [], [AC_MSG_ERROR([libsodium headers missing])])
     AC_CHECK_LIB([sodium], [main], [SODIUM_LIBS=-lsodium], [AC_MSG_ERROR([libsodium missing])])
   fi
 
@@ -1211,10 +1211,10 @@ else
   fi
 
   BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main], [QR_LIBS=-lqrencode], [BITCOIN_QT_FAIL(libqrencode not found)])])
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h],, BITCOIN_QT_FAIL(libqrencode not found))])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h], [], [BITCOIN_QT_FAIL(libqrencode not found)])])
   if test x$use_qtcharts != xno; then
     BITCOIN_QT_CHECK([AC_CHECK_LIB([Qt5Charts], [main], [CHARTS_LIBS=-lQt5Charts], [have_qtcharts=no])])
-    BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtCharts/qchartview.h],, have_qtcharts=no)])
+    BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtCharts/qchartview.h], [], [have_qtcharts=no])])
   fi
 fi
 
