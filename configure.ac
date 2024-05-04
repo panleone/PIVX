@@ -109,14 +109,14 @@ AC_ARG_ENABLE([online-rust],
 AM_CONDITIONAL([ENABLE_ONLINE_RUST], [test "$enable_online_rust" != no])
 
 AC_ARG_WITH([params-dir],
-  AS_HELP_STRING([--with-params-dir=PARAMS_DIR],
-  [specify zk params path]),
+  [AS_HELP_STRING([--with-params-dir=PARAMS_DIR],
+  [specify zk params path])],
   [
   if test -d "$withval"
   then
-          params_path="$withval"
+    params_path="$withval"
   else
-          AC_MSG_ERROR([--with-params-dir expected directory name])
+    AC_MSG_ERROR([--with-params-dir expected directory name])
   fi
   ],
   [params_path=""])
@@ -273,9 +273,9 @@ AC_ARG_ENABLE([debug],
 
 dnl Enable different -fsanitize options
 AC_ARG_WITH([sanitizers],
-    [AS_HELP_STRING([--with-sanitizers],
-                    [comma separated list of extra sanitizers to build with (default is none enabled)])],
-    [use_sanitizers=$withval])
+  [AS_HELP_STRING([--with-sanitizers],
+  [comma separated list of extra sanitizers to build with (default is none enabled)])],
+  [use_sanitizers=$withval])
 
 dnl Enable gprof profiling
 AC_ARG_ENABLE([gprof],
