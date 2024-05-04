@@ -1156,7 +1156,7 @@ if test x$use_pkgconfig = xyes; then
   m4_ifdef(
     [PKG_CHECK_MODULES],
     [
-      BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode], [], [BITCOIN_QT_FAIL(libqrencode not found)])])
+      BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode], [], [BITCOIN_QT_FAIL([libqrencode not found])])])
       if test x$use_qtcharts != xno; then
         BITCOIN_QT_CHECK([PKG_CHECK_MODULES([CHARTS], [Qt5Charts], [have_qtcharts=yes], [have_qtcharts=no])])
       fi
@@ -1215,8 +1215,8 @@ else
     esac
   fi
 
-  BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main], [QR_LIBS=-lqrencode], [BITCOIN_QT_FAIL(libqrencode not found)])])
-  BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h], [], [BITCOIN_QT_FAIL(libqrencode not found)])])
+  BITCOIN_QT_CHECK([AC_CHECK_LIB([qrencode], [main], [QR_LIBS=-lqrencode], [BITCOIN_QT_FAIL([libqrencode not found])])])
+  BITCOIN_QT_CHECK([AC_CHECK_HEADER([qrencode.h], [], [BITCOIN_QT_FAIL([libqrencode not found])])])
   if test x$use_qtcharts != xno; then
     BITCOIN_QT_CHECK([AC_CHECK_LIB([Qt5Charts], [main], [CHARTS_LIBS=-lQt5Charts], [have_qtcharts=no])])
     BITCOIN_QT_CHECK([AC_CHECK_HEADER([QtCharts/qchartview.h], [], [have_qtcharts=no])])
