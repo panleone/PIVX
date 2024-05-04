@@ -157,31 +157,35 @@ AC_ARG_ENABLE([natpmp-default],
   [use_natpmp_default=$enableval],
   [use_natpmp_default=no])
 
-AC_ARG_ENABLE(tests,
-    AS_HELP_STRING([--disable-tests],[do not compile tests (default is to compile)]),
-    [use_tests=$enableval],
-    [use_tests=yes])
+AC_ARG_ENABLE([tests],
+  [AS_HELP_STRING([--disable-tests],
+  [do not compile tests (default is to compile)])],
+  [use_tests=$enableval],
+  [use_tests=yes])
 
-AC_ARG_ENABLE(gui-tests,
-    AS_HELP_STRING([--disable-gui-tests],[do not compile GUI tests (default is to compile if GUI and tests enabled)]),
-    [use_gui_tests=$enableval],
-    [use_gui_tests=$use_tests])
+AC_ARG_ENABLE([gui-tests],
+  [AS_HELP_STRING([--disable-gui-tests],
+  [do not compile GUI tests (default is to compile if GUI and tests enabled)])],
+  [use_gui_tests=$enableval],
+  [use_gui_tests=$use_tests])
 
-AC_ARG_ENABLE(bench,
-    AS_HELP_STRING([--disable-bench],[do not compile benchmarks (default is to compile)]),
-    [use_bench=$enableval],
-    [use_bench=yes])
+AC_ARG_ENABLE([bench],
+  [AS_HELP_STRING([--disable-bench],
+  [do not compile benchmarks (default is to compile)])],
+  [use_bench=$enableval],
+  [use_bench=yes])
 
 AC_ARG_ENABLE([extended-functional-tests],
-    AS_HELP_STRING([--enable-extended-functional-tests],[enable expensive functional tests when using lcov (default no)]),
-    [use_extended_functional_tests=$enableval],
-    [use_extended_functional_tests=no])
+  [AS_HELP_STRING([--enable-extended-functional-tests],
+  [enable expensive functional tests when using lcov (default no)])],
+  [use_extended_functional_tests=$enableval],
+  [use_extended_functional_tests=no])
 
 AC_ARG_ENABLE([fuzz],
-    AS_HELP_STRING([--enable-fuzz],
-    [enable building of fuzz targets (default no). enabling this will disable all other targets]),
-    [enable_fuzz=$enableval],
-    [enable_fuzz=no])
+  [AS_HELP_STRING([--enable-fuzz],
+  [enable building of fuzz targets (default no). enabling this will disable all other targets])],
+  [enable_fuzz=$enableval],
+  [enable_fuzz=no])
 
 AC_ARG_WITH([qtcharts],
   [AS_HELP_STRING([--with-qtcharts],
@@ -253,18 +257,19 @@ AC_ARG_ENABLE([zmq],
   [use_zmq=$enableval],
   [use_zmq=yes])
 
-AC_ARG_ENABLE(man,
-    [AS_HELP_STRING([--disable-man],
-                    [do not install man pages (default is to install)])],,
-    enable_man=yes)
+AC_ARG_ENABLE([man],
+  [AS_HELP_STRING([--disable-man],
+  [do not install man pages (default is to install)])],
+  [enable_man=$enableval],
+  [enable_man=yes])
 AM_CONDITIONAL([ENABLE_MAN], [test "$enable_man" != no])
 
 dnl Enable debug
 AC_ARG_ENABLE([debug],
-    [AS_HELP_STRING([--enable-debug],
-                    [use debug compiler flags and macros (default is no)])],
-    [enable_debug=$enableval],
-    [enable_debug=no])
+  [AS_HELP_STRING([--enable-debug],
+  [use debug compiler flags and macros (default is no)])],
+  [enable_debug=$enableval],
+  [enable_debug=no])
 
 dnl Enable different -fsanitize options
 AC_ARG_WITH([sanitizers],
@@ -274,17 +279,17 @@ AC_ARG_WITH([sanitizers],
 
 dnl Enable gprof profiling
 AC_ARG_ENABLE([gprof],
-    [AS_HELP_STRING([--enable-gprof],
-                    [use gprof profiling compiler flags (default is no)])],
-    [enable_gprof=$enableval],
-    [enable_gprof=no])
+  [AS_HELP_STRING([--enable-gprof],
+  [use gprof profiling compiler flags (default is no)])],
+  [enable_gprof=$enableval],
+  [enable_gprof=no])
 
 dnl Turn warnings into errors
 AC_ARG_ENABLE([werror],
-    [AS_HELP_STRING([--enable-werror],
-                    [Treat certain compiler warnings as errors (default is no)])],
-    [enable_werror=$enableval],
-    [enable_werror=no])
+  [AS_HELP_STRING([--enable-werror],
+  [Treat certain compiler warnings as errors (default is no)])],
+  [enable_werror=$enableval],
+  [enable_werror=no])
 
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-Werror], [CXXFLAG_WERROR="-Werror"], [CXXFLAG_WERROR=""])
