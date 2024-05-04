@@ -1151,17 +1151,17 @@ if test x$use_pkgconfig = xyes; then
   m4_ifdef(
     [PKG_CHECK_MODULES],
     [
-      BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode],,[BITCOIN_QT_FAIL(libqrencode not found)])])
+      BITCOIN_QT_CHECK([PKG_CHECK_MODULES([QR], [libqrencode], [], [BITCOIN_QT_FAIL(libqrencode not found)])])
       if test x$use_qtcharts != xno; then
-        BITCOIN_QT_CHECK([PKG_CHECK_MODULES([CHARTS], [Qt5Charts],[have_qtcharts=yes], [have_qtcharts=no])])
+        BITCOIN_QT_CHECK([PKG_CHECK_MODULES([CHARTS], [Qt5Charts], [have_qtcharts=yes], [have_qtcharts=no])])
       fi
 
       if test x$build_bitcoin_utils$build_bitcoind$bitcoin_enable_qt$use_tests != xnononono; then
-        PKG_CHECK_MODULES([EVENT], [libevent],, [AC_MSG_ERROR([libevent not found.])])
+        PKG_CHECK_MODULES([EVENT], [libevent], [], [AC_MSG_ERROR([libevent not found.])])
         if test x$TARGET_OS != xwindows; then
-          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads],, [AC_MSG_ERROR([libevent_pthreads not found.])])
+          PKG_CHECK_MODULES([EVENT_PTHREADS], [libevent_pthreads], [], [AC_MSG_ERROR([libevent_pthreads not found.])])
         fi
-        PKG_CHECK_MODULES([SODIUM], [libsodium],, [AC_MSG_ERROR([libsodium not found.])])
+        PKG_CHECK_MODULES([SODIUM], [libsodium], [], [AC_MSG_ERROR([libsodium not found.])])
       fi
 
       if test "x$use_zmq" = "xyes"; then
@@ -1239,7 +1239,7 @@ if test x$system_univalue != xno ; then
     m4_ifdef(
       [PKG_CHECK_MODULES],
       [
-        PKG_CHECK_MODULES([UNIVALUE],[libunivalue >= 1.0.4],[found_univalue=yes],[true])
+        PKG_CHECK_MODULES([UNIVALUE],[libunivalue >= 1.0.4], [found_univalue=yes], [true])
       ]
     )
   else
