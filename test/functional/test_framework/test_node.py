@@ -79,7 +79,7 @@ class TestNode():
             "-debugexclude=libevent",
             "-debugexclude=leveldb",
             "-mocktime=" + str(mocktime),
-            "-uacomment=testnode%d" % i
+            "-uacomment=testnode%d" % i, # required for subversion uniqueness across peers
         ]
 
         self.cli = TestNodeCLI(os.getenv("BITCOINCLI", "pivx-cli"), self.datadir)
