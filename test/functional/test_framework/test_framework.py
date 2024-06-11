@@ -353,11 +353,6 @@ class PivxTestFramework():
         def find_conn(node, peer_subversion, inbound):
             return next(filter(lambda peer: peer['subver'] == peer_subversion and peer['inbound'] == inbound, node.getpeerinfo()), None)
 
-        # poll until version handshake complete to avoid race conditions
-        # with transaction relaying
-        # See comments in net_processing:
-        # * Must have a version message before anything else
-        # * Must have a verack message before anything else
         wait_until(lambda: find_conn(from_connection, to_connection_subver, inbound=False) is not None)
         wait_until(lambda: find_conn(to_connection, from_connection_subver, inbound=True) is not None)
 
@@ -365,11 +360,12 @@ class PivxTestFramework():
             assert peer is not None, "Error: peer disconnected"
             return peer['bytesrecv_per_msg'].pop(msg_type, 0) >= min_bytes_recv
 
-        wait_until(lambda: check_bytesrecv(find_conn(from_connection, to_connection_subver, inbound=False), 'verack', 21))
-        wait_until(lambda: check_bytesrecv(find_conn(to_connection, from_connection_subver, inbound=True), 'verack', 21))
-
-        # The message bytes are counted before processing the message, so make
-        # sure it was fully processed by waiting for a ping.
+        # Poll until version handshake (fSuccessfullyConnected) is complete to
+        # avoid race conditions, because some message types are blocked from
+        # being sent or received before fSuccessfullyConnected.
+        #
+        # As the flag fSuccessfullyConnected is not exposed, check it by
+        # waiting for a pong, which can only happen after the flag was set.
         wait_until(lambda: check_bytesrecv(find_conn(from_connection, to_connection_subver, inbound=False), 'pong', 29))
         wait_until(lambda: check_bytesrecv(find_conn(to_connection, from_connection_subver, inbound=True), 'pong', 29))
 
