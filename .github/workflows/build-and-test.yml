@@ -151,8 +151,8 @@ jobs:
                 export LDFLAGS="-L/opt/homebrew/opt/boost@1.76/lib"
                 export CPPFLAGS="-I/opt/homebrew/opt/boost@1.76/include"
               else
-                export CPPFLAGS="-I/usr/local/opt/boost@1.76/include"
-                export LDFLAGS="-L/usr/local/opt/boost@1.76/lib"
+                export CPPFLAGS="-I/usr/local/opt/boost@1.76/include -I/usr/local/opt/berkeley-db@4/include"
+                export LDFLAGS="-L/usr/local/opt/boost@1.76/lib -L/usr/local/opt/berkeley-db@4/lib"
               fi
             fi
           fi
@@ -258,6 +258,11 @@ jobs:
             CXX=${{ matrix.config.cxx }}
             export CC
             export CXX
+          fi
+
+          if [ "${{ matrix.config.os }}" = "macos-12" ]; then
+            export CPPFLAGS="-I/usr/local/opt/boost@1.76/include -I/usr/local/opt/berkeley-db@4/include"
+            export LDFLAGS="-L/usr/local/opt/boost@1.76/lib -L/usr/local/opt/berkeley-db@4/lib"
           fi
 
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
