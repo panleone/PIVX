@@ -441,7 +441,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Environment
-        run: sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
 
       - name: depends cache files
         uses: actions/cache@v4
@@ -563,7 +565,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Environment
-        run: sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
 
       - name: depends cache files
         if: matrix.config.no_depends != 1
