@@ -108,7 +108,7 @@ jobs:
           - name: macOS
             os: macos-12
             python-version: '3.8'
-            packages: llvm@13 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust
+            packages: llvm@13 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium
             boost_root: true
             cc: $(brew --prefix llvm@13)/bin/clang
             cxx: $(brew --prefix llvm@13)/bin/clang++
@@ -116,7 +116,7 @@ jobs:
           - name: macOS-latest
             os: macos-14
             python-version: '3.10'
-            packages: llvm@14 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust
+            packages: llvm@14 autoconf automake berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium
             boost_root: true
             cc: $(brew --prefix llvm@14)/bin/clang
             cxx: $(brew --prefix llvm@14)/bin/clang++
@@ -221,7 +221,7 @@ jobs:
             id: macOS-nodepends
             os: macos-12
             python-version: '3.8'
-            packages: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust librsvg
+            packages: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium librsvg
             unit_tests: true
             functional_tests: true
             cc: clang
@@ -232,7 +232,7 @@ jobs:
             id: macOS-nodepends-latest
             os: macos-14
             python-version: '3.10'
-            packages: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium rust librsvg
+            packages: autoconf automake ccache berkeley-db@4 libtool boost@1.76 miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium librsvg
             unit_tests: true
             functional_tests: true
             goal: deploy
