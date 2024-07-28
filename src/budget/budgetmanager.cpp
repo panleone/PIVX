@@ -165,6 +165,11 @@ uint256 CBudgetManager::SubmitFinalBudget()
             LogPrint(BCLog::MNBUDGET,"%s: Wallet not found\n", __func__);
             return UINT256_ZERO;
         }
+        // Exit if wallet is locked
+        if (vpwallets[0]->IsLocked()) {
+            LogPrint(BCLog::MNBUDGET, "%s: Wallet is locked, can't make collateral transaction.\n", __func__);
+            return UINT256_ZERO;
+        }
         CReserveKey keyChange(vpwallets[0]);
         if (!vpwallets[0]->CreateBudgetFeeTX(wtx, budgetHash, keyChange, BUDGET_FEE_TX)) {
             LogPrint(BCLog::MNBUDGET,"%s: Can't make collateral transaction\n", __func__);
