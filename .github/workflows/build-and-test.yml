@@ -133,6 +133,7 @@ jobs:
       - name: Setup Environment
         run: |
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
+            sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
           fi
           if [[ ${{ matrix.config.os }} = macos* ]]; then
@@ -258,6 +259,7 @@ jobs:
       - name: Setup Environment
         run: |
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
+            sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
           fi
           if [[ ${{ matrix.config.os }} = macos* ]]; then
@@ -406,6 +408,7 @@ jobs:
       - name: Setup Environment
         run: |
           if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
+            sudo apt-get update
             sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
           fi
           if [[ ${{ matrix.config.os }} = macos* ]]; then
@@ -787,6 +790,7 @@ jobs:
         run: |
           if [[ ${{ matrix.config.packages }} != None ]]; then
             if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
+              sudo apt-get update
               sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
             fi
             if [[ ${{ matrix.config.os }} = macos* ]]; then
