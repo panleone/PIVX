@@ -99,7 +99,7 @@ jobs:
             cxx: g++
 
           - name: Linux-latest
-            os: ubuntu-latest
+            os: ubuntu-22.04
             python-version: '3.8'
             packages: python3-zmq qttools5-dev qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
             cc: gcc
@@ -216,7 +216,7 @@ jobs:
 
           - name: x64-Linux-latest
             id: Linux-x86_64-nodepends-latest
-            os: ubuntu-latest
+            os: ubuntu-22.04
             python-version: '3.8'
             packages: python3-zmq qtbase5-dev qttools5-dev-tools libqt5svg5-dev libqt5charts5-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev cargo
             unit_tests: true
@@ -383,7 +383,7 @@ jobs:
 
           - name: x64-Linux-latest
             id: Linux-x86_64-nodepends-latest-tests
-            os: ubuntu-latest
+            os: ubuntu-22.04
             python-version: '3.8'
             packages: python3-zmq libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb5.3++-dev libminiupnpc-dev libnatpmp-dev libzmq3-dev libqrencode-dev libgmp-dev libsodium-dev
 
