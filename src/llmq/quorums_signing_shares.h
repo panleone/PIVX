@@ -126,7 +126,7 @@ public:
     CSigSharesInv ToInv() const;
 };
 
-template<typename T>
+template <typename T>
 class SigShareMap
 {
 private:
@@ -235,13 +235,13 @@ public:
         internalMap.erase(signHash);
     }
 
-    template<typename F>
+    template <typename F>
     void EraseIf(F&& f)
     {
-        for (auto it = internalMap.begin(); it != internalMap.end(); ) {
+        for (auto it = internalMap.begin(); it != internalMap.end();) {
             SigShareKey k;
             k.first = it->first;
-            for (auto jt = it->second.begin(); jt != it->second.end(); ) {
+            for (auto jt = it->second.begin(); jt != it->second.end();) {
                 k.second = jt->first;
                 if (f(k, jt->second)) {
                     jt = it->second.erase(jt);
@@ -257,7 +257,7 @@ public:
         }
     }
 
-    template<typename F>
+    template <typename F>
     void ForEach(F&& f)
     {
         for (auto& p : internalMap) {
@@ -359,14 +359,14 @@ private:
     bool PreVerifyBatchedSigShares(NodeId nodeId, const CBatchedSigShares& batchedSigShares, bool& retBan);
 
     void CollectPendingSigSharesToVerify(size_t maxUniqueSessions,
-            std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares,
-            std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums);
+        std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares,
+        std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums);
     bool ProcessPendingSigShares(CConnman& connman);
 
     void ProcessPendingSigSharesFromNode(NodeId nodeId,
-            const std::vector<CSigShare>& sigShares,
-            const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& quorums,
-            CConnman& connman);
+        const std::vector<CSigShare>& sigShares,
+        const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& quorums,
+        CConnman& connman);
 
     void ProcessSigShare(NodeId nodeId, const CSigShare& sigShare, CConnman& connman, const CQuorumCPtr& quorum);
     void TryRecoverSig(const CQuorumCPtr& quorum, const uint256& id, const uint256& msgHash, CConnman& connman);

@@ -378,9 +378,9 @@ bool CSigSharesManager::PreVerifyBatchedSigShares(NodeId nodeId, const CBatchedS
 }
 
 void CSigSharesManager::CollectPendingSigSharesToVerify(
-        size_t maxUniqueSessions,
-        std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares,
-        std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums)
+    size_t maxUniqueSessions,
+    std::unordered_map<NodeId, std::vector<CSigShare>>& retSigShares,
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums)
 {
     {
         LOCK(cs);
@@ -510,9 +510,9 @@ bool CSigSharesManager::ProcessPendingSigShares(CConnman& connman)
 
 // It's ensured that no duplicates are passed to this method
 void CSigSharesManager::ProcessPendingSigSharesFromNode(NodeId nodeId,
-        const std::vector<CSigShare>& sigShares,
-        const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& quorums,
-        CConnman& connman)
+    const std::vector<CSigShare>& sigShares,
+    const std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& quorums,
+    CConnman& connman)
 {
     auto& nodeState = nodeStates[nodeId];
 
@@ -616,8 +616,8 @@ void CSigSharesManager::TryRecoverSig(const CQuorumCPtr& quorum, const uint256& 
             return;
         }
 
-        sigSharesForRecovery.reserve((size_t) quorum->params.threshold);
-        idsForRecovery.reserve((size_t) quorum->params.threshold);
+        sigSharesForRecovery.reserve((size_t)quorum->params.threshold);
+        idsForRecovery.reserve((size_t)quorum->params.threshold);
         for (auto it = sigShares->begin(); it != sigShares->end() && sigSharesForRecovery.size() < quorum->params.threshold; ++it) {
             auto& sigShare = it->second;
             sigSharesForRecovery.emplace_back(sigShare.sigShare.Get());
@@ -710,7 +710,7 @@ void CSigSharesManager::CollectSigSharesToRequest(std::unordered_map<NodeId, std
                 if (!session.announced.inv[i]) {
                     continue;
                 }
-                auto k = std::make_pair(signHash, (uint16_t) i);
+                auto k = std::make_pair(signHash, (uint16_t)i);
                 if (sigShares.Has(k)) {
                     // we already have it
                     session.announced.inv[i] = false;
@@ -985,7 +985,7 @@ void CSigSharesManager::Cleanup()
 
                 auto& oneSigShare = m->begin()->second;
                 LogPrintf("CSigSharesManager::%s -- signing session timed out. signHash=%s, id=%s, msgHash=%s, sigShareCount=%d\n", __func__,
-                          signHash.ToString(), oneSigShare.id.ToString(), oneSigShare.msgHash.ToString(), count);
+                    signHash.ToString(), oneSigShare.id.ToString(), oneSigShare.msgHash.ToString(), count);
             } else {
                 LogPrintf("CSigSharesManager::%s -- signing session timed out. signHash=%s, sigShareCount=%d\n", __func__,
                     signHash.ToString(), count);
@@ -994,7 +994,7 @@ void CSigSharesManager::Cleanup()
         }
 
         sigShares.ForEach([&](const SigShareKey& k, const CSigShare& sigShare) {
-            quorumsToCheck.emplace((Consensus::LLMQType) sigShare.llmqType, sigShare.quorumHash);
+            quorumsToCheck.emplace((Consensus::LLMQType)sigShare.llmqType, sigShare.quorumHash);
         });
     }
 
@@ -1123,7 +1123,7 @@ void CSigSharesManager::WorkThreadMain()
         quorumSigningManager->Cleanup();
 
         // TODO Wakeup when pending signing is needed?
-        if(!didWork) {
+        if (!didWork) {
             if (!interruptSigningShare.sleep_for(std::chrono::milliseconds(100))) {
                 return;
             }
