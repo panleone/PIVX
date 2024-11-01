@@ -115,7 +115,7 @@ jobs:
 
           - name: macOS-latest
             os: macos-14
-            python-version: '3.10'
+            python-version: '3.12'
             packages: llvm@14 autoconf automake berkeley-db@4 libtool boost miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium
             boost_root: true
             cc: $(brew --prefix llvm@14)/bin/clang
@@ -239,7 +239,7 @@ jobs:
           - name: arm64-macOS-latest
             id: macOS-nodepends-latest
             os: macos-14
-            python-version: '3.10'
+            python-version: '3.12'
             packages: autoconf automake ccache berkeley-db@4 libtool boost miniupnpc libnatpmp pkg-config qt@5 zmq libevent qrencode gmp libsodium librsvg
             unit_tests: true
             functional_tests: true
@@ -392,7 +392,7 @@ jobs:
           - name: arm64-macOS-latest
             id: macOS-nodepends-latest
             os: macos-14
-            python-version: '3.10'
+            python-version: '3.12'
             packages: berkeley-db@4 boost miniupnpc libnatpmp pkg-config zmq libevent qrencode gmp libsodium
 
     steps:
