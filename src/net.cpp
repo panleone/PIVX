@@ -1434,13 +1434,8 @@ void CConnman::SocketHandler()
     //
     // Service each socket
     //
-    std::vector<CNode*> vNodesCopy;
-    {
-        LOCK(cs_vNodes);
-        vNodesCopy = vNodes;
-        for (CNode* pnode : vNodesCopy)
-            pnode->AddRef();
-    }
+    std::vector<CNode*> vNodesCopy = CopyNodeVector();
+
     for (CNode* pnode : vNodesCopy) {
         if (interruptNet)
             return;
@@ -1518,11 +1513,7 @@ void CConnman::SocketHandler()
 
         InactivityCheck(pnode);
     }
-    {
-        LOCK(cs_vNodes);
-        for (CNode* pnode : vNodesCopy)
-            pnode->Release();
-    }
+    ReleaseNodeVector(vNodesCopy);
 }
 
 void CConnman::ThreadSocketHandler()
@@ -1947,14 +1938,7 @@ void CConnman::ThreadMessageHandler()
     int64_t nLastSendMessagesTimeMasternodes = 0;
 
     while (!flagInterruptMsgProc) {
-        std::vector<CNode*> vNodesCopy;
-        {
-            LOCK(cs_vNodes);
-            vNodesCopy = vNodes;
-            for (CNode* pnode : vNodesCopy) {
-                pnode->AddRef();
-            }
-        }
+        std::vector<CNode*> vNodesCopy = CopyNodeVector();
 
         bool fMoreWork = false;
 
@@ -1986,11 +1970,7 @@ void CConnman::ThreadMessageHandler()
         }
 
 
-        {
-            LOCK(cs_vNodes);
-            for (CNode* pnode : vNodesCopy)
-                pnode->Release();
-        }
+        ReleaseNodeVector(vNodesCopy);
 
         std::unique_lock<std::mutex> lock(mutexMsgProc);
         if (!fMoreWork) {
