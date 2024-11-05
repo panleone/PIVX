@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <unordered_set>
 
 namespace llmq
 {
@@ -79,8 +80,23 @@ bool CRecoveredSigsDb::HasRecoveredSigForSession(const uint256& signHash)
 
 bool CRecoveredSigsDb::HasRecoveredSigForHash(const uint256& hash)
 {
+    int64_t t = GetTimeMillis();
+
+    {
+        LOCK(cs);
+        auto it = hasSigForHashCache.find(hash);
+        if (it != hasSigForHashCache.end()) {
+            it->second.second = t;
+            return it->second.first;
+        }
+    }
+
     auto k = std::make_tuple('h', hash);
-    return db.Exists(k);
+    bool ret = db.Exists(k);
+
+    LOCK(cs);
+    hasSigForHashCache.emplace(hash, std::make_pair(ret, t));
+    return ret;
 }
 
 bool CRecoveredSigsDb::ReadRecoveredSig(Consensus::LLMQType llmqType, const uint256& id, CRecoveredSig& ret)
@@ -152,13 +168,14 @@ void CRecoveredSigsDb::WriteRecoveredSig(const llmq::CRecoveredSig& recSig)
         LOCK(cs);
         hasSigForIdCache[std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id)] = std::make_pair(true, t);
         hasSigForSessionCache[signHash] = std::make_pair(true, t);
+        hasSigForHashCache[recSig.GetHash()] = std::make_pair(true, t);
     }
 }
 
-template<typename K>
-static void TruncateCacheMap(std::unordered_map<K, std::pair<bool, int64_t>>& m, size_t maxSize, size_t truncateThreshold)
+template <typename K, typename H>
+static void TruncateCacheMap(std::unordered_map<K, std::pair<bool, int64_t>, H>& m, size_t maxSize, size_t truncateThreshold)
 {
-    typedef typename std::unordered_map<K, std::pair<bool, int64_t>> Map;
+    typedef typename std::unordered_map<K, std::pair<bool, int64_t>, H> Map;
     typedef typename Map::iterator Iterator;
 
     if (m.size() <= truncateThreshold) {
@@ -237,10 +254,12 @@ void CRecoveredSigsDb::CleanupOldRecoveredSigs(int64_t maxAge)
 
             hasSigForIdCache.erase(std::make_pair((Consensus::LLMQType)recSig.llmqType, recSig.id));
             hasSigForSessionCache.erase(signHash);
+            hasSigForHashCache.erase(recSig.GetHash());
         }
 
         TruncateCacheMap(hasSigForIdCache, MAX_CACHE_SIZE, MAX_CACHE_TRUNCATE_THRESHOLD);
         TruncateCacheMap(hasSigForSessionCache, MAX_CACHE_SIZE, MAX_CACHE_TRUNCATE_THRESHOLD);
+        TruncateCacheMap(hasSigForHashCache, MAX_CACHE_SIZE, MAX_CACHE_TRUNCATE_THRESHOLD);
     }
 
     for (auto& e : toDelete2) {
@@ -355,8 +374,8 @@ bool CSigningManager::PreVerifyRecoveredSig(NodeId nodeId, const CRecoveredSig& 
 
 void CSigningManager::CollectPendingRecoveredSigsToVerify(
     size_t maxUniqueSessions,
-    std::map<NodeId, std::list<CRecoveredSig>>& retSigShares,
-    std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr>& retQuorums)
+    std::unordered_map<NodeId, std::list<CRecoveredSig>>& retSigShares,
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums)
 {
     {
         LOCK(cs);
@@ -364,9 +383,8 @@ void CSigningManager::CollectPendingRecoveredSigsToVerify(
             return;
         }
 
-        std::set<std::pair<NodeId, uint256>> uniqueSignHashes;
-        llmq::utils::IterateNodesRandom(
-            pendingRecoveredSigs, [&]() { return uniqueSignHashes.size() < maxUniqueSessions; }, [&](NodeId nodeId, std::list<CRecoveredSig>& ns) {
+        std::unordered_set<std::pair<NodeId, uint256>, StaticSaltedHasher> uniqueSignHashes;
+        llmq::utils::IterateNodesRandom(pendingRecoveredSigs, [&]() { return uniqueSignHashes.size() < maxUniqueSessions; }, [&](NodeId nodeId, std::list<CRecoveredSig>& ns) {
             if (ns.empty()) {
                 return false;
             }
@@ -419,8 +437,8 @@ void CSigningManager::CollectPendingRecoveredSigsToVerify(
 
 bool CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
 {
-    std::map<NodeId, std::list<CRecoveredSig>> recSigsByNode;
-    std::map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr> quorums;
+    std::unordered_map<NodeId, std::list<CRecoveredSig>> recSigsByNode;
+    std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher> quorums;
 
     CollectPendingRecoveredSigsToVerify(32, recSigsByNode, quorums);
     if (recSigsByNode.empty()) {
@@ -443,13 +461,13 @@ bool CSigningManager::ProcessPendingRecoveredSigs(CConnman& connman)
         }
     }
 
-    cxxtimer::Timer verifyTimer;
+    cxxtimer::Timer verifyTimer(true);
     batchVerifier.Verify();
     verifyTimer.stop();
 
     LogPrintf("llmq", "CSigningManager::%s -- verified recovered sig(s). count=%d, vt=%d, nodes=%d\n", __func__, verifyCount, verifyTimer.count(), recSigsByNode.size());
 
-    std::set<uint256> processed;
+    std::unordered_set<uint256, StaticSaltedHasher> processed;
     for (auto& p : recSigsByNode) {
         NodeId nodeId = p.first;
         auto& v = p.second;
@@ -494,11 +512,25 @@ void CSigningManager::ProcessRecoveredSig(NodeId nodeId, const CRecoveredSig& re
             signHash.ToString(), recoveredSig.id.ToString(), recoveredSig.msgHash.ToString(), nodeId);
 
         if (db.HasRecoveredSigForId(llmqType, recoveredSig.id)) {
-            // this should really not happen, as each masternode is participating in only one vote,
-            // even if it's a member of multiple quorums. so a majority is only possible on one quorum and one msgHash per id
-            LogPrintf("CSigningManager::%s -- conflicting recoveredSig for id=%s, msgHash=%s\n", __func__,
-                recoveredSig.id.ToString(), recoveredSig.msgHash.ToString());
-            return;
+            CRecoveredSig otherRecoveredSig;
+            if (db.GetRecoveredSigById(llmqType, recoveredSig.id, otherRecoveredSig)) {
+                auto otherSignHash = llmq::utils::BuildSignHash(recoveredSig);
+                if (signHash != otherSignHash) {
+                    // this should really not happen, as each masternode is participating in only one vote,
+                    // even if it's a member of multiple quorums. so a majority is only possible on one quorum and one msgHash per id
+                    LogPrintf("CSigningManager::%s -- conflicting recoveredSig for signHash=%s, id=%s, msgHash=%s, otherSignHash=%s\n", __func__,
+                        signHash.ToString(), recoveredSig.id.ToString(), recoveredSig.msgHash.ToString(), otherSignHash.ToString());
+                } else {
+                    // Looks like we're trying to process a recSig that is already known. This might happen if the same
+                    // recSig comes in through regular QRECSIG messages and at the same time through some other message
+                    // which allowed to reconstruct a recSig (e.g. IXLOCK). In this case, just bail out.
+                }
+                return;
+            } else {
+                // This case is very unlikely. It can only happen when cleanup caused this specific recSig to vanish
+                // between the HasRecoveredSigForId and GetRecoveredSigById call. If that happens, treat it as if we
+                // never had that recSig
+            }
         }
 
         db.WriteRecoveredSig(recoveredSig);
@@ -552,14 +584,19 @@ bool CSigningManager::AsyncSignIfMember(Consensus::LLMQType llmqType, const uint
         if (db.HasVotedOnId(llmqType, id)) {
             uint256 prevMsgHash;
             db.GetVoteForId(llmqType, id, prevMsgHash);
-            LogPrintf("CSigningManager::%s -- already voted for id=%s and msgHash=%s. Not voting on conflicting msgHash=%s\n", __func__,
-                id.ToString(), prevMsgHash.ToString(), msgHash.ToString());
+            if (msgHash != prevMsgHash) {
+                LogPrintf("CSigningManager::%s -- already voted for id=%s and msgHash=%s. Not voting on conflicting msgHash=%s\n", __func__,
+                    id.ToString(), prevMsgHash.ToString(), msgHash.ToString());
+            } else {
+                LogPrintf("CSigningManager::%s -- already voted for id=%s and msgHash=%s. Not voting again.\n", __func__,
+                    id.ToString(), prevMsgHash.ToString());
+            }
             return false;
         }
 
         if (db.HasRecoveredSigForId(llmqType, id)) {
             // no need to sign it if we already have a recovered sig
-            return false;
+            return true;
         }
         db.WriteVoteForId(llmqType, id, msgHash);
     }
