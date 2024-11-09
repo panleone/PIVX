@@ -280,6 +280,10 @@ public:
         post();
     };
 
+    std::vector<CNode*> CopyNodeVector(std::function<bool(const CNode* pnode)> cond);
+    std::vector<CNode*> CopyNodeVector();
+    void ReleaseNodeVector(const std::vector<CNode*>& vecNodes);
+
     // Clears AskFor requests for every known peer
     void RemoveAskFor(const uint256& invHash, int invType);
 

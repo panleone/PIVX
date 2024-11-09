@@ -80,11 +80,11 @@ class ChainLocksTest(PivxDMNTestFramework):
 
         # Keep node connected and let it try to reorg the chain
         good_tip = self.nodes[0].getbestblockhash()
-        self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         # Restart it so that it forgets all the chainlocks from the past
         self.stop_node(0)
         self.start_node(0, extra_args=self.extra_args[0])
         connect_nodes(self.nodes[0], 1)
+        self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         # Now try to reorg the chain
         self.nodes[0].generate(2)
         time.sleep(2)

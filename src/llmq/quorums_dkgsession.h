@@ -10,7 +10,6 @@
 #include "bls/bls_worker.h"
 #include "consensus/params.h"
 #include "evo/deterministicmns.h"
-#include "evo/evodb.h"
 #include "net.h"
 #include "llmq/quorums_utils.h"
 #include "logging.h"
@@ -237,7 +236,6 @@ class CDKGSession
 private:
     const Consensus::LLMQParams& params;
 
-    CEvoDB& evoDb;
     CBLSWorker& blsWorker;
     CBLSWorkerCache cache;
     CDKGSessionManager& dkgManager;
@@ -277,8 +275,8 @@ private:
     std::set<uint256> validCommitments;
 
 public:
-    CDKGSession(const Consensus::LLMQParams& _params, CEvoDB& _evoDb, CBLSWorker& _blsWorker, CDKGSessionManager& _dkgManager) :
-        params(_params), evoDb(_evoDb), blsWorker(_blsWorker), cache(_blsWorker), dkgManager(_dkgManager) {}
+    CDKGSession(const Consensus::LLMQParams& _params, CBLSWorker& _blsWorker, CDKGSessionManager& _dkgManager) :
+        params(_params), blsWorker(_blsWorker), cache(_blsWorker), dkgManager(_dkgManager) {}
 
     bool Init(const CBlockIndex* _pindexQuorum, const std::vector<CDeterministicMNCPtr>& mns, const uint256& _myProTxHash);
 

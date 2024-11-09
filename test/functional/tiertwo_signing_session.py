@@ -60,11 +60,11 @@ class SigningSessionTest(PivxDMNTestFramework):
         # At this point a recovery threshold signature should have been generated and propagated to the whole network
         # Let's generate some blocks to ensure that nodes are synced
         time.sleep(5)
-        for i in range(len(self.nodes)):
+        for i in [m.idx for m in members]:
             assert_equal(True, self.nodes[i].hasrecoverysignature(100, id, msgHash))
 
         # Moreover since we have a recovery signature we surely cannot sign a message with the same id
-        for i in range(len(self.nodes)):
+        for i in [m.idx for m in members]:
             assert_equal(False, self.nodes[i].hasrecoverysignature(100, id, msgHashConflict))
 
         self.log.info("Threshold signature successfully generated and propagated!")
@@ -93,7 +93,7 @@ class SigningSessionTest(PivxDMNTestFramework):
         # Since with this quorum type 2 nodes are enough to generate the threshold signature at the end every node MUST agree on (id, msgHash)
         # Let's wait a bit to sync all messages
         time.sleep(5)
-        for i in range(len(self.nodes)):
+        for i in [m.idx for m in members]:
             assert_equal(True, self.nodes[i].hasrecoverysignature(100, id, msgHash))
         self.log.info("Threshold signature successfully generated and propagated!")
 
@@ -102,7 +102,7 @@ class SigningSessionTest(PivxDMNTestFramework):
         self.mine_quorum()
         self.mine_quorum()
         time.sleep(5)
-        for i in range(len(self.nodes)):
+        for i in [m.idx for m in members]:
             assert_equal(True, self.nodes[i].hasrecoverysignature(100, id, msgHash))
         self.log.info("Threshold signature is still valid after the corresponding quorum went inactive!")
 

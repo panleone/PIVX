@@ -45,7 +45,7 @@ class CChainLocksHandler : public CRecoveredSigsListener
 private:
     CScheduler* scheduler;
     RecursiveMutex cs;
-    std::atomic<bool> inEnforceBestChainLock{false};
+    bool tryLockChainTipScheduled{false};
 
     uint256 bestChainLockHash;
     CChainLockSig bestChainLock;
@@ -75,6 +75,7 @@ public:
     void ProcessNewChainLock(NodeId from, const CChainLockSig& clsig, const uint256& hash);
     void AcceptedBlockHeader(const CBlockIndex* pindexNew);
     void UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork);
+    void TrySignChainTip();
     void EnforceBestChainLock();
     virtual void HandleNewRecoveredSig(const CRecoveredSig& recoveredSig);
 
@@ -86,7 +87,6 @@ private:
     bool InternalHasChainLock(int nHeight, const uint256& blockHash);
     bool InternalHasConflictingChainLock(int nHeight, const uint256& blockHash);
 
-    void ScheduleInvalidateBlock(const CBlockIndex* pindex);
     void DoInvalidateBlock(const CBlockIndex* pindex, bool activateBestChain);
 
     void Cleanup();

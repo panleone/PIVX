@@ -141,7 +141,7 @@ void CQuorum::StartCachePopulatorThread(std::shared_ptr<CQuorum> _this)
     }
 
     cxxtimer::Timer t(true);
-    LogPrintf("CQuorum::StartCachePopulatorThread -- start\n");
+    LogPrint(BCLog::LLMQ, "CQuorum::StartCachePopulatorThread -- start\n");
 
     // this thread will exit after some time
     // when then later some other thread tries to get keys, it will be much faster
@@ -151,7 +151,7 @@ void CQuorum::StartCachePopulatorThread(std::shared_ptr<CQuorum> _this)
                 _this->GetPubKeyShare(i);
             }
         }
-        LogPrintf("CQuorum::StartCachePopulatorThread -- done. time=%d\n", t.count());
+        LogPrint(BCLog::LLMQ, "CQuorum::StartCachePopulatorThread -- done. time=%d\n", t.count());
     });
 }
 
@@ -195,7 +195,7 @@ bool CQuorumManager::BuildQuorumFromCommitment(const CFinalCommitment& qc, const
             quorum->WriteContributions(evoDb);
             hasValidVvec = true;
         } else {
-            LogPrintf("CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed\n", __func__, qc.quorumHash.ToString());
+            LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- quorum.ReadContributions and BuildQuorumContributions for block %s failed\n", __func__, qc.quorumHash.ToString());
         }
     }
 
@@ -224,20 +224,20 @@ bool CQuorumManager::BuildQuorumContributions(const CFinalCommitment& fqc, std::
     cxxtimer::Timer t2(true);
     quorumVvec = blsWorker.BuildQuorumVerificationVector(vvecs);
     if (quorumVvec == nullptr) {
-        LogPrintf("CQuorumManager::%s -- failed to build quorumVvec\n", __func__);
+        LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- failed to build quorumVvec\n", __func__);
         // without the quorum vvec, there can't be a skShare, so we fail here. Failure is not fatal here, as it still
         // allows to use the quorum as a non-member (verification through the quorum pub key)
         return false;
     }
     skShare = blsWorker.AggregateSecretKeys(skContributions);
     if (!skShare.IsValid()) {
-        LogPrintf("CQuorumManager::%s -- failed to build skShare\n", __func__);
+        LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- failed to build skShare\n", __func__);
         // We don't bail out here as this is not a fatal error and still allows us to recover public key shares (as we
         // have a valid quorum vvec at this point)
     }
     t2.stop();
 
-    LogPrintf("CQuorumManager::%s -- built quorum vvec and skShare. time=%d\n", __func__, t2.count());
+    LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- built quorum vvec and skShare. time=%d\n", __func__, t2.count());
 
     quorum->quorumVvec = quorumVvec;
     quorum->skShare = skShare;

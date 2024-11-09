@@ -66,6 +66,7 @@ namespace BCLog {
         LLMQ        = (1 << 25),
         NET_MN      = (1 << 26),
         DKG         = (1 << 27),
+        CHAINLOCKS  = (1 << 28),
         ALL         = ~(uint32_t)0,
     };
 

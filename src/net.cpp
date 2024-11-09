@@ -1434,13 +1434,8 @@ void CConnman::SocketHandler()
     //
     // Service each socket
     //
-    std::vector<CNode*> vNodesCopy;
-    {
-        LOCK(cs_vNodes);
-        vNodesCopy = vNodes;
-        for (CNode* pnode : vNodesCopy)
-            pnode->AddRef();
-    }
+    std::vector<CNode*> vNodesCopy = CopyNodeVector();
+
     for (CNode* pnode : vNodesCopy) {
         if (interruptNet)
             return;
@@ -1518,11 +1513,7 @@ void CConnman::SocketHandler()
 
         InactivityCheck(pnode);
     }
-    {
-        LOCK(cs_vNodes);
-        for (CNode* pnode : vNodesCopy)
-            pnode->Release();
-    }
+    ReleaseNodeVector(vNodesCopy);
 }
 
 void CConnman::ThreadSocketHandler()
@@ -1947,14 +1938,7 @@ void CConnman::ThreadMessageHandler()
     int64_t nLastSendMessagesTimeMasternodes = 0;
 
     while (!flagInterruptMsgProc) {
-        std::vector<CNode*> vNodesCopy;
-        {
-            LOCK(cs_vNodes);
-            vNodesCopy = vNodes;
-            for (CNode* pnode : vNodesCopy) {
-                pnode->AddRef();
-            }
-        }
+        std::vector<CNode*> vNodesCopy = CopyNodeVector();
 
         bool fMoreWork = false;
 
@@ -1986,11 +1970,7 @@ void CConnman::ThreadMessageHandler()
         }
 
 
-        {
-            LOCK(cs_vNodes);
-            for (CNode* pnode : vNodesCopy)
-                pnode->Release();
-        }
+        ReleaseNodeVector(vNodesCopy);
 
         std::unique_lock<std::mutex> lock(mutexMsgProc);
         if (!fMoreWork) {
@@ -2789,6 +2769,33 @@ bool validateMasternodeIP(const std::string& addrStr)
 
 int64_t PoissonNextSend(int64_t nNow, int average_interval_seconds) {
     return nNow + (int64_t)(log1p(GetRand(1ULL << 48) * -0.0000000000000035527136788 /* -1/2^48 */) * average_interval_seconds * -1000000.0 + 0.5);
+}
+
+std::vector<CNode*> CConnman::CopyNodeVector(std::function<bool(const CNode* pnode)> cond)
+{
+    std::vector<CNode*> vecNodesCopy;
+    LOCK(cs_vNodes);
+    for (size_t i = 0; i < vNodes.size(); ++i) {
+        CNode* pnode = vNodes[i];
+        if (!cond(pnode))
+            continue;
+        pnode->AddRef();
+        vecNodesCopy.push_back(pnode);
+    }
+    return vecNodesCopy;
+}
+
+std::vector<CNode*> CConnman::CopyNodeVector()
+{
+    return CopyNodeVector(AllNodes);
+}
+
+void CConnman::ReleaseNodeVector(const std::vector<CNode*>& vecNodes)
+{
+    for (size_t i = 0; i < vecNodes.size(); ++i) {
+        CNode* pnode = vecNodes[i];
+        pnode->Release();
+    }
 }
 
 CSipHasher CConnman::GetDeterministicRandomizer(uint64_t id)

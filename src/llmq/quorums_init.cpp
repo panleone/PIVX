@@ -6,6 +6,7 @@
 #include "llmq/quorums_init.h"
 
 #include "bls/bls_worker.h"
+#include "dbwrapper.h"
 #include "llmq/quorums.h"
 #include "llmq/quorums_blockprocessor.h"
 #include "llmq/quorums_debug.h"
@@ -18,17 +19,19 @@ namespace llmq
 {
 
 CBLSWorker* blsWorker;
+CDBWrapper* llmqDb;
 
 void InitLLMQSystem(CEvoDB& evoDb, CScheduler* scheduler, bool unitTests)
 {
+    llmqDb = new CDBWrapper(unitTests ? "" : (GetDataDir() / "llmq"), 1 << 20, unitTests, false, CLIENT_VERSION | ADDRV2_FORMAT);
     blsWorker = new CBLSWorker();
 
     quorumDKGDebugManager.reset(new CDKGDebugManager());
     quorumBlockProcessor.reset(new CQuorumBlockProcessor(evoDb));
-    quorumDKGSessionManager.reset(new CDKGSessionManager(evoDb, *blsWorker));
+    quorumDKGSessionManager.reset(new CDKGSessionManager(*llmqDb, *blsWorker));
     quorumManager.reset(new CQuorumManager(evoDb, *blsWorker, *quorumDKGSessionManager));
     quorumSigSharesManager.reset(new CSigSharesManager());
-    quorumSigningManager.reset(new CSigningManager(unitTests));
+    quorumSigningManager.reset(new CSigningManager(*llmqDb, unitTests));
     chainLocksHandler.reset(new CChainLocksHandler(scheduler));
 }
 
@@ -43,6 +46,8 @@ void DestroyLLMQSystem()
     quorumManager.reset();
     delete blsWorker;
     blsWorker = nullptr;
+    delete llmqDb;
+    llmqDb = nullptr;
 }
 
 void StartLLMQSystem()
