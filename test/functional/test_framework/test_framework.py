@@ -374,7 +374,7 @@ class PivxTestFramework():
     def connect_nodes_clique(self, nodes):
         l = len(nodes)
         for a in range(l):
-            for b in range(a, l):
+            for b in range(a + 1, l):
                 self.connect_nodes(a, b)
                 self.connect_nodes(b, a)
 
