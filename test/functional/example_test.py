@@ -26,7 +26,6 @@ from test_framework.mininode import (
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
-    connect_nodes,
     wait_until,
 )
 
@@ -111,7 +110,7 @@ class ExampleTest(PivxTestFramework):
         # In this test, we're not connecting node2 to node0 or node1. Calls to
         # sync_all() should not include node2, since we're not expecting it to
         # sync.
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.sync_all(self.nodes[0:1])
 
     # Use setup_nodes() to customize the node start behaviour (for example if
@@ -182,7 +181,7 @@ class ExampleTest(PivxTestFramework):
         self.nodes[1].waitforblockheight(11)
 
         self.log.info("Connect node2 and node1")
-        connect_nodes(self.nodes[1], 2)
+        self.connect_nodes(1, 2)
 
         self.log.info("Add P2P connection to node2")
         self.nodes[0].disconnect_p2ps()

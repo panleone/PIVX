@@ -7,9 +7,6 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    connect_nodes,
-    connect_nodes_clique,
-    disconnect_nodes,
     set_node_times,
     DecimalAmt,
 )
@@ -28,7 +25,7 @@ class ReorgStakeTest(PivxTestFramework):
     def setup_network(self):
         # connect all nodes between each other
         self.setup_nodes()
-        connect_nodes_clique(self.nodes)
+        self.connect_nodes_clique(self.nodes)
         self.sync_all()
 
     def log_title(self):
@@ -42,7 +39,7 @@ class ReorgStakeTest(PivxTestFramework):
         for i in range(self.num_nodes):
             for j in range(self.num_nodes):
                 if j != i:
-                    disconnect_nodes(self.nodes[i], j)
+                    self.disconnect_nodes(i, j)
         self.log.info("Nodes disconnected")
 
     def get_tot_balance(self, nodeid):
@@ -109,7 +106,7 @@ class ReorgStakeTest(PivxTestFramework):
 
         # Connect with node 2 and sync
         self.log.info("Reconnecting node 0 and node 2")
-        connect_nodes(self.nodes[0], 2)
+        self.connect_nodes(0, 2)
         self.sync_blocks([self.nodes[i] for i in [0, 2]])
 
         # verify that the stakeinput can't be spent
@@ -140,7 +137,7 @@ class ReorgStakeTest(PivxTestFramework):
         new_best_hash = self.nodes[1].getbestblockhash()
         self.log.info("Connecting and syncing nodes...")
         set_node_times(self.nodes, self.mocktime)
-        connect_nodes_clique(self.nodes)
+        self.connect_nodes_clique(self.nodes)
         self.sync_blocks()
         for i in [0, 2]:
             assert_equal(self.nodes[i].getbestblockhash(), new_best_hash)

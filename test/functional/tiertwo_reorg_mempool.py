@@ -20,8 +20,6 @@ from test_framework.util import (
     assert_greater_than,
     assert_raises_rpc_error,
     create_new_dmn,
-    connect_nodes,
-    disconnect_nodes,
     get_collateral_vout,
 )
 
@@ -40,13 +38,13 @@ class TiertwoReorgMempoolTest(PivxTestFramework):
         self.connect_all()
 
     def connect_all(self):
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 0)
 
     def disconnect_all(self):
         self.log.info("Disconnecting nodes...")
-        disconnect_nodes(self.nodes[0], 1)
-        disconnect_nodes(self.nodes[1], 0)
+        self.disconnect_nodes(0, 1)
+        self.disconnect_nodes(1, 0)
         self.log.info("Nodes disconnected")
 
     def register_masternode(self, from_node, dmn, collateral_addr):

@@ -15,8 +15,6 @@ from test_framework.util import (
     assert_greater_than_or_equal,
     assert_greater_than,
     assert_raises_rpc_error,
-    connect_nodes,
-    disconnect_nodes,
     p2p_port,
     wait_until,
 )
@@ -28,8 +26,8 @@ class NetTest(PivxTestFramework):
 
     def run_test(self):
         self.log.info("Connect nodes both way")
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 0)
 
         self._test_connection_count()
         self._test_getnettotals()
@@ -69,13 +67,13 @@ class NetTest(PivxTestFramework):
     def _test_getnetworkinginfo(self):
         assert_equal(self.nodes[0].getnetworkinfo()['connections'], 2)
 
-        disconnect_nodes(self.nodes[0], 1)
+        self.disconnect_nodes(0, 1)
         # Wait a bit for all sockets to close
         wait_until(lambda: self.nodes[0].getnetworkinfo()['connections'] == 0, timeout=3)
 
         self.log.info("Connect nodes both way")
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 0)
         assert_equal(self.nodes[0].getnetworkinfo()['connections'], 2)
 
     def _test_getaddednodeinfo(self):

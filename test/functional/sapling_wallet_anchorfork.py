@@ -7,7 +7,7 @@
 from decimal import Decimal
 
 from test_framework.test_framework import PivxTestFramework
-from test_framework.util import assert_equal, connect_nodes, get_coinstake_address
+from test_framework.util import assert_equal, get_coinstake_address
 
 class WalletAnchorForkTest(PivxTestFramework):
 
@@ -61,7 +61,7 @@ class WalletAnchorForkTest(PivxTestFramework):
         self.start_node(0, self.extra_args[0])
         self.start_node(1, self.extra_args[1])
         self.start_node(2, self.extra_args[2])
-        connect_nodes(self.nodes[1], 2)
+        self.connect_nodes(1, 2)
 
         # Partition B, node 1 mines an empty block
         self.nodes[1].generate(1)
@@ -95,9 +95,9 @@ class WalletAnchorForkTest(PivxTestFramework):
 
         # Relaunch nodes and reconnect the entire network
         self.start_nodes()
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[2], 1)
-        connect_nodes(self.nodes[2], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(2, 1)
+        self.connect_nodes(2, 0)
 
         # Mine a new block and let it propagate
         self.nodes[1].generate(1)

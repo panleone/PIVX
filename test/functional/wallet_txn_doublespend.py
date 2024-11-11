@@ -7,7 +7,7 @@
 from decimal import Decimal
 
 from test_framework.test_framework import PivxTestFramework
-from test_framework.util import assert_equal, connect_nodes, disconnect_nodes, find_output
+from test_framework.util import assert_equal, find_output
 
 class TxnMallTest(PivxTestFramework):
     def set_test_params(self):
@@ -20,8 +20,8 @@ class TxnMallTest(PivxTestFramework):
     def setup_network(self):
         # Start with split network:
         super().setup_network()
-        disconnect_nodes(self.nodes[1], 2)
-        disconnect_nodes(self.nodes[2], 1)
+        self.disconnect_nodes(1, 2)
+        self.disconnect_nodes(2, 1)
 
     def run_test(self):
         # All nodes should start with 6,250 PIV:
@@ -102,10 +102,10 @@ class TxnMallTest(PivxTestFramework):
         self.nodes[2].generate(1)
 
         # Reconnect the split network, and sync chain:
-        connect_nodes(self.nodes[1], 2)
-        connect_nodes(self.nodes[0], 2)
-        connect_nodes(self.nodes[2], 0)
-        connect_nodes(self.nodes[2], 1)
+        self.connect_nodes(1, 2)
+        self.connect_nodes(0, 2)
+        self.connect_nodes(2, 0)
+        self.connect_nodes(2, 1)
         self.nodes[2].generate(1)  # Mine another block to make sure we sync
         self.sync_blocks()
         assert_equal(self.nodes[0].gettransaction(doublespend_txid)["confirmations"], 2)

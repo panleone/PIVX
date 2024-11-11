@@ -4,6 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Base class for RPC testing."""
 
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from io import BytesIO
 import logging
@@ -43,9 +44,6 @@ from .util import (
     assert_equal,
     assert_greater_than,
     check_json_precision,
-    connect_nodes,
-    connect_nodes_clique,
-    disconnect_nodes,
     get_collateral_vout,
     Decimal,
     DEFAULT_FEE,
@@ -251,7 +249,7 @@ class PivxTestFramework():
         # If further outbound connections are needed, they can be added at the beginning of the test with e.g.
         # connect_nodes(self.nodes[1], 2)
         for i in range(self.num_nodes - 1):
-            connect_nodes(self.nodes[i + 1], i)
+            self.connect_nodes(i + 1, i)
         self.sync_all()
 
     def setup_nodes(self):
@@ -343,12 +341,59 @@ class PivxTestFramework():
     def wait_for_node_exit(self, i, timeout):
         self.nodes[i].process.wait(timeout)
 
+    def connect_nodes(self, a, b):
+        def connect_nodes_helper(from_connection, node_num):
+            ip_port = "127.0.0.1:" + str(p2p_port(node_num))
+            from_connection.addnode(ip_port, "onetry")
+            # poll until version handshake complete to avoid race conditions
+            # with transaction relaying
+            # See comments in net_processing:
+            # * Must have a version message before anything else
+            # * Must have a verack message before anything else
+            wait_until(lambda: all(peer['version'] != 0 for peer in from_connection.getpeerinfo()))
+            wait_until(lambda: all(peer['bytesrecv_per_msg'].pop('verack', 0) == 24 for peer in from_connection.getpeerinfo()))
+        connect_nodes_helper(self.nodes[a], b)
+
+    def disconnect_nodes(self, a, b):
+        def disconnect_nodes_helper(from_connection, node_num):
+            for addr in [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']]:
+                try:
+                    from_connection.disconnectnode(addr)
+                except JSONRPCException as e:
+                    # If this node is disconnected between calculating the peer id
+                    # and issuing the disconnect, don't worry about it.
+                    # This avoids a race condition if we're mass-disconnecting peers.
+                    if e.error['code'] != -29: # RPC_CLIENT_NODE_NOT_CONNECTED
+                        raise
+
+            # wait to disconnect
+            wait_until(lambda: [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']] == [], timeout=5)
+        disconnect_nodes_helper(self.nodes[a], b)
+
+    def connect_nodes_clique(self, nodes):
+        # max_workers should be the maximum number of nodes that we have in the same functional test,
+        # 15 seems to be a good upper bound
+        parallel_exec = ThreadPoolExecutor(max_workers=15)
+        l = len(nodes)
+
+        def connect_nodes_clique_internal(a):
+            for b in range(0, l):
+                self.connect_nodes(a, b)
+        jobs = []
+        for a in range(l):
+            jobs.append(parallel_exec.submit(connect_nodes_clique_internal, a))
+
+        for job in jobs:
+            job.result()
+        jobs.clear()
+        parallel_exec.shutdown()
+
     def split_network(self):
         """
         Split the network of four nodes into nodes 0/1 and 2/3.
         """
-        disconnect_nodes(self.nodes[1], 2)
-        disconnect_nodes(self.nodes[2], 1)
+        self.disconnect_nodes(1, 2)
+        self.disconnect_nodes(2, 1)
         self.sync_all(self.nodes[:2])
         self.sync_all(self.nodes[2:])
 
@@ -356,7 +401,7 @@ class PivxTestFramework():
         """
         Join the (previously split) network halves together.
         """
-        connect_nodes(self.nodes[1], 2)
+        self.connect_nodes(1, 2)
         self.sync_all()
 
     def sync_blocks(self, nodes=None, wait=1, timeout=60):
@@ -538,7 +583,7 @@ class PivxTestFramework():
             for node in range(4):
                 self.nodes[node].wait_for_rpc_connection()
             self.log.info("Connecting nodes")
-            connect_nodes_clique(self.nodes)
+            self.connect_nodes_clique(self.nodes)
 
         def stop_and_clean_cache_dir(ddir):
             self.stop_nodes()
@@ -1176,7 +1221,7 @@ class PivxTestFramework():
     def connect_to_all(self, nodePos):
         for i in range(self.num_nodes):
             if i != nodePos and self.nodes[i] is not None:
-                connect_nodes(self.nodes[i], nodePos)
+                self.connect_nodes(i, nodePos)
 
     def assert_equal_for_all(self, expected, func_name, *args):
         def not_found():
@@ -1415,7 +1460,7 @@ class PivxDMNTestFramework(PivxTestFramework):
     def setup_test(self):
         self.mns = []
         self.disable_mocktime()
-        connect_nodes_clique(self.nodes)
+        self.connect_nodes_clique(self.nodes)
 
         # Enforce mn payments and reject legacy mns at block 131
         self.activate_spork(0, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT")

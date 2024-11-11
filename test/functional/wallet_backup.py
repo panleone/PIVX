@@ -40,7 +40,6 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    connect_nodes,
 )
 
 
@@ -53,10 +52,10 @@ class WalletBackupTest(PivxTestFramework):
 
     def setup_network(self, split=False):
         self.setup_nodes()
-        connect_nodes(self.nodes[0], 3)
-        connect_nodes(self.nodes[1], 3)
-        connect_nodes(self.nodes[2], 3)
-        connect_nodes(self.nodes[2], 0)
+        self.connect_nodes(0, 3)
+        self.connect_nodes(1, 3)
+        self.connect_nodes(2, 3)
+        self.connect_nodes(2, 0)
         self.sync_all()
 
     def one_send(self, from_node, to_address):
@@ -87,10 +86,10 @@ class WalletBackupTest(PivxTestFramework):
         self.start_node(0)
         self.start_node(1)
         self.start_node(2)
-        connect_nodes(self.nodes[0], 3)
-        connect_nodes(self.nodes[1], 3)
-        connect_nodes(self.nodes[2], 3)
-        connect_nodes(self.nodes[2], 0)
+        self.connect_nodes(0, 3)
+        self.connect_nodes(1, 3)
+        self.connect_nodes(2, 3)
+        self.connect_nodes(2, 0)
 
     def stop_three(self):
         self.stop_node(0)

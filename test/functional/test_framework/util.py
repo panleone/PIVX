@@ -13,7 +13,6 @@ import logging
 import os
 import random
 import re
-from concurrent.futures import ThreadPoolExecutor
 from subprocess import CalledProcessError
 import time
 
@@ -362,49 +361,6 @@ def get_bip9_status(node, key):
 def set_node_times(nodes, t):
     for node in nodes:
         node.setmocktime(t)
-
-def disconnect_nodes(from_connection, node_num):
-    for addr in [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']]:
-        try:
-            from_connection.disconnectnode(addr)
-        except JSONRPCException as e:
-            # If this node is disconnected between calculating the peer id
-            # and issuing the disconnect, don't worry about it.
-            # This avoids a race condition if we're mass-disconnecting peers.
-            if e.error['code'] != -29: # RPC_CLIENT_NODE_NOT_CONNECTED
-                raise
-
-    # wait to disconnect
-    wait_until(lambda: [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']] == [], timeout=5)
-
-def connect_nodes(from_connection, node_num):
-    ip_port = "127.0.0.1:" + str(p2p_port(node_num))
-    from_connection.addnode(ip_port, "onetry")
-    # poll until version handshake complete to avoid race conditions
-    # with transaction relaying
-    # See comments in net_processing:
-    # * Must have a version message before anything else
-    # * Must have a verack message before anything else
-    wait_until(lambda: all(peer['version'] != 0 for peer in from_connection.getpeerinfo()))
-    wait_until(lambda: all(peer['bytesrecv_per_msg'].pop('verack', 0) == 24 for peer in from_connection.getpeerinfo()))
-
-def connect_nodes_clique(nodes):
-    # max_workers should be the maximum number of nodes that we have in the same functional test,
-    # 15 seems to be a good upper bound
-    parallel_exec = ThreadPoolExecutor(max_workers=15)
-    l = len(nodes)
-
-    def connect_nodes_clique_internal(a):
-        for b in range(0, l):
-            connect_nodes(nodes[a], b)
-    jobs = []
-    for a in range(l):
-        jobs.append(parallel_exec.submit(connect_nodes_clique_internal, a))
-
-    for job in jobs:
-        job.result()
-    jobs.clear()
-    parallel_exec.shutdown()
 
 # Transaction/Block functions
 #############################

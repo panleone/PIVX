@@ -88,7 +88,7 @@ from test_framework.messages import (
 )
 from test_framework.mininode import mininode_lock, NetworkThread, P2PInterface
 from test_framework.test_framework import PivxTestFramework
-from test_framework.util import assert_equal, wait_until, connect_nodes, p2p_port
+from test_framework.util import assert_equal, wait_until, p2p_port
 
 
 direct_fetch_response_time = 0.05
@@ -242,7 +242,7 @@ class SendHeadersTest(PivxTestFramework):
     def setup_network(self):
         self.nodes = []
         self.nodes = start_nodes(self.num_nodes, self.options.tmpdir, [["-debug", "-logtimemicros=1"]]*2)
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
 
     # mine count blocks and return the new tip
     def mine_blocks(self, count):

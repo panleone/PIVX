@@ -7,9 +7,7 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    connect_nodes,
-    Decimal,
-    disconnect_nodes,
+    Decimal
 )
 
 class AbandonConflictTest(PivxTestFramework):
@@ -41,7 +39,7 @@ class AbandonConflictTest(PivxTestFramework):
         balance = newbalance
 
         # Disconnect nodes so node0's transactions don't get into node1's mempool
-        disconnect_nodes(self.nodes[0], 1)
+        self.disconnect_nodes(0, 1)
 
         # Identify the 10btc outputs
         nA = next(i for i, vout in enumerate(self.nodes[0].getrawtransaction(txA, 1)["vout"]) if vout["value"] == 10)
@@ -152,7 +150,7 @@ class AbandonConflictTest(PivxTestFramework):
         self.nodes[1].sendrawtransaction(signed["hex"])
         self.nodes[1].generate(1)
 
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.sync_blocks()
 
         # Verify that B and C's 10 BTC outputs are available for spending again because AB1 is now conflicted

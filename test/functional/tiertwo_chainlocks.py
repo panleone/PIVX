@@ -5,10 +5,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 from test_framework.test_framework import PivxDMNTestFramework
-from test_framework.util import (
-    assert_equal,
-    connect_nodes,
-)
+from test_framework.util import assert_equal
 import time
 
 '''
@@ -60,7 +57,7 @@ class ChainLocksTest(PivxDMNTestFramework):
         self.wait_for_chainlock_tip(self.nodes[1])
         assert self.nodes[0].getbestblockhash() == node0_tip
         self.nodes[0].setnetworkactive(True)
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.nodes[1].generate(1)
         self.wait_for_chainlock(self.nodes[0], self.nodes[1].getbestblockhash())
 
@@ -72,7 +69,7 @@ class ChainLocksTest(PivxDMNTestFramework):
         self.wait_for_chainlock_tip(self.nodes[1])
         assert not self.nodes[0].getblock(self.nodes[0].getbestblockhash())["chainlock"]
         self.nodes[0].setnetworkactive(True)
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.nodes[1].generate(1)
         self.wait_for_chainlock(self.nodes[0], self.nodes[1].getbestblockhash())
         assert self.nodes[0].getblock(self.nodes[0].getbestblockhash())["previousblockhash"] == good_tip
@@ -83,7 +80,7 @@ class ChainLocksTest(PivxDMNTestFramework):
         # Restart it so that it forgets all the chainlocks from the past
         self.stop_node(0)
         self.start_node(0, extra_args=self.extra_args[0])
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         # Now try to reorg the chain
         self.nodes[0].generate(2)

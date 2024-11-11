@@ -13,7 +13,7 @@ from struct import unpack, pack
 import urllib.parse
 
 from test_framework.test_framework import PivxTestFramework
-from test_framework.util import assert_equal, assert_greater_than, connect_nodes, hex_str_to_bytes
+from test_framework.util import assert_equal, assert_greater_than, hex_str_to_bytes
 
 
 def deser_uint256(f):
@@ -52,7 +52,7 @@ class RESTTest (PivxTestFramework):
 
     def setup_network(self, split=False):
         super().setup_network()
-        connect_nodes(self.nodes[0], 2)
+        self.connect_nodes(0, 2)
 
     def run_test(self):
         url = urllib.parse.urlparse(self.nodes[0].url)
