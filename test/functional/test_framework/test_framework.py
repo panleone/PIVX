@@ -4,7 +4,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Base class for RPC testing."""
 
-from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from io import BytesIO
 import logging
@@ -373,22 +372,11 @@ class PivxTestFramework():
         disconnect_nodes_helper(self.nodes[a], b)
 
     def connect_nodes_clique(self, nodes):
-        # max_workers should be the maximum number of nodes that we have in the same functional test,
-        # 15 seems to be a good upper bound
-        parallel_exec = ThreadPoolExecutor(max_workers=15)
         l = len(nodes)
-
-        def connect_nodes_clique_internal(a):
-            for b in range(0, l):
-                self.connect_nodes(a, b)
-        jobs = []
         for a in range(l):
-            jobs.append(parallel_exec.submit(connect_nodes_clique_internal, a))
-
-        for job in jobs:
-            job.result()
-        jobs.clear()
-        parallel_exec.shutdown()
+            for b in range(a, l):
+                self.connect_nodes(a, b)
+                self.connect_nodes(b, a)
 
     def split_network(self):
         """
