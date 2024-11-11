@@ -340,11 +340,14 @@ class PivxTestFramework():
     def wait_for_node_exit(self, i, timeout):
         self.nodes[i].process.wait(timeout)
 
-    def connect_nodes(self, a, b):
+    def connect_nodes(self, a, b, wait_for_connect = True):
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
         ip_port = "127.0.0.1:" + str(p2p_port(b))
         from_connection.addnode(ip_port, "onetry")
+
+        if not wait_for_connect:
+            return
 
         # Use subversion as peer id. Test nodes have their node number appended to the user agent string
         from_connection_subver = from_connection.getnetworkinfo()['subversion']

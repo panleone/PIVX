@@ -9,6 +9,7 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     set_node_times,
+    wait_until,
 )
 
 
@@ -22,9 +23,9 @@ class TimeOffsetTest(PivxTestFramework):
         # don't connect nodes yet
         self.setup_nodes()
 
-    def connect_nodes_bi(self, a, b):
-        self.connect_nodes(a, b)
-        self.connect_nodes(b, a)
+    def connect_nodes_bi(self, a, b, wait_for_connect = True):
+        self.connect_nodes(a, b, wait_for_connect)
+        self.connect_nodes(b, a, wait_for_connect)
 
     def check_connected_nodes(self):
         ni = [node.getnetworkinfo() for node in self.connected_nodes]
@@ -96,9 +97,9 @@ class TimeOffsetTest(PivxTestFramework):
 
         # try to connect node 5 and check that it can't
         self.log.info("Trying to connect with node-5 (+30 s)...")
-        self.connect_nodes_bi(0, 5)
-        ni = self.nodes[0].getnetworkinfo()
-        assert_equal(ni['connections'], 10)
+        # Don't wait for a connection that will never be established.
+        self.connect_nodes_bi(0, 5, False)
+        wait_until(lambda: self.nodes[0].getnetworkinfo()['connections'] == 10)
         assert_equal(ni['timeoffset'], 15)
         self.log.info("Not connected.")
         self.log.info("Node-0 nTimeOffset: +%d seconds" % ni['timeoffset'])
