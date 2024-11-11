@@ -13,7 +13,6 @@ import logging
 import os
 import random
 import re
-from concurrent.futures import ThreadPoolExecutor
 from subprocess import CalledProcessError
 import time
 
@@ -385,22 +384,11 @@ def connect_nodes(from_connection, node_num):
     wait_until(lambda:  all(peer['version'] != 0 for peer in from_connection.getpeerinfo()))
 
 def connect_nodes_clique(nodes):
-    # max_workers should be the maximum number of nodes that we have in the same functional test,
-    # 15 seems to be a good upper bound
-    parallel_exec = ThreadPoolExecutor(max_workers=15)
     l = len(nodes)
-
-    def connect_nodes_clique_internal(a):
-        for b in range(0, l):
-            connect_nodes(nodes[a], b)
-    jobs = []
     for a in range(l):
-        jobs.append(parallel_exec.submit(connect_nodes_clique_internal, a))
-
-    for job in jobs:
-        job.result()
-    jobs.clear()
-    parallel_exec.shutdown()
+        for b in range(a + 1, l):
+            connect_nodes(nodes[a], b)
+            connect_nodes(nodes[b], a)
 
 # Transaction/Block functions
 #############################
