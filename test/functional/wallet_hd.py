@@ -10,7 +10,6 @@ import shutil
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
-    connect_nodes,
     assert_raises_rpc_error
 )
 
@@ -52,8 +51,8 @@ class WalletHDTest(PivxTestFramework):
 
     def start_and_connect_node1(self):
         self.start_node(1)
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 0)
         self.sync_all()
 
     def check_addressbook(self, old_book, new_book):
@@ -120,7 +119,7 @@ class WalletHDTest(PivxTestFramework):
         self.stop_node(1)
         shutil.copyfile(os.path.join(self.nodes[1].datadir, "hd.bak"), os.path.join(self.nodes[1].datadir, "regtest", "wallet.dat"))
         self.start_node(1)
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         self.sync_all()
         self.check_addressbook(addrbook_old, self.nodes[1].getaddressesbylabel(""))
 
@@ -140,8 +139,8 @@ class WalletHDTest(PivxTestFramework):
         z_add_2 = self.generate_shield_addr(masterkeyid, NUM_SHIELD_ADDS)
         assert_equal(z_add, z_add_2)
         # connect and sync
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 0)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 0)
         self.sync_all()
         assert_equal(self.nodes[1].getbalance(), NUM_HD_ADDS + NUM_SHIELD_ADDS + 1)
 

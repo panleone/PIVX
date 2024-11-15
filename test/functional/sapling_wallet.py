@@ -11,8 +11,6 @@ from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    connect_nodes,
-    disconnect_nodes,
     satoshi_round,
     get_coinstake_address,
     wait_until,
@@ -77,7 +75,7 @@ class WalletSaplingTest(PivxTestFramework):
         self.restart_node(0, extra_args=self.extra_args[0]+['-minrelaytxfee=0.0000001'])
         rawtx_hex = self.nodes[0].rawshieldsendmany("from_transparent", recipients, 1)
         self.restart_node(0, extra_args=self.extra_args[0])
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
         assert_raises_rpc_error(-26, "insufficient fee",
                                 self.nodes[0].sendrawtransaction, rawtx_hex)
         self.log.info("Good. Not accepted in the mempool.")
@@ -132,7 +130,7 @@ class WalletSaplingTest(PivxTestFramework):
         self.log.info("Balances check out")
 
         # Now disconnect the block, activate SPORK_20, and try to reconnect it
-        disconnect_nodes(self.nodes[0], 1)
+        self.disconnect_nodes(0, 1)
         tip_hash = self.nodes[0].getbestblockhash()
         self.nodes[0].invalidateblock(tip_hash)
         assert tip_hash != self.nodes[0].getbestblockhash()
@@ -152,7 +150,7 @@ class WalletSaplingTest(PivxTestFramework):
         assert_equal(tip_hash, self.nodes[0].getbestblockhash())    # Block connected
         assert_equal(self.nodes[0].getshieldbalance(saplingAddr0), Decimal('30'))
         self.log.info("Reconnected after deactivation of SPORK_20. Balance restored.")
-        connect_nodes(self.nodes[0], 1)
+        self.connect_nodes(0, 1)
 
         # Node 0 sends some shield funds to node 1
         # Sapling -> Sapling

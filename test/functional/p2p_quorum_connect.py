@@ -13,7 +13,6 @@ from test_framework.mininode import P2PInterface
 from test_framework.messages import msg_version
 from test_framework.util import (
     assert_equal,
-    connect_nodes,
     hash256,
     wait_until,
 )
@@ -174,7 +173,7 @@ class DMNConnectionTest(PivxDMNTestFramework):
         self.clean_conns_and_disconnect(mn6_node)
 
         # Create the regular connection
-        connect_nodes(mn5_node, mn6.idx)
+        self.connect_nodes(mn5.idx, mn6.idx)
         self.wait_for_peers_count([mn5_node], 1)
         assert self.has_single_regular_connection(mn5_node)
         assert self.has_single_regular_connection(mn6_node)

@@ -9,10 +9,7 @@ Test checking compatibility code between MN and DMN
 from decimal import Decimal
 
 from test_framework.test_framework import PivxTier2TestFramework
-from test_framework.util import (
-    assert_equal,
-    connect_nodes,
-)
+from test_framework.util import assert_equal
 
 
 class MasternodeCompatibilityTest(PivxTier2TestFramework):
@@ -105,9 +102,9 @@ class MasternodeCompatibilityTest(PivxTier2TestFramework):
         self.remoteDMN2 = self.nodes[self.remoteDMN2Pos]
         self.remoteDMN3 = self.nodes[self.remoteDMN3Pos]
         # add more direct connections to the miner
-        connect_nodes(self.miner, 2)
-        connect_nodes(self.remoteTwo, 0)
-        connect_nodes(self.remoteDMN2, 0)
+        self.connect_nodes(self.minerPos, 2)
+        self.connect_nodes(self.remoteTwoPos, 0)
+        self.connect_nodes(self.remoteDMN2Pos, 0)
         self.sync_all()
 
         # check mn list from miner

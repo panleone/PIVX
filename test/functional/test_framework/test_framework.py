@@ -43,9 +43,6 @@ from .util import (
     assert_equal,
     assert_greater_than,
     check_json_precision,
-    connect_nodes,
-    connect_nodes_clique,
-    disconnect_nodes,
     get_collateral_vout,
     Decimal,
     DEFAULT_FEE,
@@ -251,7 +248,7 @@ class PivxTestFramework():
         # If further outbound connections are needed, they can be added at the beginning of the test with e.g.
         # connect_nodes(self.nodes[1], 2)
         for i in range(self.num_nodes - 1):
-            connect_nodes(self.nodes[i + 1], i)
+            self.connect_nodes(i + 1, i)
         self.sync_all()
 
     def setup_nodes(self):
@@ -343,12 +340,67 @@ class PivxTestFramework():
     def wait_for_node_exit(self, i, timeout):
         self.nodes[i].process.wait(timeout)
 
+    def connect_nodes(self, a, b, wait_for_connect = True):
+        from_connection = self.nodes[a]
+        to_connection = self.nodes[b]
+        ip_port = "127.0.0.1:" + str(p2p_port(b))
+        from_connection.addnode(ip_port, "onetry")
+
+        if not wait_for_connect:
+            return
+
+        # Use subversion as peer id. Test nodes have their node number appended to the user agent string
+        from_connection_subver = from_connection.getnetworkinfo()['subversion']
+        to_connection_subver = to_connection.getnetworkinfo()['subversion']
+
+        def find_conn(node, peer_subversion, inbound):
+            return next(filter(lambda peer: peer['subver'] == peer_subversion and peer['inbound'] == inbound, node.getpeerinfo()), None)
+
+        wait_until(lambda: find_conn(from_connection, to_connection_subver, inbound=False) is not None)
+        wait_until(lambda: find_conn(to_connection, from_connection_subver, inbound=True) is not None)
+
+        def check_bytesrecv(peer, msg_type, min_bytes_recv):
+            assert peer is not None, "Error: peer disconnected"
+            return peer['bytesrecv_per_msg'].pop(msg_type, 0) >= min_bytes_recv
+
+        # Poll until version handshake (fSuccessfullyConnected) is complete to
+        # avoid race conditions, because some message types are blocked from
+        # being sent or received before fSuccessfullyConnected.
+        #
+        # As the flag fSuccessfullyConnected is not exposed, check it by
+        # waiting for a pong, which can only happen after the flag was set.
+        wait_until(lambda: check_bytesrecv(find_conn(from_connection, to_connection_subver, inbound=False), 'pong', 29))
+        wait_until(lambda: check_bytesrecv(find_conn(to_connection, from_connection_subver, inbound=True), 'pong', 29))
+
+    def disconnect_nodes(self, a, b):
+        def disconnect_nodes_helper(from_connection, node_num):
+            for addr in [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']]:
+                try:
+                    from_connection.disconnectnode(addr)
+                except JSONRPCException as e:
+                    # If this node is disconnected between calculating the peer id
+                    # and issuing the disconnect, don't worry about it.
+                    # This avoids a race condition if we're mass-disconnecting peers.
+                    if e.error['code'] != -29: # RPC_CLIENT_NODE_NOT_CONNECTED
+                        raise
+
+            # wait to disconnect
+            wait_until(lambda: [peer['addr'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']] == [], timeout=5)
+        disconnect_nodes_helper(self.nodes[a], b)
+
+    def connect_nodes_clique(self, nodes):
+        l = len(nodes)
+        for a in range(l):
+            for b in range(a + 1, l):
+                self.connect_nodes(a, b)
+                self.connect_nodes(b, a)
+
     def split_network(self):
         """
         Split the network of four nodes into nodes 0/1 and 2/3.
         """
-        disconnect_nodes(self.nodes[1], 2)
-        disconnect_nodes(self.nodes[2], 1)
+        self.disconnect_nodes(1, 2)
+        self.disconnect_nodes(2, 1)
         self.sync_all(self.nodes[:2])
         self.sync_all(self.nodes[2:])
 
@@ -356,7 +408,7 @@ class PivxTestFramework():
         """
         Join the (previously split) network halves together.
         """
-        connect_nodes(self.nodes[1], 2)
+        self.connect_nodes(1, 2)
         self.sync_all()
 
     def sync_blocks(self, nodes=None, wait=1, timeout=60):
@@ -538,7 +590,7 @@ class PivxTestFramework():
             for node in range(4):
                 self.nodes[node].wait_for_rpc_connection()
             self.log.info("Connecting nodes")
-            connect_nodes_clique(self.nodes)
+            self.connect_nodes_clique(self.nodes)
 
         def stop_and_clean_cache_dir(ddir):
             self.stop_nodes()
@@ -1176,7 +1228,7 @@ class PivxTestFramework():
     def connect_to_all(self, nodePos):
         for i in range(self.num_nodes):
             if i != nodePos and self.nodes[i] is not None:
-                connect_nodes(self.nodes[i], nodePos)
+                self.connect_nodes(i, nodePos)
 
     def assert_equal_for_all(self, expected, func_name, *args):
         def not_found():
@@ -1415,7 +1467,7 @@ class PivxDMNTestFramework(PivxTestFramework):
     def setup_test(self):
         self.mns = []
         self.disable_mocktime()
-        connect_nodes_clique(self.nodes)
+        self.connect_nodes_clique(self.nodes)
 
         # Enforce mn payments and reject legacy mns at block 131
         self.activate_spork(0, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT")

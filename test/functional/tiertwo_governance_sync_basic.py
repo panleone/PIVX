@@ -18,7 +18,6 @@ from test_framework.test_framework import PivxTier2TestFramework
 from test_framework.util import (
     assert_equal,
     assert_true,
-    connect_nodes,
     get_datadir_path,
     satoshi_round
 )
@@ -129,10 +128,6 @@ class MasternodeGovernanceBasicTest(PivxTier2TestFramework):
         for i in range(self.num_nodes):
             assert_equal(self.nodes[i].getbudgetprojection(), expected)
             self.log.info("Budget projection valid for node %d" % i)
-
-    def connect_nodes_bi(self, nodes, a, b):
-        connect_nodes(nodes[a], b)
-        connect_nodes(nodes[b], a)
 
     def create_proposals_tx(self, props):
         nextSuperBlockHeight = self.miner.getnextsuperblock()

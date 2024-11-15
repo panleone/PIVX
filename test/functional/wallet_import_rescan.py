@@ -26,7 +26,6 @@ import itertools
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_raises_rpc_error,
-    connect_nodes,
     assert_equal,
     set_node_times
 )
@@ -126,7 +125,7 @@ class ImportRescanTest(PivxTestFramework):
         self.add_nodes(self.num_nodes, extra_args=extra_args)
         self.start_nodes()
         for i in range(1, self.num_nodes):
-            connect_nodes(self.nodes[i], 0)
+            self.connect_nodes(i, 0)
 
     def run_test(self):
         # Create one transaction on node 0 with a unique amount for

@@ -17,8 +17,6 @@ import time
 
 from test_framework.test_framework import PivxTier2TestFramework
 from test_framework.util import (
-    connect_nodes_clique,
-    disconnect_nodes,
     wait_until,
 )
 
@@ -29,10 +27,10 @@ class MasternodeActivationTest(PivxTier2TestFramework):
         for i in [self.remoteOnePos, self.remoteTwoPos]:
             for j in range(self.num_nodes):
                 if i != j:
-                    disconnect_nodes(self.nodes[i], j)
+                    self.disconnect_nodes(i, j)
 
     def reconnect_remotes(self):
-        connect_nodes_clique(self.nodes)
+        self.connect_nodes_clique(self.nodes)
         self.sync_all()
 
     def reconnect_and_restart_masternodes(self):

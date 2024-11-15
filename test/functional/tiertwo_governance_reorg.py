@@ -10,8 +10,6 @@ import time
 from test_framework.test_framework import PivxTestFramework
 from test_framework.util import (
     assert_equal,
-    connect_nodes,
-    disconnect_nodes,
     p2p_port,
     set_node_times,
 )
@@ -183,17 +181,17 @@ class GovernanceReorgTest(PivxTestFramework):
     def split_network(self):
         for i in range(self.num_nodes):
             if i != self.minerBPos:
-                disconnect_nodes(self.nodes[i], self.minerBPos)
-                disconnect_nodes(self.nodes[self.minerBPos], i)
+                self.disconnect_nodes(i, self.minerBPos)
+                self.disconnect_nodes(self.minerBPos, i)
         # by-pass ring connection
         assert self.minerBPos > 0
-        connect_nodes(self.nodes[self.minerBPos-1], self.minerBPos+1)
+        self.connect_nodes(self.minerBPos-1, self.minerBPos+1)
 
     def reconnect_nodes(self):
         for i in range(self.num_nodes):
             if i != self.minerBPos:
-                connect_nodes(self.nodes[i], self.minerBPos)
-                connect_nodes(self.nodes[self.minerBPos], i)
+                self.connect_nodes(i, self.minerBPos)
+                self.connect_nodes(self.minerBPos, i)
 
     def create_and_check_superblock(self, node, next_superblock, payee):
         self.stake_and_ping(self.nodes.index(node), 1, [])

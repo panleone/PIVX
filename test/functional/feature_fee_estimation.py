@@ -10,7 +10,7 @@ import random
 from test_framework.messages import CTransaction, CTxIn, CTxOut, COutPoint, ToHex, COIN
 from test_framework.script import CScript, OP_1, OP_DROP, OP_2, OP_HASH160, OP_EQUAL, hash160, OP_TRUE
 from test_framework.test_framework import PivxTestFramework
-from test_framework.util import connect_nodes, satoshi_round
+from test_framework.util import satoshi_round
 
 
 # Use as minTxFee
@@ -247,9 +247,9 @@ class EstimateFeeTest(PivxTestFramework):
         # so the estimates would not be affected by the splitting transactions
         self.start_node(1)
         self.start_node(2)
-        connect_nodes(self.nodes[1], 0)
-        connect_nodes(self.nodes[0], 2)
-        connect_nodes(self.nodes[2], 1)
+        self.connect_nodes(1, 0)
+        self.connect_nodes(0, 2)
+        self.connect_nodes(2, 1)
 
         self.sync_all()
 

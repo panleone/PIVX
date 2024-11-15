@@ -10,7 +10,6 @@ from test_framework.util import (
     assert_equal,
     assert_fee_amount,
     assert_raises_rpc_error,
-    connect_nodes,
     Decimal,
     wait_until,
 )
@@ -25,9 +24,9 @@ class WalletTest(PivxTestFramework):
         self.start_node(0)
         self.start_node(1)
         self.start_node(2)
-        connect_nodes(self.nodes[0], 1)
-        connect_nodes(self.nodes[1], 2)
-        connect_nodes(self.nodes[0], 2)
+        self.connect_nodes(0, 1)
+        self.connect_nodes(1, 2)
+        self.connect_nodes(0, 2)
         self.sync_all(self.nodes[0:3])
 
     def get_vsize(self, txn):

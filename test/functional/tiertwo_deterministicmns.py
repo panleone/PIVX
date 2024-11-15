@@ -16,7 +16,6 @@ from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
     create_new_dmn,
-    connect_nodes,
     hex_str_to_bytes,
     is_coin_locked_by,
     spend_mn_collateral,
@@ -74,7 +73,7 @@ class DIP3Test(PivxTestFramework):
     def restart_controller(self):
         self.restart_node(self.controllerPos, extra_args=self.extra_args[self.controllerPos])
         self.connect_to_all(self.controllerPos)
-        connect_nodes(self.nodes[self.controllerPos], self.minerPos)
+        self.connect_nodes(self.controllerPos, self.minerPos)
         self.sync_all()
 
     def wait_until_mnsync_completed(self):
