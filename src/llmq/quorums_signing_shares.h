@@ -273,7 +273,6 @@ class CSigSharesNodeState
 public:
     // Used to avoid holding locks too long
     struct SessionInfo {
-        uint32_t recvSessionId;
         Consensus::LLMQType llmqType;
         uint256 quorumHash;
         uint256 id;
