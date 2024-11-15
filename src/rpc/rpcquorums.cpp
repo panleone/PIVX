@@ -141,7 +141,7 @@ UniValue listquorums(const JSONRPCRequest& request)
 
         auto quorums = llmq::quorumManager->ScanQuorums(p.first, chainActive.Tip(), count);
         for (auto& q : quorums) {
-            v.push_back(q->pindexQuorum->GetBlockHash().ToString());
+            v.push_back(q->qc.quorumHash.ToString());
         }
 
         ret.pushKV(p.second.name, v);
@@ -201,15 +201,15 @@ UniValue getquoruminfo(const JSONRPCRequest& request)
     UniValue ret(UniValue::VOBJ);
 
     ret.pushKV("height", quorum->pindexQuorum->nHeight);
-    ret.pushKV("quorumHash", quorum->pindexQuorum->GetBlockHash().ToString());
+    ret.pushKV("quorumHash", quorum->qc.quorumHash.ToString());
 
     UniValue membersArr(UniValue::VARR);
     for (size_t i = 0; i < quorum->members.size(); i++) {
         auto& dmn = quorum->members[i];
         UniValue mo(UniValue::VOBJ);
         mo.pushKV("proTxHash", dmn->proTxHash.ToString());
-        mo.pushKV("valid", quorum->validMembers[i]);
-        if (quorum->validMembers[i]) {
+        mo.pushKV("valid", quorum->qc.validMembers[i]);
+        if (quorum->qc.validMembers[i]) {
             CBLSPublicKey pubKey = quorum->GetPubKeyShare(i);
             if (pubKey.IsValid()) {
                 mo.pushKV("pubKeyShare", pubKey.ToString());
@@ -219,7 +219,7 @@ UniValue getquoruminfo(const JSONRPCRequest& request)
     }
 
     ret.pushKV("members", membersArr);
-    ret.pushKV("quorumPublicKey", quorum->quorumPublicKey.ToString());
+    ret.pushKV("quorumPublicKey", quorum->qc.quorumPublicKey.ToString());
     CBLSSecretKey skShare = quorum->GetSkShare();
     if (includeSkShare && skShare.IsValid()) {
         ret.pushKV("secretKeyShare", skShare.ToString());
@@ -374,7 +374,7 @@ UniValue quorumselectquorum(const JSONRPCRequest& request)
     if (!quorum) {
         throw JSONRPCError(RPC_MISC_ERROR, "no quorums active");
     }
-    ret.pushKV("quorumHash", quorum->pindexQuorum->GetBlockHash().ToString());
+    ret.pushKV("quorumHash", quorum->qc.quorumHash.ToString());
 
     UniValue recoveryMembers(UniValue::VARR);
     for (int i = 0; i < quorum->params.recoveryMembers; i++) {

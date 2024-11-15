@@ -479,7 +479,7 @@ void CSigSharesManager::ProcessMessageSigShare(NodeId fromId, const CSigShare& s
     if (!quorum) {
         return;
     }
-    if (!llmq::utils::IsQuorumActive((Consensus::LLMQType)sigShare.llmqType, quorum->pindexQuorum->GetBlockHash())) {
+    if (!llmq::utils::IsQuorumActive((Consensus::LLMQType)sigShare.llmqType, quorum->qc.quorumHash)) {
         // quorum is too old
         return;
     }
@@ -490,7 +490,7 @@ void CSigSharesManager::ProcessMessageSigShare(NodeId fromId, const CSigShare& s
     if (quorum->quorumVvec == nullptr) {
         // TODO we should allow to ask other nodes for the quorum vvec if we missed it in the DKG
         LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- we don't have the quorum vvec for %s, no verification possible. node=%d\n", __func__,
-            quorum->pindexQuorum->GetBlockHash().ToString(), fromId);
+            quorum->qc.quorumHash.ToString(), fromId);
         return;
     }
 
@@ -499,11 +499,11 @@ void CSigSharesManager::ProcessMessageSigShare(NodeId fromId, const CSigShare& s
         BanNode(fromId);
         return;
     }
-    // if (!quorum->qc.validMembers[sigShare.quorumMember]) {
-    //     LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- quorumMember not valid\n", __func__);
-    //     BanNode(fromId);
-    //    return;
-    // }
+    if (!quorum->qc.validMembers[sigShare.quorumMember]) {
+        LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- quorumMember not valid\n", __func__);
+        BanNode(fromId);
+        return;
+    }
 
     {
         LOCK(cs);
@@ -528,7 +528,7 @@ bool CSigSharesManager::PreVerifyBatchedSigShares(NodeId nodeId, const CSigShare
 {
     retBan = false;
 
-    if (!llmq::utils::IsQuorumActive(session.llmqType, session.quorum->pindexQuorum->GetBlockHash())) {
+    if (!llmq::utils::IsQuorumActive(session.llmqType, session.quorum->qc.quorumHash)) {
         // quorum is too old
         return false;
     }
@@ -557,7 +557,7 @@ bool CSigSharesManager::PreVerifyBatchedSigShares(NodeId nodeId, const CSigShare
             retBan = true;
             return false;
         }
-        if (!session.quorum->validMembers[quorumMember]) {
+        if (!session.quorum->qc.validMembers[quorumMember]) {
             LogPrintf("CSigSharesManager::%s -- quorumMember not valid\n", __func__);
             retBan = true;
             return false;
@@ -778,7 +778,7 @@ void CSigSharesManager::TryRecoverSig(const CQuorumCPtr& quorum, const uint256& 
 
         auto k = std::make_pair(quorum->params.type, id);
 
-        auto signHash = llmq::utils::BuildSignHash(quorum->params.type, quorum->pindexQuorum->GetBlockHash(), id, msgHash);
+        auto signHash = llmq::utils::BuildSignHash(quorum->params.type, quorum->qc.quorumHash, id, msgHash);
         auto sigShares = this->sigShares.GetAllForSignHash(signHash);
         if (!sigShares) {
             return;
@@ -812,7 +812,7 @@ void CSigSharesManager::TryRecoverSig(const CQuorumCPtr& quorum, const uint256& 
 
     CRecoveredSig rs;
     rs.llmqType = quorum->params.type;
-    rs.quorumHash = quorum->pindexQuorum->GetBlockHash();
+    rs.quorumHash = quorum->qc.quorumHash;
     rs.id = id;
     rs.msgHash = msgHash;
     rs.sig.Set(recoveredSig);
@@ -823,7 +823,7 @@ void CSigSharesManager::TryRecoverSig(const CQuorumCPtr& quorum, const uint256& 
     // verification because this is unbatched and thus slow verification that happens here.
     if (((recoveredSigsCounter++) % 100) == 0) {
         auto signHash = llmq::utils::BuildSignHash(rs);
-        bool valid = recoveredSig.VerifyInsecure(quorum->quorumPublicKey, signHash);
+        bool valid = recoveredSig.VerifyInsecure(quorum->qc.quorumPublicKey, signHash);
         if (!valid) {
             // this should really not happen as we have verified all signature shares before
             LogPrintf("CSigSharesManager::%s -- own recovered signature is invalid. id=%s, msgHash=%s\n", __func__,
@@ -1521,7 +1521,7 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
 
     CBLSSecretKey skShare = quorum->GetSkShare();
     if (!skShare.IsValid()) {
-        LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- we don't have our skShare for quorum %s\n", __func__, quorum->pindexQuorum->GetBlockHash().ToString());
+        LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- we don't have our skShare for quorum %s\n", __func__, quorum->qc.quorumHash.ToString());
         return;
     }
 
@@ -1533,7 +1533,7 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
 
     CSigShare sigShare;
     sigShare.llmqType = quorum->params.type;
-    sigShare.quorumHash = quorum->pindexQuorum->GetBlockHash();
+    sigShare.quorumHash = quorum->qc.quorumHash;
     sigShare.id = id;
     sigShare.msgHash = msgHash;
     sigShare.quorumMember = (uint16_t)memberIdx;
@@ -1549,7 +1549,7 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
     sigShare.UpdateKey();
 
     LogPrint(BCLog::LLMQ, "CSigSharesManager::%s -- signed sigShare. signHash=%s, id=%s, msgHash=%s, llmqType=%d, quorum=%s, time=%s\n", __func__,
-        signHash.ToString(), sigShare.id.ToString(), sigShare.msgHash.ToString(), quorum->params.type, quorum->pindexQuorum->GetBlockHash().ToString(), t.count());
+        signHash.ToString(), sigShare.id.ToString(), sigShare.msgHash.ToString(), quorum->params.type, quorum->qc.quorumHash.ToString(), t.count());
     ProcessSigShare(-1, sigShare, *g_connman, quorum);
 
     LOCK(cs);
@@ -1564,7 +1564,7 @@ void CSigSharesManager::Sign(const CQuorumCPtr& quorum, const uint256& id, const
 void CSigSharesManager::ForceReAnnouncement(const CQuorumCPtr& quorum, Consensus::LLMQType llmqType, const uint256& id, const uint256& msgHash)
 {
     LOCK(cs);
-    auto signHash = llmq::utils::BuildSignHash(llmqType, quorum->pindexQuorum->GetBlockHash(), id, msgHash);
+    auto signHash = llmq::utils::BuildSignHash(llmqType, quorum->qc.quorumHash, id, msgHash);
     auto sigs = sigShares.GetAllForSignHash(signHash);
     if (sigs) {
         for (auto& p : *sigs) {
